@@ -1,0 +1,9 @@
+*
+!.gitignore
+!AGENTS.md
+!docs/
+!docs/**
+!tools/
+!tools/**
+!tests/
+!tests/**
