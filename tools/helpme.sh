@@ -18,5 +18,5 @@ Context-safe helper commands
 
 4) backup [destination_dir]
 - Dedupe snapshot backup (rsync hard-link incremental).
-- Example: backup /tmp/system32-backups
+- Example: backup /mnt/c/Windows/system32/backups
 EOF

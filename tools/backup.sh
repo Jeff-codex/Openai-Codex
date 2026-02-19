@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Dedupe backup for this workspace using rsync hard-link snapshots.
 # - Identical files across snapshots consume almost no extra disk.
-# - Default destination is /tmp/system32-backups.
+# - Default destination is /mnt/c/Windows/system32/backups.
 #
 # Usage:
 #   backup.sh [destination_dir]
@@ -17,7 +17,7 @@ fi
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
-dest_root="${1:-/tmp/system32-backups}"
+dest_root="${1:-/mnt/c/Windows/system32/backups}"
 snapshots_dir="$dest_root/snapshots"
 latest_link="$dest_root/latest"
 ts="$(date +%Y%m%d-%H%M%S)"
