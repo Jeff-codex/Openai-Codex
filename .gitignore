@@ -1,9 +1,36 @@
+# Default: ignore everything, then explicitly allow tracked project paths.
 *
+
+# Core repository files
 !.gitignore
 !AGENTS.md
+!README.md
+!index.html
+
+# Existing upstream structure
 !docs/
 !docs/**
 !tools/
 !tools/**
 !tests/
 !tests/**
+
+# Deliver project structure (Korean + English)
+!01_서비스코드-ServiceCode/
+!01_서비스코드-ServiceCode/**
+!02_디자인에셋-DesignAssets/
+!02_디자인에셋-DesignAssets/**
+!03_프로젝트문서-ProjectDocs/
+!03_프로젝트문서-ProjectDocs/**
+!04_배포패키지-DeployPackage/
+!04_배포패키지-DeployPackage/**
+!05_로컬백업-LocalBackup/
+!05_로컬백업-LocalBackup/**
+!06_운영로그-OpsLogs/
+!06_운영로그-OpsLogs/**
+!07_자동화스크립트-AutomationScripts/
+!07_자동화스크립트-AutomationScripts/**
+
+# Runtime artifacts to keep out of Git
+05_로컬백업-LocalBackup/*.tar.gz
+06_운영로그-OpsLogs/*.log
