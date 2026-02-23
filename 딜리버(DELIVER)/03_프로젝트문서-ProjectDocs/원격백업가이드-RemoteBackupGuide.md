@@ -13,6 +13,7 @@ git push origin main
 
 ## 자동화 스크립트 사용
 ```bash
+cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
 ./07_자동화스크립트-AutomationScripts/backup_and_push.sh
 ./07_자동화스크립트-AutomationScripts/backup_and_push.sh --push
 ```

@@ -1,8 +1,8 @@
 # 딜리버 웹서비스 개발 저장 구조 (Local + Git Remote)
 
 ## 저장 경로
-- 로컬 PC: `C:\Users\gusru\code\Openai-Codex`
-- WSL 경로: `/mnt/c/Users/gusru/code/Openai-Codex`
+- 로컬 PC: `C:\Users\gusru\code\Openai-Codex\딜리버(DELIVER)`
+- WSL 경로: `/mnt/c/Users/gusru/code/Openai-Codex/딜리버(DELIVER)`
 - 원격 Git: `origin` (현재 연결됨)
 
 ## 폴더 구조 (한국어+영어)
@@ -22,12 +22,12 @@
 ## 운영 안정화 워크플로우
 1. 개발 후 로컬 백업 생성
 ```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex
+cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
 ./07_자동화스크립트-AutomationScripts/backup_and_push.sh
 ```
 
 2. 백업 + Git 원격 푸시까지 한 번에 실행
 ```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex
+cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
 ./07_자동화스크립트-AutomationScripts/backup_and_push.sh --push
 ```
