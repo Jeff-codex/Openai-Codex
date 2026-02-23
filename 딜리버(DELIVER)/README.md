@@ -14,6 +14,11 @@
 - `06_운영로그-OpsLogs` : 운영 로그 파일
 - `07_자동화스크립트-AutomationScripts` : 백업/동기화 스크립트
 
+## 고정 개발 정책
+- 모든 회원/주문/운영 데이터 기능은 Supabase 연동 가능 구조를 기본값으로 설계
+- 환경 변수 기준 파일: `01_서비스코드-ServiceCode/.env.supabase.example`
+- 세부 원칙 문서: `03_프로젝트문서-ProjectDocs/개발원칙-DevelopmentPrinciples.md`
+
 ## 현재 랜딩페이지 위치
 - `01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html`
 
@@ -30,4 +35,16 @@ cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
 ```bash
 cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
 ./07_자동화스크립트-AutomationScripts/backup_and_push.sh --push
+```
+
+3. 단계 완료 기록 + 백업(권장)
+```bash
+cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
+./07_자동화스크립트-AutomationScripts/checkpoint.sh "회원가입 화면 개선"
+```
+
+4. 단계 완료 기록 + 백업 + 원격 푸시
+```bash
+cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
+./07_자동화스크립트-AutomationScripts/checkpoint.sh "회원가입 화면 개선" --push
 ```

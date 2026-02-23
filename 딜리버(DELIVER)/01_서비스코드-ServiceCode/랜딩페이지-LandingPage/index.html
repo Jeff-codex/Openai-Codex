@@ -128,6 +128,12 @@
         color: var(--primary);
       }
 
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+      }
+
       .btn {
         display: inline-flex;
         align-items: center;
@@ -502,6 +508,105 @@
         gap: 0.65rem;
       }
 
+      .auth-note {
+        margin-top: 0.8rem;
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(4, 14, 34, 0.55);
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal-card {
+        width: min(560px, 100%);
+        max-height: 92vh;
+        overflow: auto;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--line);
+        background: #fff;
+        box-shadow: var(--shadow-lg);
+        padding: 1.4rem;
+      }
+
+      .modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+        margin-bottom: 0.9rem;
+      }
+
+      .btn-ghost {
+        background: #eef4ff;
+        color: var(--primary);
+        border: 1px solid #caddfb;
+      }
+
+      .signup-form {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .input-row {
+        display: grid;
+        gap: 0.38rem;
+      }
+
+      .input-row label {
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .input-row input {
+        border: 1px solid #cfdcf4;
+        border-radius: 10px;
+        padding: 0.72rem 0.8rem;
+        font-size: 0.94rem;
+        outline: none;
+      }
+
+      .input-row input:focus {
+        border-color: var(--primary-2);
+        box-shadow: 0 0 0 3px rgba(31, 95, 191, 0.13);
+      }
+
+      .form-terms {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 0.86rem;
+        color: var(--muted);
+      }
+
+      .form-message {
+        min-height: 1.3rem;
+        font-size: 0.88rem;
+      }
+
+      .form-message.error {
+        color: #b42318;
+      }
+
+      .form-message.success {
+        color: #0f766e;
+      }
+
+      body.modal-open {
+        overflow: hidden;
+      }
+
       .chip {
         display: inline-flex;
         align-items: center;
@@ -588,6 +693,10 @@
         .btn {
           width: 100%;
         }
+
+        .top-nav .btn {
+          width: auto;
+        }
       }
     </style>
   </head>
@@ -605,7 +714,10 @@
           <a href="#faq">FAQ</a>
           <a href="#contact">문의</a>
         </nav>
-        <a class="btn btn-outline" href="#contact" data-cta="consult">상담 문의</a>
+        <div class="nav-actions">
+          <button class="btn btn-ghost" type="button" data-open-signup>회원가입</button>
+          <a class="btn btn-outline" href="#contact" data-cta="consult">상담 문의</a>
+        </div>
       </div>
     </header>
 
@@ -624,7 +736,7 @@
             </p>
             <div class="hero-actions">
               <a class="btn btn-primary" href="#contact" data-cta="consult">무료 상담 시작</a>
-              <a class="btn btn-outline" href="#pricing" data-cta="pricing-request">단가 문의하기</a>
+              <button class="btn btn-outline" type="button" data-open-signup>회원가입 후 단가확인</button>
             </div>
           </div>
 
@@ -712,7 +824,8 @@
           <div class="section-head reveal">
             <span class="eyebrow">MEDIA & PRICING</span>
             <h2 id="pricing-title">매체/단가 안내</h2>
-            <p class="copy">매체별 단가는 문의바람 기준으로 안내되며, 실제 견적은 상담 후 확정됩니다.</p>
+            <p class="copy">매체별 단가는 회원전용으로 제공되며, 실제 견적은 상담 후 확정됩니다.</p>
+            <p class="auth-note" id="member-status">회원전용 단가입니다. 회원가입 후 확인 가능합니다.</p>
           </div>
 
           <div class="pricing-wrap">
@@ -729,22 +842,22 @@
                   <tr>
                     <td>경제/비즈니스</td>
                     <td>기본 기사형</td>
-                    <td>문의바람</td>
+                    <td>회원전용</td>
                   </tr>
                   <tr>
                     <td>IT/테크</td>
                     <td>브랜드 소개형</td>
-                    <td>문의바람</td>
+                    <td>회원전용</td>
                   </tr>
                   <tr>
                     <td>라이프/컬처</td>
                     <td>제품/서비스 리뷰형</td>
-                    <td>문의바람</td>
+                    <td>회원전용</td>
                   </tr>
                   <tr>
                     <td>종합 포털 제휴</td>
                     <td>확장 노출형</td>
-                    <td>문의바람</td>
+                    <td>회원전용</td>
                   </tr>
                 </tbody>
               </table>
@@ -757,12 +870,12 @@
                 빠른 상담을 통해 최적의 송출 조합을 제안드립니다.
               </p>
               <ul class="checklist">
-                <li><span class="check">✓</span> 매체 단가는 상담 시 안내(문의바람)</li>
+                <li><span class="check">✓</span> 매체 단가는 회원전용으로 제공</li>
                 <li><span class="check">✓</span> 예산 구간별 매체 패키지 제안 가능</li>
                 <li><span class="check">✓</span> 급행 건 별도 요청 시 일정 우선 배정</li>
               </ul>
               <div class="hero-actions" style="margin-top: 1.4rem">
-                <a class="btn btn-primary" href="#contact" data-cta="pricing-request">맞춤 단가 문의</a>
+                <button class="btn btn-primary" type="button" data-open-signup>회원가입 하고 단가보기</button>
               </div>
             </aside>
           </div>
@@ -872,6 +985,67 @@
       </section>
     </main>
 
+    <div class="modal" id="signup-modal" aria-hidden="true">
+      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="signup-title">
+        <div class="modal-head">
+          <div>
+            <span class="eyebrow">MEMBER SIGNUP</span>
+            <h3 id="signup-title">딜리버 회원가입</h3>
+          </div>
+          <button class="btn btn-ghost" type="button" data-close-signup>닫기</button>
+        </div>
+
+        <p class="copy" style="margin-bottom: 1rem">
+          가입 완료 시 회원전용 단가 확인 절차로 안내됩니다.
+        </p>
+
+        <form class="signup-form" id="signup-form" novalidate>
+          <div class="input-row">
+            <label for="signup-name">이름</label>
+            <input id="signup-name" name="name" type="text" placeholder="홍길동" required />
+          </div>
+          <div class="input-row">
+            <label for="signup-email">이메일</label>
+            <input id="signup-email" name="email" type="email" placeholder="name@company.com" required />
+          </div>
+          <div class="input-row">
+            <label for="signup-company">회사명</label>
+            <input id="signup-company" name="company" type="text" placeholder="딜리버컴퍼니" required />
+          </div>
+          <div class="input-row">
+            <label for="signup-password">비밀번호</label>
+            <input
+              id="signup-password"
+              name="password"
+              type="password"
+              placeholder="영문+숫자 포함 8자 이상"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <div class="input-row">
+            <label for="signup-confirm-password">비밀번호 확인</label>
+            <input
+              id="signup-confirm-password"
+              name="confirmPassword"
+              type="password"
+              placeholder="비밀번호를 다시 입력하세요"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <label class="form-terms" for="signup-terms">
+            <input id="signup-terms" name="terms" type="checkbox" required />
+            <span>개인정보 수집 및 서비스 안내 수신에 동의합니다.</span>
+          </label>
+
+          <p class="form-message" id="signup-message" aria-live="polite"></p>
+
+          <button class="btn btn-primary" type="submit">회원가입 완료</button>
+        </form>
+      </article>
+    </div>
+
     <footer>
       <div class="container footer-line">
         <span>© 2026 딜리버. All rights reserved.</span>
@@ -909,6 +1083,159 @@
           panel.style.maxHeight = expanded ? "0px" : panel.scrollHeight + "px";
         });
       });
+
+      const signupModal = document.getElementById("signup-modal");
+      const signupForm = document.getElementById("signup-form");
+      const signupMessage = document.getElementById("signup-message");
+      const memberStatus = document.getElementById("member-status");
+      const signupOpenButtons = document.querySelectorAll("[data-open-signup]");
+      const signupCloseButton = document.querySelector("[data-close-signup]");
+      const MEMBER_STORAGE_KEY = "deliver_members_v1";
+      const CURRENT_MEMBER_KEY = "deliver_current_member_v1";
+
+      function getMembers() {
+        try {
+          const value = localStorage.getItem(MEMBER_STORAGE_KEY);
+          return value ? JSON.parse(value) : [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function setMembers(members) {
+        localStorage.setItem(MEMBER_STORAGE_KEY, JSON.stringify(members));
+      }
+
+      function setFormMessage(type, text) {
+        signupMessage.className = "form-message " + type;
+        signupMessage.textContent = text;
+      }
+
+      function clearFormMessage() {
+        signupMessage.className = "form-message";
+        signupMessage.textContent = "";
+      }
+
+      function updateMemberStatus(member) {
+        if (!memberStatus) return;
+        if (member && member.name) {
+          memberStatus.textContent = member.name + "님 가입 완료. 회원전용 단가 확인 대상입니다.";
+        } else {
+          memberStatus.textContent = "회원전용 단가입니다. 회원가입 후 확인 가능합니다.";
+        }
+      }
+
+      function openSignupModal() {
+        signupModal.classList.add("open");
+        signupModal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+        clearFormMessage();
+        const nameInput = document.getElementById("signup-name");
+        if (nameInput) nameInput.focus();
+      }
+
+      function closeSignupModal() {
+        signupModal.classList.remove("open");
+        signupModal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+      }
+
+      signupOpenButtons.forEach((button) => {
+        button.addEventListener("click", openSignupModal);
+      });
+
+      if (signupCloseButton) {
+        signupCloseButton.addEventListener("click", closeSignupModal);
+      }
+
+      signupModal.addEventListener("click", (event) => {
+        if (event.target === signupModal) closeSignupModal();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && signupModal.classList.contains("open")) {
+          closeSignupModal();
+        }
+      });
+
+      signupForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearFormMessage();
+
+        const formData = new FormData(signupForm);
+        const name = String(formData.get("name") || "").trim();
+        const email = String(formData.get("email") || "")
+          .trim()
+          .toLowerCase();
+        const company = String(formData.get("company") || "").trim();
+        const password = String(formData.get("password") || "");
+        const confirmPassword = String(formData.get("confirmPassword") || "");
+        const termsChecked = formData.get("terms") === "on";
+
+        if (!name || !email || !company || !password || !confirmPassword) {
+          setFormMessage("error", "필수 항목을 모두 입력해 주세요.");
+          return;
+        }
+
+        const emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+        if (!emailPattern.test(email)) {
+          setFormMessage("error", "이메일 형식을 확인해 주세요.");
+          return;
+        }
+
+        const passwordPattern = /^(?=.*[A-Za-z])(?=.*\\d).{8,}$/;
+        if (!passwordPattern.test(password)) {
+          setFormMessage("error", "비밀번호는 영문+숫자 포함 8자 이상이어야 합니다.");
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          setFormMessage("error", "비밀번호 확인 값이 일치하지 않습니다.");
+          return;
+        }
+
+        if (!termsChecked) {
+          setFormMessage("error", "개인정보 수집 및 안내 수신 동의가 필요합니다.");
+          return;
+        }
+
+        const members = getMembers();
+        if (members.some((member) => member.email === email)) {
+          setFormMessage("error", "이미 가입된 이메일입니다.");
+          return;
+        }
+
+        const memberRecord = {
+          id: "member_" + Date.now(),
+          name,
+          email,
+          company,
+          createdAt: new Date().toISOString(),
+        };
+
+        members.push(memberRecord);
+        setMembers(members);
+        localStorage.setItem(CURRENT_MEMBER_KEY, JSON.stringify(memberRecord));
+        updateMemberStatus(memberRecord);
+        setFormMessage("success", "회원가입이 완료되었습니다. 회원전용 단가 확인 절차로 안내됩니다.");
+
+        signupForm.reset();
+        window.setTimeout(() => {
+          closeSignupModal();
+          clearFormMessage();
+        }, 900);
+      });
+
+      try {
+        const savedMember = localStorage.getItem(CURRENT_MEMBER_KEY);
+        if (savedMember) {
+          updateMemberStatus(JSON.parse(savedMember));
+        } else {
+          updateMemberStatus(null);
+        }
+      } catch (error) {
+        updateMemberStatus(null);
+      }
     </script>
   </body>
 </html>
