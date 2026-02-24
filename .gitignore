@@ -11,3 +11,8 @@
 # Runtime artifacts to keep out of Git
 딜리버(DELIVER)/05_로컬백업-LocalBackup/*.tar.gz
 딜리버(DELIVER)/06_운영로그-OpsLogs/*.log
+딜리버(DELIVER)/01_서비스코드-ServiceCode/.env.supabase
+딜리버(DELIVER)/01_서비스코드-ServiceCode/.env.cloudflare
+딜리버(DELIVER)/08_데이터베이스-Database/04_백업-Backups/*.tar.gz
+딜리버(DELIVER)/08_데이터베이스-Database/03_동기화로그-SyncLogs/*.json
+딜리버(DELIVER)/.wrangler/
