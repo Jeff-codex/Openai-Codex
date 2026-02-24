@@ -13,6 +13,9 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel)"
 JOURNAL_PATH="$PROJECT_ROOT/03_프로젝트문서-ProjectDocs/개발기록-DevelopmentJournal.md"
 BACKUP_SCRIPT="$PROJECT_ROOT/07_자동화스크립트-AutomationScripts/backup_and_push.sh"
+DB_BACKUP_SCRIPT="$PROJECT_ROOT/07_자동화스크립트-AutomationScripts/database_backup_all.sh"
+OPTIMIZE_SCRIPT="$PROJECT_ROOT/07_자동화스크립트-AutomationScripts/optimize_storage.sh"
+PREVIEW_SCRIPT="$PROJECT_ROOT/07_자동화스크립트-AutomationScripts/preview_paths.sh"
 TIMESTAMP_KST="$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
 
 mkdir -p "$(dirname "$JOURNAL_PATH")"
@@ -41,6 +44,18 @@ EOT
 echo "[INFO] Journal updated: $JOURNAL_PATH"
 
 "$BACKUP_SCRIPT"
+
+if [[ -x "$DB_BACKUP_SCRIPT" ]]; then
+  "$DB_BACKUP_SCRIPT" --soft
+fi
+
+if [[ -x "$OPTIMIZE_SCRIPT" ]]; then
+  "$OPTIMIZE_SCRIPT"
+fi
+
+if [[ -x "$PREVIEW_SCRIPT" ]]; then
+  "$PREVIEW_SCRIPT"
+fi
 
 if [[ "$DO_PUSH" == "--push" ]]; then
   git -C "$REPO_ROOT" add "$PROJECT_ROOT"

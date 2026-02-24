@@ -1,0 +1,6 @@
+[INFO] scheduled backup start: 2026-02-24T09:24:47+09:00
+[INFO] project root: /mnt/c/Users/gusru/code/Openai-Codex/딜리버(DELIVER)
+[ERROR] Cloudflare D1 snapshot failed
+Missing CLOUDFLARE_API_TOKEN. Set it in shell or 01_서비스코드-ServiceCode/.env.cloudflare.
+[WARN] Database backup failed in soft mode; continuing.
+[INFO] scheduled backup done: 2026-02-24T09:24:48+09:00

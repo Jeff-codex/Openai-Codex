@@ -1,0 +1,44 @@
+{
+  "provider": "cloudflare-d1",
+  "database": "dliver-prod-db",
+  "createdAt": "2026-02-23T14:02:14.302Z",
+  "snapshotDir": "/mnt/c/Users/gusru/code/Openai-Codex/딜리버(DELIVER)/08_데이터베이스-Database/04_백업-Backups/snapshot-20260223-230214",
+  "tables": {
+    "members": {
+      "status": "ok",
+      "rows": 15,
+      "file": "members.json"
+    },
+    "media_channels": {
+      "status": "ok",
+      "rows": 121,
+      "file": "media_channels.json"
+    },
+    "orders": {
+      "status": "ok",
+      "rows": 14,
+      "file": "orders.json"
+    },
+    "order_items": {
+      "status": "error",
+      "rows": 0,
+      "file": "order_items.json",
+      "detail": "Wrangler query failed: select * from order_items\nUsing \"CF_ACCOUNT_ID\" environment variable. This is deprecated. Please use \"CLOUDFLARE_ACCOUNT_ID\", instead."
+    },
+    "order_status_logs": {
+      "status": "ok",
+      "rows": 0,
+      "file": "order_status_logs.json"
+    },
+    "admin_logs": {
+      "status": "ok",
+      "rows": 14,
+      "file": "admin_logs.json"
+    }
+  },
+  "summary": {
+    "ok": 5,
+    "error": 1,
+    "totalRows": 164
+  }
+}

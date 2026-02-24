@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>딜리버 회원 포털 | 주문 대시보드</title>
+    <meta name="description" content="회원전용 언론 송출 주문 대시보드" />
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex" />
+    <link rel="canonical" href="https://member.dliver.co.kr/" />
+    <link rel="icon" type="image/svg+xml" href="../공통데이터-SharedData/brand/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260224r4" />
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-a"></div>
+    <div class="bg-shape bg-shape-b"></div>
+
+    <header class="topbar">
+      <div class="brand-wrap">
+        <a class="brand" href="https://dliver.co.kr/" aria-label="딜리버 홈으로 이동">
+          <img class="brand-logo" src="../공통데이터-SharedData/brand/dliver-logo-nav-tight.png" alt="Dliver" />
+        </a>
+        <span class="brand-sub">회원전용 송출 주문 포털</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-light" type="button" id="member-charge-button-top">포인트충전</button>
+        <span class="mode-pill" id="member-state">회원 확인중...</span>
+        <button class="btn btn-danger" type="button" id="member-logout-button">로그아웃</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="card panel">
+        <h2>실시간 운영 대시보드</h2>
+        <p class="sub">포인트, 주문 상태, 매체 선택을 한 화면에서 처리합니다.</p>
+        <div class="stats-grid">
+          <article class="stat-box">
+            <strong id="stat-points">0원</strong>
+            <span>현재 포인트</span>
+          </article>
+          <article class="stat-box">
+            <strong id="stat-orders-total">0</strong>
+            <span>내 총 주문</span>
+          </article>
+          <article class="stat-box">
+            <strong id="stat-orders-pending">0</strong>
+            <span>진행 중 주문</span>
+          </article>
+          <article class="stat-box">
+            <strong id="stat-orders-published">0</strong>
+            <span>송출 완료</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="portal-grid">
+        <article class="card panel">
+          <div class="panel-head">
+            <h2>매체 선택</h2>
+            <input id="media-search" type="text" placeholder="매체명/등급/노출채널 검색" />
+          </div>
+          <div class="media-group-nav" id="media-group-nav"></div>
+          <div class="media-tools">
+            <div class="media-summary" id="media-summary"></div>
+            <div class="media-tool-buttons">
+              <button class="btn btn-light small" id="media-expand-all" type="button">전체 펼치기</button>
+              <button class="btn btn-light small" id="media-collapse-all" type="button">전체 접기</button>
+            </div>
+          </div>
+          <div class="media-group-list" id="media-group-list"></div>
+          <div class="point-charge-inline">
+            <p class="charge-hint">포인트가 부족하면 충전 후 즉시 주문이 가능합니다.</p>
+            <button class="btn btn-primary" type="button" id="member-charge-button-inline">포인트충전</button>
+          </div>
+        </article>
+
+        <article class="card panel">
+          <h2>송출 주문 등록</h2>
+          <p class="sub">선택한 매체 기준으로 주문을 등록하면 관리자 페이지에서 즉시 확인됩니다.</p>
+
+          <div class="selected-media" id="selected-media-card">
+            <h3 id="selected-media-name">매체를 선택해 주세요</h3>
+            <p id="selected-media-price">단가: -</p>
+            <p id="selected-media-channel">노출채널: -</p>
+            <p id="selected-media-description">참고사항: -</p>
+          </div>
+
+          <form id="member-order-form" class="order-form" novalidate>
+            <div class="input-row">
+              <label for="order-title">주문명</label>
+              <input id="order-title" name="title" type="text" placeholder="예: 신제품 런칭 보도자료" required />
+            </div>
+            <div class="input-row">
+              <label for="order-budget">사용 포인트(원)</label>
+              <input
+                id="order-budget"
+                name="budget"
+                type="number"
+                min="1"
+                placeholder="매체 선택 시 자동 입력"
+                readonly
+                required
+              />
+              <small class="field-hint">선택한 매체 단가가 자동 적용되며 수정할 수 없습니다.</small>
+            </div>
+            <div class="input-row">
+              <label for="order-note">요청사항</label>
+              <textarea
+                id="order-note"
+                name="requestNote"
+                rows="4"
+                placeholder="핵심 메시지, 송출 희망 일정, 금지 키워드 등을 입력해 주세요."
+              ></textarea>
+            </div>
+            <div class="input-row">
+              <label>원고 파일 첨부</label>
+              <input
+                id="order-file-input"
+                name="draftFile"
+                type="file"
+                class="sr-only"
+                accept=".txt,.doc,.docx,.hwp,.hwpx,.pdf,.rtf,.md,.odt"
+              />
+              <div class="file-row">
+                <button class="btn btn-light" id="order-file-button" type="button">원고파일첨부</button>
+                <span id="order-file-name">선택된 파일 없음</span>
+              </div>
+            </div>
+            <p class="form-message" id="order-message" aria-live="polite"></p>
+            <button class="btn btn-primary" type="submit">주문 등록</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="card panel">
+        <h2>내 주문 현황</h2>
+        <p class="sub">상태는 관리자 처리에 따라 실시간으로 반영됩니다.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>접수일</th>
+                <th>주문명</th>
+                <th>매체</th>
+                <th>사용 포인트</th>
+                <th>첨부</th>
+                <th>상태</th>
+              </tr>
+            </thead>
+            <tbody id="member-orders-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <p>© 2026 뎁스코퍼레이션. All rights reserved.</p>
+        <p>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804</p>
+        <p>운영정보: 우측 하단 채널톡 상담 운영</p>
+      </div>
+    </footer>
+
+    <div class="modal" id="point-charge-modal" aria-hidden="true">
+      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="point-charge-title">
+        <div class="modal-head">
+          <h3 id="point-charge-title">포인트 충전</h3>
+          <button class="btn btn-light small" type="button" id="point-charge-close">닫기</button>
+        </div>
+        <p class="sub">충전 금액을 선택하거나 직접 입력해 포인트를 즉시 충전합니다.</p>
+        <div class="charge-quick-grid">
+          <button class="btn btn-light small" type="button" data-charge-quick="50000">+5만</button>
+          <button class="btn btn-light small" type="button" data-charge-quick="100000">+10만</button>
+          <button class="btn btn-light small" type="button" data-charge-quick="300000">+30만</button>
+          <button class="btn btn-light small" type="button" data-charge-quick="500000">+50만</button>
+        </div>
+        <form id="point-charge-form" class="charge-form" novalidate>
+          <div class="input-row">
+            <label for="point-charge-amount">충전 금액(원)</label>
+            <input id="point-charge-amount" name="amount" type="number" min="1000" step="1000" placeholder="예: 100000" required />
+          </div>
+          <div class="input-row">
+            <label for="point-charge-note">충전 메모(선택)</label>
+            <input id="point-charge-note" name="note" type="text" maxlength="120" placeholder="예: 월간 예산 충전" />
+          </div>
+          <p class="form-message" id="point-charge-message" aria-live="polite"></p>
+          <div class="modal-actions">
+            <button class="btn btn-light" type="button" id="point-charge-cancel">취소</button>
+            <button class="btn btn-primary" type="submit">충전하기</button>
+          </div>
+        </form>
+        <details class="refund-policy" id="point-refund-policy">
+          <summary>포인트 환불 규정</summary>
+          <div class="refund-policy-body">
+            <h4>포인트의 환급</h4>
+            <p>1. 회원이 포인트의 환급을 청구하는 경우 본 약관 또는 세부이용지침 등에서 약정한 바에 따라 환급합니다.</p>
+            <p>
+              2. 회원이 포인트를 구매한 후에는 아래 기재된 경우가 아닐시 전자금융거래법에 근거하여 불법 금융행위 등을 방지하기
+              위하여 환급받을 수 없습니다.
+            </p>
+            <p class="refund-sub">(1) 천재지변 등의 사유로 회사 측이 일체의 마케팅 서비스를 제공하지 못하여 포인트를 사용하지 못하게 되는 경우</p>
+            <p>
+              3. 회사는 회원이 구매한 포인트의 환급을 청구하는 경우 포인트의 잔액에서 잔액의 10% 또는 1000원 가운데 큰 금액을
+              환급 수수료로 공제한 후 환급합니다.
+            </p>
+            <p>
+              4. 회사는 회원이 포인트를 마지막으로 구매한 후 사용 이력이 없는 경우에 대해 아래 각 호를 모두 충족한 경우 결제
+              취소를 통해 전액 환급합니다.
+            </p>
+            <p class="refund-sub">(1) 결제 당사자의 국내 명의를 명확하게 확인할 수 있는 결제 수단을 사용한 경우</p>
+            <p class="refund-sub">(2) 결제 수단의 기술적 특성상 결제 취소가 가능한 경우</p>
+            <p class="refund-sub">
+              (3) 세부이용지침에서 정한 내용을 정확하게 기입한 결제 취소 요청서를 회사가 정한 방법으로 결제 후 5영업일 이내에
+              접수한 경우
+            </p>
+            <p>
+              5. 천재지변 등의 불가피한 사유로 회사측이 재화 또는 용역을 제공하기 곤란하여 포인트를 사용하지 못하게 된 경우 또는
+              포인트의 결함으로 회사가 재화 또는 용역을 제공하지 못하는 경우에는 포인트에 기록된 잔액의 전부를 지급합니다.
+            </p>
+            <p>
+              6. 회사는 불법 금융행위 등을 방지하기 위하여 회원에게 환급에 필요한 증빙 서류를 요구할 수 있으며, 회원이 이를
+              거부할 경우에는 환급이 제한될 수 있습니다.
+            </p>
+            <p>7. 회원이 직접 구매하지 않은 포인트는 환급대상에서 제외됩니다.</p>
+          </div>
+        </details>
+      </article>
+    </div>
+
+    <script src="../공통데이터-SharedData/media_seed.js?v=20260224r4"></script>
+    <script src="app.js?v=20260224r4"></script>
+  </body>
+</html>
