@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>딜리버 관리자 | Admin MVP</title>
+    <meta name="description" content="딜리버 언론송출대행 관리자 페이지 MVP" />
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex" />
+    <link rel="canonical" href="https://admin.dliver.co.kr/" />
+    <link rel="icon" type="image/svg+xml" href="../공통데이터-SharedData/brand/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260224r3" />
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-a"></div>
+    <div class="bg-shape bg-shape-b"></div>
+
+    <header class="topbar">
+      <div class="brand-wrap">
+        <a class="brand" href="https://dliver.co.kr/" aria-label="딜리버 홈으로 이동">
+          <img class="brand-logo" src="../공통데이터-SharedData/brand/dliver-logo-nav-tight.png" alt="Dliver" />
+        </a>
+        <span class="brand-sub">관리자 운영 대시보드</span>
+      </div>
+      <div class="top-actions">
+        <span class="mode-pill" id="data-mode">데이터 모드: LocalStorage</span>
+        <span class="mode-pill hidden" id="admin-auth-state"></span>
+        <button class="btn btn-danger hidden" type="button" id="admin-logout-button">로그아웃</button>
+      </div>
+    </header>
+
+    <section class="admin-auth-screen card" id="admin-auth-screen">
+      <h2>관리자 로그인</h2>
+      <p class="sub">어드민 페이지는 관리자 전용 계정으로만 접근할 수 있습니다.</p>
+      <form id="admin-login-form" class="admin-auth-form" novalidate>
+        <label for="admin-login-id">아이디</label>
+        <input id="admin-login-id" name="loginId" type="text" placeholder="admin" autocomplete="username" required />
+        <label for="admin-login-password">비밀번호</label>
+        <input
+          id="admin-login-password"
+          name="password"
+          type="password"
+          placeholder="admin1234"
+          autocomplete="current-password"
+          required
+        />
+        <p class="form-message" id="admin-login-message" aria-live="polite"></p>
+        <button class="btn btn-primary" type="submit">로그인</button>
+      </form>
+    </section>
+
+    <main class="layout hidden" id="admin-app">
+      <aside class="sidebar card">
+        <button class="side-btn active" data-panel="dashboard">대시보드</button>
+        <button class="side-btn" data-panel="members">회원 관리</button>
+        <button class="side-btn" data-panel="orders">주문 관리</button>
+        <button class="side-btn" data-panel="media">매체/단가 관리</button>
+        <button class="side-btn" data-panel="logs">운영 로그</button>
+      </aside>
+
+      <section class="content">
+        <article class="panel card" id="panel-dashboard">
+          <h2>운영 현황</h2>
+          <p class="sub">회원, 주문, 매체 상태를 실시간으로 점검합니다.</p>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <strong id="stat-members">0</strong>
+              <span>총 회원 수</span>
+            </div>
+            <div class="stat-box">
+              <strong id="stat-orders">0</strong>
+              <span>총 주문 수</span>
+            </div>
+            <div class="stat-box">
+              <strong id="stat-pending">0</strong>
+              <span>처리 대기 주문</span>
+            </div>
+            <div class="stat-box">
+              <strong id="stat-media">0</strong>
+              <span>활성 매체 수</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel card hidden" id="panel-members">
+          <div class="panel-head">
+            <h2>회원 관리</h2>
+            <input id="member-search" type="text" placeholder="이름/아이디/이메일 검색" />
+          </div>
+          <div class="table-wrap">
+            <table class="members-table">
+              <thead>
+                <tr>
+                  <th class="col-created">가입일</th>
+                  <th class="col-member-name">이름</th>
+                  <th class="col-member-login">아이디</th>
+                  <th class="col-member-email">이메일</th>
+                  <th class="col-member-company">회사명</th>
+                  <th class="col-member-point">보유 포인트</th>
+                  <th class="col-member-role">권한</th>
+                  <th class="col-member-action">관리</th>
+                </tr>
+              </thead>
+              <tbody id="members-body"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="members-pagination"></div>
+        </article>
+
+        <article class="panel card hidden" id="panel-orders">
+          <div class="panel-head">
+            <h2>주문 관리</h2>
+            <p class="sub">주문 접수와 상태 변경을 한 화면에서 처리합니다.</p>
+          </div>
+
+          <form id="order-form" class="form-grid">
+            <input name="email" type="email" placeholder="회원 이메일 (선택)" />
+            <input name="title" type="text" placeholder="주문명" required />
+            <select name="mediaId" id="order-media-select" required></select>
+            <input name="budget" type="number" min="0" placeholder="예산(원)" required />
+            <button class="btn btn-primary" type="submit">주문 등록</button>
+          </form>
+
+          <div class="table-wrap">
+            <table class="orders-table">
+              <thead>
+                <tr>
+                  <th class="col-date">접수일</th>
+                  <th class="col-title">주문명</th>
+                  <th class="col-login-id">회원아이디</th>
+                  <th class="col-email">회원 이메일</th>
+                  <th class="col-media">매체</th>
+                  <th class="col-budget">예산</th>
+                  <th class="col-attachment">첨부 파일</th>
+                  <th class="col-status">상태</th>
+                </tr>
+              </thead>
+              <tbody id="orders-body"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="orders-pagination"></div>
+        </article>
+
+        <article class="panel card hidden" id="panel-media">
+          <div class="panel-head">
+            <h2>매체/단가 관리</h2>
+            <p class="sub">회원전용 노출 단가 정책 기준으로 관리합니다.</p>
+          </div>
+
+          <form id="media-form" class="form-grid">
+            <input name="name" type="text" placeholder="매체명" required />
+            <input name="category" type="text" placeholder="카테고리" required />
+            <input name="memberPrice" type="text" placeholder="회원전용 문구 (기본: 회원전용)" />
+            <button class="btn btn-primary" type="submit">매체 추가</button>
+          </form>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>매체명</th>
+                  <th>카테고리</th>
+                  <th>회원전용 단가</th>
+                  <th>활성</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="media-body"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel card hidden" id="panel-logs">
+          <h2>운영/보안 로그</h2>
+          <p class="sub">운영 액션 로그와 보안 감사 로그를 최근 순으로 확인합니다.</p>
+          <div class="log-section">
+            <h3>운영 로그</h3>
+            <ul class="log-list" id="log-list"></ul>
+          </div>
+          <div class="log-section">
+            <div class="log-section-head">
+              <h3>보안 감사 로그</h3>
+              <div class="audit-summary">
+                <span class="audit-pill" id="audit-total">총 0건</span>
+                <span class="audit-pill success" id="audit-success">성공 0건</span>
+                <span class="audit-pill fail" id="audit-failed">실패/차단 0건</span>
+              </div>
+            </div>
+            <div class="audit-filters">
+              <select id="audit-outcome-filter" aria-label="감사로그 결과 필터">
+                <option value="">결과 전체</option>
+                <option value="success">성공</option>
+                <option value="failed">실패</option>
+                <option value="blocked">차단</option>
+              </select>
+              <input id="audit-search" type="text" placeholder="이벤트/행위자/상세 검색" />
+            </div>
+            <div class="table-wrap">
+              <table class="audit-table">
+                <thead>
+                  <tr>
+                    <th class="col-audit-time">발생시각</th>
+                    <th class="col-audit-event">이벤트</th>
+                    <th class="col-audit-actor">행위자</th>
+                    <th class="col-audit-result">결과</th>
+                    <th class="col-audit-ip">IP</th>
+                    <th class="col-audit-detail">상세</th>
+                  </tr>
+                </thead>
+                <tbody id="security-log-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <div class="modal" id="member-edit-modal" aria-hidden="true">
+      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="member-edit-title">
+        <div class="modal-head">
+          <h3 id="member-edit-title">회원정보 수정</h3>
+          <button class="btn btn-light small" id="member-edit-close" type="button">닫기</button>
+        </div>
+        <form id="member-edit-form" class="member-edit-form" novalidate>
+          <div class="field-grid">
+            <label>
+              이름
+              <input name="memberName" type="text" readonly />
+            </label>
+            <label>
+              아이디
+              <input name="memberLoginId" type="text" readonly />
+            </label>
+            <label class="field-full">
+              이메일
+              <input name="memberEmail" type="text" readonly />
+            </label>
+            <label>
+              포인트
+              <input name="pointBalance" type="number" min="0" step="1" required />
+            </label>
+            <label>
+              새 비밀번호
+              <input name="newPassword" type="password" placeholder="비워두면 유지" autocomplete="new-password" />
+            </label>
+          </div>
+          <p class="field-hint">비밀번호는 4자 이상 입력 시 변경됩니다.</p>
+          <p class="form-message" id="member-edit-message" aria-live="polite"></p>
+          <div class="modal-actions">
+            <button class="btn btn-light" id="member-edit-cancel" type="button">취소</button>
+            <button class="btn btn-primary" type="submit">저장</button>
+          </div>
+        </form>
+      </article>
+    </div>
+
+    <div class="modal" id="media-edit-modal" aria-hidden="true">
+      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="media-edit-title">
+        <div class="modal-head">
+          <h3 id="media-edit-title">매체 정보 수정</h3>
+          <button class="btn btn-light small" id="media-edit-close" type="button">닫기</button>
+        </div>
+        <form id="media-edit-form" class="member-edit-form" novalidate>
+          <div class="field-grid">
+            <label class="field-full">
+              매체명
+              <input name="name" type="text" required />
+            </label>
+            <label>
+              카테고리
+              <input name="category" type="text" required />
+            </label>
+            <label>
+              회원전용 단가 문구
+              <input name="memberPrice" type="text" placeholder="예: 72,000원" />
+            </label>
+            <label class="field-full">
+              기준 단가(원)
+              <input name="unitPrice" type="number" min="0" step="1" placeholder="비워두면 기존 단가 유지" />
+            </label>
+          </div>
+          <p class="field-hint">회원전용 단가 문구는 회원 페이지 노출값이며, 기준 단가는 정렬/계산에 사용됩니다.</p>
+          <p class="form-message" id="media-edit-message" aria-live="polite"></p>
+          <div class="modal-actions">
+            <button class="btn btn-light" id="media-edit-cancel" type="button">취소</button>
+            <button class="btn btn-primary" type="submit">저장</button>
+          </div>
+        </form>
+      </article>
+    </div>
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <p>© 2026 뎁스코퍼레이션. All rights reserved.</p>
+        <p>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804</p>
+        <p>운영정보: 우측 하단 채널톡 상담 운영</p>
+      </div>
+    </footer>
+
+    <script src="../공통데이터-SharedData/media_seed.js?v=20260223r11"></script>
+    <script src="app.js?v=20260224r2"></script>
+  </body>
+</html>

@@ -3,13 +3,1769 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>딜리버 랜딩페이지 이동</title>
-    <meta http-equiv="refresh" content="0; url=01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html" />
+    <title>딜리버 | 회원전용 셀프 언론송출 주문 플랫폼</title>
+    <meta
+      name="description"
+      content="회원전용 셀프주문 방식으로 매체 선택부터 주문 등록, 원고 첨부, 진행현황 확인까지 한 번에 처리하는 언론송출 플랫폼."
+    />
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+    <meta name="naver-site-verification" content="db80323608f2018fab38668c4820913ec3ab3414" />
+    <meta name="author" content="Dliver" />
+    <meta name="theme-color" content="#0b3a82" />
+    <link rel="canonical" href="https://dliver.co.kr/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:site_name" content="딜리버" />
+    <meta property="og:title" content="딜리버 | 회원전용 셀프 언론송출 주문 플랫폼" />
+    <meta
+      property="og:description"
+      content="회원전용 셀프주문 방식으로 매체 선택부터 주문 등록, 원고 첨부, 진행현황 확인까지 한 번에 처리하는 언론송출 플랫폼."
+    />
+    <meta property="og:url" content="https://dliver.co.kr/" />
+    <meta
+      property="og:image"
+      content="https://dliver.co.kr/og-share-clean-20260224-v2.jpg"
+    />
+    <meta property="og:image:secure_url" content="https://dliver.co.kr/og-share-clean-20260224-v2.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="딜리버 서비스 대표 이미지" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="딜리버 | 회원전용 셀프 언론송출 주문 플랫폼" />
+    <meta
+      name="twitter:description"
+      content="회원전용 셀프주문 방식으로 매체 선택부터 주문 등록, 원고 첨부, 진행현황 확인까지 한 번에 처리하는 언론송출 플랫폼."
+    />
+    <meta
+      name="twitter:image"
+      content="https://dliver.co.kr/og-share-clean-20260224-v2.jpg"
+    />
+    <link rel="icon" type="image/svg+xml" href="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/favicon.svg" />
+    <script>
+      (function () {
+        const host = String(window.location.hostname || "").toLowerCase();
+        const origin = window.location.origin;
+        if (host.startsWith("admin.")) {
+          window.location.replace(`${origin}/01_서비스코드-ServiceCode/관리자페이지-AdminPage/index.html`);
+        } else if (host.startsWith("member.") || host.startsWith("portal.")) {
+          window.location.replace(`${origin}/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/index.html`);
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "딜리버",
+        "url": "https://dliver.co.kr/",
+        "logo": "https://dliver.co.kr/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B3%B5%ED%86%B5%EB%8D%B0%EC%9D%B4%ED%84%B0-SharedData/brand/dliver-logo-nav-tight.png"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "딜리버",
+        "url": "https://dliver.co.kr/",
+        "inLanguage": "ko-KR"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "serviceType": "언론보도 송출 주문 서비스",
+        "provider": {
+          "@type": "Organization",
+          "name": "딜리버",
+          "url": "https://dliver.co.kr/"
+        },
+        "areaServed": "KR",
+        "audience": {
+          "@type": "Audience",
+          "audienceType": "회원 전용"
+        },
+        "url": "https://dliver.co.kr/"
+      }
+    </script>
+    <style>
+      :root {
+        --bg: #f7fafe;
+        --surface: #ffffff;
+        --primary: #0b3a82;
+        --primary-2: #1f5fbf;
+        --text: #0f172a;
+        --muted: #5b6b84;
+        --line: #d7e4fb;
+        --glow: rgba(31, 95, 191, 0.2);
+        --radius-lg: 22px;
+        --radius-md: 14px;
+        --shadow-sm: 0 8px 22px rgba(11, 58, 130, 0.08);
+        --shadow-lg: 0 24px 55px rgba(11, 58, 130, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Noto Sans KR", sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at top right, rgba(31, 95, 191, 0.1), transparent 40%),
+          linear-gradient(180deg, #f9fbff 0%, var(--bg) 35%, #f2f7ff 100%);
+      }
+
+      img {
+        max-width: 100%;
+        display: block;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .container {
+        width: min(1120px, calc(100% - 3rem));
+        margin: 0 auto;
+      }
+
+      .top-nav {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        backdrop-filter: blur(10px);
+        background: rgba(247, 250, 254, 0.8);
+        border-bottom: 1px solid rgba(215, 228, 251, 0.7);
+      }
+
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        line-height: 0;
+        width: clamp(152px, 15vw, 210px);
+        flex-shrink: 0;
+      }
+
+      .brand-logo {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 1.2rem;
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      .nav-links a:hover {
+        color: var(--primary);
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+      }
+
+      .login-chip {
+        font-weight: 600;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        padding: 0.78rem 1.3rem;
+        font-weight: 600;
+        font-size: 0.93rem;
+        cursor: pointer;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .btn-primary {
+        color: #fff;
+        background: linear-gradient(130deg, var(--primary), var(--primary-2));
+        box-shadow: 0 10px 24px rgba(11, 58, 130, 0.24);
+      }
+
+      .btn-outline {
+        color: var(--primary);
+        background: #fff;
+        border-color: rgba(31, 95, 191, 0.35);
+      }
+
+      section {
+        padding: 4.8rem 0;
+      }
+
+      .section-head {
+        max-width: 620px;
+        margin-bottom: 2rem;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.9rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(31, 95, 191, 0.1);
+        color: var(--primary);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      h1 {
+        font-family: "Montserrat", "Noto Sans KR", sans-serif;
+        font-size: clamp(2rem, 3.3vw, 3.15rem);
+        letter-spacing: -0.015em;
+      }
+
+      h2 {
+        font-family: "Montserrat", "Noto Sans KR", sans-serif;
+        font-size: clamp(1.55rem, 2.4vw, 2.3rem);
+        letter-spacing: -0.01em;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .copy {
+        margin-top: 0.95rem;
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      #hero {
+        padding-top: 5.3rem;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .hero-copy {
+        position: relative;
+      }
+
+      .hero-copy::before {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--glow) 0%, transparent 72%);
+        left: -80px;
+        top: -55px;
+        z-index: -1;
+      }
+
+      .hero-sub {
+        margin-top: 1.2rem;
+        color: var(--muted);
+        font-size: 1.04rem;
+        line-height: 1.8;
+      }
+
+      .hero-actions {
+        margin-top: 2rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+      }
+
+      .hero-card {
+        border-radius: var(--radius-lg);
+        padding: 1.4rem;
+        background: linear-gradient(160deg, #fff, #f5f9ff);
+        border: 1px solid #dee9fb;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .hero-panel {
+        border-radius: 16px;
+        padding: 1rem;
+        background: #fff;
+        border: 1px solid var(--line);
+        margin-top: 0.75rem;
+      }
+
+      .hero-panel strong {
+        display: block;
+        color: var(--primary);
+      }
+
+      .hero-panel p {
+        margin-top: 0.35rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .proof-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .metric {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 1.25rem 1rem;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .metric-value {
+        display: block;
+        font-family: "Montserrat", sans-serif;
+        font-size: 1.7rem;
+        color: var(--primary);
+      }
+
+      .metric-label {
+        margin-top: 0.35rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .process-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .step {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 1.25rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .step::after {
+        content: "";
+        position: absolute;
+        inset: auto -24px -24px auto;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(31, 95, 191, 0.14) 0%, transparent 66%);
+      }
+
+      .step-num {
+        display: inline-flex;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary);
+        color: #fff;
+        font-family: "Montserrat", sans-serif;
+        font-size: 0.9rem;
+        margin-bottom: 0.85rem;
+      }
+
+      .step p {
+        margin-top: 0.45rem;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+
+      .pricing-wrap {
+        display: grid;
+        grid-template-columns: 1.04fr 0.96fr;
+        gap: 1.1rem;
+      }
+
+      .card {
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--line);
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .pricing-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .pricing-table th,
+      .pricing-table td {
+        border-bottom: 1px solid #e4ecfb;
+        padding: 1rem;
+        font-size: 0.92rem;
+        text-align: left;
+      }
+
+      .pricing-table th {
+        color: var(--primary);
+        font-size: 0.86rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: #f6faff;
+      }
+
+      .pricing-table tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .pricing-note {
+        padding: 1.2rem;
+      }
+
+      .checklist {
+        margin: 1rem 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 0.65rem;
+      }
+
+      .checklist li {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        color: var(--muted);
+        font-size: 0.94rem;
+      }
+
+      .check {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #dce8ff;
+        color: var(--primary);
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .review-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .review {
+        padding: 1.25rem;
+      }
+
+      .review p {
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      .review .author {
+        margin-top: 1.1rem;
+        font-size: 0.9rem;
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      .faq-list {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .faq-item {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--line);
+        background: var(--surface);
+        overflow: hidden;
+      }
+
+      .faq-question {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        padding: 1rem 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--text);
+        font-size: 0.98rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .faq-question span:last-child {
+        font-family: "Montserrat", sans-serif;
+        color: var(--primary);
+      }
+
+      .faq-panel {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease;
+      }
+
+      .faq-panel-inner {
+        padding: 0 1.1rem 1rem;
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      .cta-wrap {
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        background: linear-gradient(140deg, #f9fcff, #eef5ff);
+      }
+
+      .cta-contact {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+      }
+
+      .auth-note {
+        margin-top: 0.8rem;
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(4, 14, 34, 0.55);
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal-card {
+        width: min(560px, 100%);
+        max-height: 92vh;
+        overflow: auto;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--line);
+        background: #fff;
+        box-shadow: var(--shadow-lg);
+        padding: 1.4rem;
+      }
+
+      .modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+        margin-bottom: 0.9rem;
+      }
+
+      .btn-ghost {
+        background: #eef4ff;
+        color: var(--primary);
+        border: 1px solid #caddfb;
+      }
+
+      .signup-form {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .input-row {
+        display: grid;
+        gap: 0.38rem;
+      }
+
+      .input-row label {
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .input-row input {
+        border: 1px solid #cfdcf4;
+        border-radius: 10px;
+        padding: 0.72rem 0.8rem;
+        font-size: 0.94rem;
+        outline: none;
+      }
+
+      .input-row input:focus {
+        border-color: var(--primary-2);
+        box-shadow: 0 0 0 3px rgba(31, 95, 191, 0.13);
+      }
+
+      .form-terms {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 0.86rem;
+        color: var(--muted);
+      }
+
+      .form-terms-policy {
+        align-items: center;
+      }
+
+      .terms-inline-link {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--primary);
+        font: inherit;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        cursor: pointer;
+      }
+
+      .terms-panel {
+        border: 1px solid #d4e2fb;
+        border-radius: 10px;
+        background: #f8fbff;
+        padding: 0.6rem;
+        max-height: 210px;
+        overflow: auto;
+      }
+
+      .terms-panel pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: keep-all;
+        font-family: "Noto Sans KR", sans-serif;
+        font-size: 0.8rem;
+        line-height: 1.55;
+        color: #364a72;
+      }
+
+      .terms-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.79rem;
+        color: #364a72;
+      }
+
+      .terms-table th,
+      .terms-table td {
+        border: 1px solid #d9e6fb;
+        padding: 0.46rem 0.5rem;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .terms-table th {
+        background: #eef4ff;
+        color: #2f4d7c;
+        white-space: nowrap;
+      }
+
+      .form-message {
+        min-height: 1.3rem;
+        font-size: 0.88rem;
+      }
+
+      .form-message.error {
+        color: #b42318;
+      }
+
+      .form-message.success {
+        color: #0f766e;
+      }
+
+      body.modal-open {
+        overflow: hidden;
+      }
+
+      .is-hidden {
+        display: none !important;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border: 1px solid #caddfb;
+        padding: 0.52rem 0.78rem;
+        border-radius: 999px;
+        color: var(--primary);
+        background: #fff;
+        font-size: 0.86rem;
+      }
+
+      footer {
+        padding: 2rem 0 2.4rem;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .footer-line {
+        padding-top: 1rem;
+        border-top: 1px solid #dfe9fb;
+        display: grid;
+        gap: 0.28rem;
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity 0.55s ease, transform 0.55s ease;
+      }
+
+      .reveal.on {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 1080px) {
+        .process-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .proof-grid,
+        .review-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .pricing-wrap,
+        .hero-grid,
+        .cta-wrap {
+          grid-template-columns: 1fr;
+        }
+
+        .nav-links {
+          display: none;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .container {
+          width: min(1120px, calc(100% - 1.5rem));
+        }
+
+        .nav-inner {
+          align-items: flex-start;
+          gap: 0.65rem;
+          padding: 0.72rem 0;
+        }
+
+        .brand {
+          width: 164px;
+        }
+
+        .brand-logo {
+          width: 100%;
+        }
+
+        .nav-actions {
+          width: 100%;
+          justify-content: flex-start;
+          gap: 0.45rem;
+        }
+
+        .nav-actions .btn {
+          flex: 1 1 calc(50% - 0.25rem);
+          min-height: 40px;
+          padding: 0.62rem 0.78rem;
+          font-size: 0.83rem;
+        }
+
+        #nav-login-state {
+          flex: 1 1 100%;
+          justify-content: center;
+        }
+
+        section {
+          padding: 3.6rem 0;
+        }
+
+        #hero {
+          padding-top: 4.5rem;
+        }
+
+        .proof-grid,
+        .review-grid,
+        .process-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .btn {
+          width: 100%;
+        }
+
+        .top-nav .btn {
+          width: auto;
+        }
+
+        .modal {
+          padding: 0.55rem;
+          align-items: flex-end;
+        }
+
+        .modal-card {
+          width: 100%;
+          max-height: 95vh;
+          border-radius: 16px 16px 12px 12px;
+          padding: 1rem;
+        }
+
+        .modal-head {
+          align-items: flex-start;
+          gap: 0.45rem;
+        }
+
+        .modal-head .btn {
+          width: auto;
+          padding: 0.45rem 0.7rem;
+          font-size: 0.82rem;
+        }
+
+        .modal-card .eyebrow {
+          margin-bottom: 0.55rem;
+          font-size: 0.73rem;
+          padding: 0.28rem 0.6rem;
+        }
+
+        .modal-card h3 {
+          font-size: 1.08rem;
+        }
+
+        .modal-card .copy {
+          line-height: 1.55;
+        }
+
+        .signup-form {
+          gap: 0.65rem;
+        }
+
+        .input-row input {
+          padding: 0.66rem 0.7rem;
+          font-size: 0.92rem;
+        }
+
+        .form-terms {
+          font-size: 0.8rem;
+        }
+
+        .terms-panel {
+          max-height: 180px;
+          padding: 0.52rem;
+        }
+
+        .terms-panel pre {
+          font-size: 0.76rem;
+        }
+
+        .terms-table {
+          font-size: 0.75rem;
+        }
+      }
+    </style>
   </head>
   <body>
-    <p>
-      랜딩페이지로 이동합니다.
-      <a href="01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html">여기를 눌러 직접 이동</a>
-    </p>
+    <header class="top-nav" aria-label="메인 내비게이션">
+      <div class="container nav-inner">
+        <a class="brand" href="#hero" aria-label="딜리버 홈으로 이동">
+          <img
+            class="brand-logo"
+            src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-nav-tight.png"
+            alt="Dliver"
+          />
+        </a>
+        <nav class="nav-links" aria-label="페이지 섹션">
+          <a href="#process">서비스 절차</a>
+          <a href="#pricing">매체/단가</a>
+          <a href="#reviews">고객 후기</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contact">문의</a>
+        </nav>
+        <div class="nav-actions">
+          <button class="btn btn-ghost" type="button" data-open-login id="top-login-button">로그인</button>
+          <button class="btn btn-ghost" type="button" data-open-signup id="top-signup-button">회원가입</button>
+          <span class="chip login-chip is-hidden" id="nav-login-state" aria-live="polite"></span>
+          <button class="btn btn-ghost is-hidden" type="button" id="logout-button">로그아웃</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="hero" aria-labelledby="hero-title">
+        <div class="container hero-grid">
+          <div class="hero-copy reveal">
+            <span class="eyebrow">MEMBER-ONLY SELF ORDER</span>
+            <h1 id="hero-title">
+              회원전용 셀프주문으로<br />
+              언론송출을 빠르고 간편하게
+            </h1>
+            <p class="hero-sub">
+              회원가입 후 매체별 단가를 확인하고 원하는 매체를 직접 선택해 바로 주문하세요.<br />
+              주문 접수부터 진행 상태, 포인트 현황까지 대시보드에서 실시간으로 확인할 수 있습니다.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#contact" data-cta="consult">셀프주문 시작 안내</a>
+              <button class="btn btn-outline" type="button" data-open-signup>회원가입 후 셀프주문</button>
+            </div>
+          </div>
+
+          <article class="hero-card reveal" aria-label="서비스 핵심 포인트">
+            <h3>로그인 후 3분 내 주문 등록 가능</h3>
+            <div class="hero-panel">
+              <strong>01. 매체 직접 선택</strong>
+              <p>회원 전용 매체 목록에서 단가와 특성을 비교한 뒤 원하는 매체를 직접 고를 수 있습니다.</p>
+            </div>
+            <div class="hero-panel">
+              <strong>02. 원고 첨부 후 주문 등록</strong>
+              <p>작성 완료한 원고를 첨부하고 요청사항을 입력하면 즉시 주문 접수가 완료됩니다.</p>
+            </div>
+            <div class="hero-panel">
+              <strong>03. 대시보드 실시간 확인</strong>
+              <p>포인트 사용 내역과 주문 상태를 실시간으로 확인하고, 결과까지 한 번에 관리할 수 있습니다.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="proof" aria-labelledby="proof-title">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow">SELF ORDER BENEFITS</span>
+            <h2 id="proof-title">회원전용 셀프주문의 핵심 장점</h2>
+            <p class="copy">상담 대기 없이 필요한 시점에 직접 주문하고, 모든 진행상태를 즉시 확인할 수 있습니다.</p>
+          </div>
+          <div class="proof-grid">
+            <article class="metric reveal">
+              <strong class="metric-value">121+</strong>
+              <p class="metric-label">회원 전용 매체 데이터</p>
+            </article>
+            <article class="metric reveal">
+              <strong class="metric-value">24/7</strong>
+              <p class="metric-label">셀프 주문 가능 시간</p>
+            </article>
+            <article class="metric reveal">
+              <strong class="metric-value">LIVE</strong>
+              <p class="metric-label">주문 상태 실시간 반영</p>
+            </article>
+            <article class="metric reveal">
+              <strong class="metric-value">ONE</strong>
+              <p class="metric-label">주문·첨부·현황 원스톱</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="process" aria-labelledby="process-title">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow">PROCESS</span>
+            <h2 id="process-title">가입 후 바로 주문하는 4단계</h2>
+            <p class="copy">회원가입 이후 상담 대기 없이, 필요한 순간 즉시 셀프주문을 진행할 수 있습니다.</p>
+          </div>
+
+          <div class="process-grid">
+            <article class="step reveal">
+              <span class="step-num">01</span>
+              <h3>회원가입/로그인</h3>
+              <p>회원 인증 후 전용 포털에 진입하면 매체 단가와 주문 기능을 바로 사용할 수 있습니다.</p>
+            </article>
+            <article class="step reveal">
+              <span class="step-num">02</span>
+              <h3>매체 선택</h3>
+              <p>카테고리별 매체를 비교해 원하는 매체를 직접 선택하고 사용 포인트를 즉시 확인합니다.</p>
+            </article>
+            <article class="step reveal">
+              <span class="step-num">03</span>
+              <h3>원고 첨부/주문 등록</h3>
+              <p>작성된 원고를 첨부하고 요청사항을 입력하면 주문이 즉시 등록됩니다.</p>
+            </article>
+            <article class="step reveal">
+              <span class="step-num">04</span>
+              <h3>실시간 상태 확인</h3>
+              <p>접수, 검수중, 송출대기, 송출완료 상태를 회원 대시보드에서 실시간으로 추적합니다.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" aria-labelledby="pricing-title">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow">MEDIA & PRICING</span>
+            <h2 id="pricing-title">회원전용 매체/단가 안내</h2>
+            <p class="copy">회원가입 후 매체별 단가를 확인하고, 셀프주문으로 즉시 접수할 수 있습니다.</p>
+            <p class="auth-note" id="member-status">회원전용 서비스입니다. 회원가입 후 단가 확인과 셀프주문이 가능합니다.</p>
+          </div>
+
+          <div class="pricing-wrap">
+            <article class="card reveal" aria-label="매체 단가 문의 안내">
+              <table class="pricing-table">
+                <thead>
+                  <tr>
+                    <th>매체군</th>
+                    <th>송출 기준</th>
+                    <th>단가 안내</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>경제/비즈니스</td>
+                    <td>기본 기사형</td>
+                    <td>회원전용</td>
+                  </tr>
+                  <tr>
+                    <td>IT/테크</td>
+                    <td>브랜드 소개형</td>
+                    <td>회원전용</td>
+                  </tr>
+                  <tr>
+                    <td>라이프/컬처</td>
+                    <td>제품/서비스 리뷰형</td>
+                    <td>회원전용</td>
+                  </tr>
+                  <tr>
+                    <td>종합 포털 제휴</td>
+                    <td>확장 노출형</td>
+                    <td>회원전용</td>
+                  </tr>
+                </tbody>
+              </table>
+            </article>
+
+            <aside class="card pricing-note reveal" aria-label="단가 정책 안내">
+              <h3>회원전용 주문 기준</h3>
+              <p class="copy">
+                셀프주문 기반으로 매체를 선택하면 사용 포인트가 자동 반영되며, 원고 첨부와 주문 등록을 한 번에 처리합니다.
+                주문 이후 상태 변경도 대시보드에서 실시간으로 확인할 수 있습니다.
+              </p>
+              <ul class="checklist">
+                <li><span class="check">✓</span> 회원 로그인 시 매체 단가 즉시 확인</li>
+                <li><span class="check">✓</span> 매체 선택 시 사용 포인트 자동 반영</li>
+                <li><span class="check">✓</span> 원고 첨부 후 주문 상태 실시간 추적</li>
+              </ul>
+              <div class="hero-actions" style="margin-top: 1.4rem">
+                <button class="btn btn-primary" type="button" data-open-signup>회원가입 후 셀프주문 시작</button>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section id="reviews" aria-labelledby="reviews-title">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow">CLIENT FEEDBACK</span>
+            <h2 id="reviews-title">회원전용 셀프주문 이용 후기</h2>
+            <p class="copy">주문 등록부터 상태 확인까지 직접 처리할 수 있어 실무 속도와 편의성이 높다는 평가를 받고 있습니다.</p>
+          </div>
+
+          <div class="review-grid">
+            <article class="card review reveal">
+              <p>
+                “회원가입 후 바로 매체를 선택하고 주문할 수 있어서 급한 일정에도 빠르게 대응할 수 있었습니다.”
+              </p>
+              <p class="author">테크 스타트업 마케팅팀</p>
+            </article>
+            <article class="card review reveal">
+              <p>
+                “사용 포인트와 주문 상태가 실시간으로 보이니 내부 공유가 쉬워졌고 운영 효율이 높아졌습니다.”
+              </p>
+              <p class="author">중견 제조사 홍보담당</p>
+            </article>
+            <article class="card review reveal">
+              <p>
+                “원고 첨부와 주문 접수가 한 번에 끝나서 반복 커뮤니케이션이 줄고 재주문도 훨씬 편해졌습니다.”
+              </p>
+              <p class="author">브랜드 에이전시 AE</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-title">
+        <div class="container">
+          <div class="section-head reveal">
+            <span class="eyebrow">FAQ</span>
+            <h2 id="faq-title">자주 묻는 질문</h2>
+          </div>
+
+          <div class="faq-list">
+            <article class="faq-item reveal">
+              <button class="faq-question" aria-expanded="false">
+                <span>셀프주문을 하려면 먼저 무엇을 준비해야 하나요?</span>
+                <span>+</span>
+              </button>
+              <div class="faq-panel">
+                <div class="faq-panel-inner">
+                  회원가입 후 주문명, 매체 선택, 원고 파일, 요청사항만 입력하면 바로 주문 접수가 가능합니다.
+                </div>
+              </div>
+            </article>
+
+            <article class="faq-item reveal">
+              <button class="faq-question" aria-expanded="false">
+                <span>원고 파일 첨부는 어떤 방식으로 진행되나요?</span>
+                <span>+</span>
+              </button>
+              <div class="faq-panel">
+                <div class="faq-panel-inner">
+                  회원전용 포털의 주문 등록 화면에서 원고 파일을 업로드하면 주문 건에 첨부되어 관리자와 즉시 공유됩니다.
+                </div>
+              </div>
+            </article>
+
+            <article class="faq-item reveal">
+              <button class="faq-question" aria-expanded="false">
+                <span>주문 진행 상태는 어디서 확인하나요?</span>
+                <span>+</span>
+              </button>
+              <div class="faq-panel">
+                <div class="faq-panel-inner">
+                  회원전용 페이지의 주문 현황에서 접수, 검수중, 송출대기, 송출완료 상태를 실시간으로 확인할 수 있습니다.
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" aria-labelledby="contact-title">
+        <div class="container">
+          <article class="card cta-wrap reveal">
+            <div>
+              <span class="eyebrow">CONTACT</span>
+              <h2 id="contact-title">회원전용 셀프주문이 처음이라면, 빠르게 안내해드립니다.</h2>
+              <p class="copy">우측 하단 채널톡을 통해 상담주시면 빠르게 안내해드립니다.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal" id="login-modal" aria-hidden="true">
+      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="login-title">
+        <div class="modal-head">
+          <div>
+            <span class="eyebrow">MEMBER LOGIN</span>
+            <h3 id="login-title">딜리버 로그인</h3>
+          </div>
+          <button class="btn btn-ghost" type="button" data-close-login>닫기</button>
+        </div>
+
+        <p class="copy" style="margin-bottom: 1rem">가입한 아이디와 비밀번호로 로그인하세요.</p>
+
+        <form class="signup-form" id="login-form" novalidate>
+          <div class="input-row">
+            <label for="login-id">아이디</label>
+            <input
+              id="login-id"
+              name="loginId"
+              type="text"
+              placeholder="아이디 입력"
+              autocomplete="username"
+              required
+            />
+          </div>
+          <div class="input-row">
+            <label for="login-password">비밀번호</label>
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              placeholder="비밀번호 입력"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <p class="form-message" id="login-message" aria-live="polite"></p>
+          <button class="btn btn-primary" type="submit">로그인</button>
+        </form>
+      </article>
+    </div>
+
+    <div class="modal" id="signup-modal" aria-hidden="true">
+      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="signup-title">
+        <div class="modal-head">
+          <div>
+            <span class="eyebrow">MEMBER SIGNUP</span>
+            <h3 id="signup-title">딜리버 회원가입</h3>
+          </div>
+          <button class="btn btn-ghost" type="button" data-close-signup>닫기</button>
+        </div>
+
+        <p class="copy" style="margin-bottom: 1rem">가입 완료 즉시 회원전용 단가 확인과 셀프주문을 시작할 수 있습니다.</p>
+
+        <form class="signup-form" id="signup-form" novalidate>
+          <div class="input-row">
+            <label for="signup-login-id">아이디</label>
+            <input
+              id="signup-login-id"
+              name="loginId"
+              type="text"
+              autocomplete="username"
+              required
+            />
+          </div>
+          <div class="input-row">
+            <label for="signup-name">이름</label>
+            <input id="signup-name" name="name" type="text" placeholder="홍길동" required />
+          </div>
+          <div class="input-row">
+            <label for="signup-email">이메일</label>
+            <input id="signup-email" name="email" type="email" placeholder="name@company.com" required />
+          </div>
+          <div class="input-row">
+            <label for="signup-company">회사명</label>
+            <input id="signup-company" name="company" type="text" placeholder="딜리버컴퍼니" required />
+          </div>
+          <div class="input-row">
+            <label for="signup-password">비밀번호</label>
+            <input
+              id="signup-password"
+              name="password"
+              type="password"
+              placeholder="비밀번호 8자 이상"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <div class="input-row">
+            <label for="signup-confirm-password">비밀번호 확인</label>
+            <input
+              id="signup-confirm-password"
+              name="confirmPassword"
+              type="password"
+              placeholder="비밀번호를 다시 입력하세요"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <label class="form-terms" for="signup-terms">
+            <input id="signup-terms" name="terms" type="checkbox" required />
+            <span>
+              <button
+                class="terms-inline-link"
+                type="button"
+                data-toggle-signup-privacy
+                aria-expanded="false"
+                aria-controls="signup-privacy-panel"
+              >
+                개인정보 수집
+              </button>
+              및 서비스 안내 수신에 동의합니다.
+            </span>
+          </label>
+          <div class="terms-panel is-hidden" id="signup-privacy-panel" aria-hidden="true">
+            <table class="terms-table" aria-label="개인정보 수집 안내">
+              <tbody>
+                <tr>
+                  <th scope="row">개인정보처리방침안내</th>
+                  <td>회원가입 및 서비스 운영을 위해 아래 항목을 수집합니다.</td>
+                </tr>
+                <tr>
+                  <th scope="row">목적</th>
+                  <td>이용자 식별 및 본인여부 확인 / 고객서비스 이용에 관한 통지 및 CS대응을 위한 이용자 식별</td>
+                </tr>
+                <tr>
+                  <th scope="row">항목</th>
+                  <td>아이디, 이름, 비밀번호 / 연락처(이메일)</td>
+                </tr>
+                <tr>
+                  <th scope="row">보유기간</th>
+                  <td>회원 탈퇴 시까지 / 회원 탈퇴 시까지</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="form-terms form-terms-policy">
+            <input id="signup-policy-terms" name="policyTerms" type="checkbox" required aria-label="회원가입약관 동의" />
+            <span>
+              <button
+                class="terms-inline-link"
+                type="button"
+                data-toggle-signup-policy
+                aria-expanded="false"
+                aria-controls="signup-policy-panel"
+              >
+                회원가입약관
+              </button>
+              에 동의합니다.
+            </span>
+          </div>
+          <div class="terms-panel is-hidden" id="signup-policy-panel" aria-hidden="true">
+            <pre id="signup-policy-content">회원가입약관을 불러오는 중입니다.</pre>
+          </div>
+
+          <p class="form-message" id="signup-message" aria-live="polite"></p>
+
+          <button class="btn btn-primary" type="submit">회원가입 완료</button>
+        </form>
+      </article>
+    </div>
+
+    <footer>
+      <div class="container footer-line">
+        <span>© 2026 뎁스코퍼레이션. All rights reserved.</span>
+        <span>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804</span>
+        <span>운영정보: 우측 하단 채널톡 상담 운영</span>
+      </div>
+    </footer>
+
+    <script>
+      const LEGACY_MEMBER_TOKEN_KEY = "deliver_member_token_v1";
+      const MEMBER_PORTAL_PATH = "/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/index.html?v=20260224r4";
+      const CHANNEL_TALK_PLUGIN_KEY = "effcd765-65b5-49ca-b003-b18931fc6f38";
+      const SIGNUP_POLICY_PATH = "/01_서비스코드-ServiceCode/공통데이터-SharedData/signup-policy.txt?v=20260224r1";
+
+      const revealItems = document.querySelectorAll(".reveal");
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("on");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.18 }
+      );
+      revealItems.forEach((item) => observer.observe(item));
+
+      const faqButtons = document.querySelectorAll(".faq-question");
+      faqButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const expanded = button.getAttribute("aria-expanded") === "true";
+          button.setAttribute("aria-expanded", String(!expanded));
+          const symbol = button.querySelector("span:last-child");
+          if (symbol) symbol.textContent = expanded ? "+" : "−";
+          const panel = button.nextElementSibling;
+          if (panel) panel.style.maxHeight = expanded ? "0px" : panel.scrollHeight + "px";
+        });
+      });
+
+      const loginModal = document.getElementById("login-modal");
+      const loginForm = document.getElementById("login-form");
+      const loginMessage = document.getElementById("login-message");
+      const loginOpenButtons = document.querySelectorAll("[data-open-login]");
+      const loginCloseButton = document.querySelector("[data-close-login]");
+      const signupModal = document.getElementById("signup-modal");
+      const signupForm = document.getElementById("signup-form");
+      const signupMessage = document.getElementById("signup-message");
+      const memberStatus = document.getElementById("member-status");
+      const navLoginState = document.getElementById("nav-login-state");
+      const logoutButton = document.getElementById("logout-button");
+      const signupOpenButtons = document.querySelectorAll("[data-open-signup]");
+      const signupCloseButton = document.querySelector("[data-close-signup]");
+      const signupPrivacyToggleButton = document.querySelector("[data-toggle-signup-privacy]");
+      const signupPrivacyPanel = document.getElementById("signup-privacy-panel");
+      const signupPolicyToggleButton = document.querySelector("[data-toggle-signup-policy]");
+      const signupPolicyPanel = document.getElementById("signup-policy-panel");
+      const signupPolicyContent = document.getElementById("signup-policy-content");
+      let signupPolicyLoaded = false;
+
+      function clearLegacyMemberTokens() {
+        try {
+          localStorage.removeItem(LEGACY_MEMBER_TOKEN_KEY);
+        } catch (error) {}
+        try {
+          sessionStorage.removeItem(LEGACY_MEMBER_TOKEN_KEY);
+        } catch (error) {}
+      }
+
+      function getCookieValue(name) {
+        const source = String(document.cookie || "");
+        const target = `${String(name || "")}=`;
+        const part = source
+          .split(";")
+          .map((item) => item.trim())
+          .find((item) => item.startsWith(target));
+        if (!part) return "";
+        return decodeURIComponent(part.slice(target.length));
+      }
+
+      function getMemberPortalUrl() {
+        const url = new URL(MEMBER_PORTAL_PATH, window.location.href);
+        return url.toString();
+      }
+
+      function initChannelTalk() {
+        const pluginKey = String(window.DLIVER_CHANNEL_TALK_PLUGIN_KEY || CHANNEL_TALK_PLUGIN_KEY || "").trim();
+        if (!pluginKey) return;
+
+        const w = window;
+        if (w.ChannelIO) return;
+        const ch = function () {
+          ch.c(arguments);
+        };
+        ch.q = [];
+        ch.c = function (args) {
+          ch.q.push(args);
+        };
+        w.ChannelIO = ch;
+
+        function loadScript() {
+          if (w.ChannelIOInitialized) return;
+          w.ChannelIOInitialized = true;
+          const s = document.createElement("script");
+          s.async = true;
+          s.src = "https://cdn.channel.io/plugin/ch-plugin-web.js";
+          const x = document.getElementsByTagName("script")[0];
+          x.parentNode?.insertBefore(s, x);
+        }
+
+        if (document.readyState === "complete") {
+          loadScript();
+        } else {
+          w.addEventListener("DOMContentLoaded", loadScript);
+          w.addEventListener("load", loadScript);
+        }
+
+        w.ChannelIO("boot", {
+          pluginKey,
+        });
+      }
+
+      async function apiFetch(path, init = {}) {
+        const headers = { ...(init.headers || {}) };
+        const method = String(init.method || "GET").toUpperCase();
+        if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+          const csrf = getCookieValue("deliver_csrf");
+          if (csrf) headers["x-csrf-token"] = csrf;
+        }
+        const response = await fetch(path, { ...init, headers, credentials: "same-origin" });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data.ok === false) {
+          throw new Error(data.message || `API ${response.status}`);
+        }
+        return data;
+      }
+
+      function setFormMessage(type, text) {
+        signupMessage.className = "form-message " + type;
+        signupMessage.textContent = text;
+      }
+
+      function clearFormMessage() {
+        signupMessage.className = "form-message";
+        signupMessage.textContent = "";
+      }
+
+      async function ensureSignupPolicyLoaded() {
+        if (signupPolicyLoaded || !(signupPolicyContent instanceof HTMLElement)) return;
+        try {
+          const response = await fetch(SIGNUP_POLICY_PATH, { credentials: "same-origin", cache: "no-store" });
+          const text = await response.text();
+          const normalized = String(text || "").trim();
+          signupPolicyContent.textContent = normalized || "회원가입약관 내용이 비어 있습니다.";
+        } catch (error) {
+          signupPolicyContent.textContent = "회원가입약관을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
+        }
+        signupPolicyLoaded = true;
+      }
+
+      function setSignupPolicyPanelOpen(isOpen) {
+        if (!(signupPolicyPanel instanceof HTMLElement) || !(signupPolicyToggleButton instanceof HTMLElement)) return;
+        signupPolicyPanel.classList.toggle("is-hidden", !isOpen);
+        signupPolicyPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        signupPolicyToggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      }
+
+      function setSignupPrivacyPanelOpen(isOpen) {
+        if (!(signupPrivacyPanel instanceof HTMLElement) || !(signupPrivacyToggleButton instanceof HTMLElement)) return;
+        signupPrivacyPanel.classList.toggle("is-hidden", !isOpen);
+        signupPrivacyPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        signupPrivacyToggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      }
+
+      function setLoginMessage(type, text) {
+        loginMessage.className = "form-message " + type;
+        loginMessage.textContent = text;
+      }
+
+      function clearLoginMessage() {
+        loginMessage.className = "form-message";
+        loginMessage.textContent = "";
+      }
+
+      function moveToMemberPortal() {
+        window.location.href = getMemberPortalUrl();
+      }
+
+      function syncModalBodyState() {
+        if (loginModal.classList.contains("open") || signupModal.classList.contains("open")) {
+          document.body.classList.add("modal-open");
+          return;
+        }
+        document.body.classList.remove("modal-open");
+      }
+
+      function updateMemberStatus(member) {
+        if (!memberStatus) return;
+        if (member && member.name) {
+          memberStatus.textContent = member.name + "님 로그인 상태입니다. 회원전용 단가 확인과 셀프주문이 가능합니다.";
+        } else {
+          memberStatus.textContent = "회원전용 서비스입니다. 회원가입 후 단가 확인과 셀프주문이 가능합니다.";
+        }
+      }
+
+      function setAuthButtonsVisibility(isLoggedIn) {
+        loginOpenButtons.forEach((button) => button.classList.toggle("is-hidden", isLoggedIn));
+        signupOpenButtons.forEach((button) => button.classList.toggle("is-hidden", isLoggedIn));
+      }
+
+      function updateAuthUI(member) {
+        const isLoggedIn = Boolean(member && member.name && member.email);
+        updateMemberStatus(member);
+        setAuthButtonsVisibility(isLoggedIn);
+        if (isLoggedIn) {
+          if (navLoginState) {
+            navLoginState.textContent = member.name + "님 로그인";
+            navLoginState.classList.remove("is-hidden");
+          }
+          if (logoutButton) {
+            logoutButton.classList.remove("is-hidden");
+          }
+        } else {
+          if (navLoginState) {
+            navLoginState.textContent = "";
+            navLoginState.classList.add("is-hidden");
+          }
+          if (logoutButton) {
+            logoutButton.classList.add("is-hidden");
+          }
+        }
+      }
+
+      function openLoginModal() {
+        closeSignupModal();
+        loginModal.classList.add("open");
+        loginModal.setAttribute("aria-hidden", "false");
+        syncModalBodyState();
+        clearLoginMessage();
+        document.getElementById("login-id")?.focus();
+      }
+
+      function closeLoginModal() {
+        loginModal.classList.remove("open");
+        loginModal.setAttribute("aria-hidden", "true");
+        syncModalBodyState();
+      }
+
+      function openSignupModal() {
+        closeLoginModal();
+        signupModal.classList.add("open");
+        signupModal.setAttribute("aria-hidden", "false");
+        syncModalBodyState();
+        clearFormMessage();
+        setSignupPrivacyPanelOpen(false);
+        setSignupPolicyPanelOpen(false);
+        document.getElementById("signup-login-id")?.focus();
+      }
+
+      function closeSignupModal() {
+        signupModal.classList.remove("open");
+        signupModal.setAttribute("aria-hidden", "true");
+        setSignupPrivacyPanelOpen(false);
+        setSignupPolicyPanelOpen(false);
+        syncModalBodyState();
+      }
+
+      loginOpenButtons.forEach((button) => button.addEventListener("click", openLoginModal));
+      signupOpenButtons.forEach((button) => button.addEventListener("click", openSignupModal));
+      loginCloseButton?.addEventListener("click", closeLoginModal);
+      signupCloseButton?.addEventListener("click", closeSignupModal);
+      signupPrivacyToggleButton?.addEventListener("click", (event) => {
+        event.preventDefault();
+        const opening = signupPrivacyPanel?.classList.contains("is-hidden");
+        setSignupPrivacyPanelOpen(Boolean(opening));
+      });
+      signupPolicyToggleButton?.addEventListener("click", async (event) => {
+        event.preventDefault();
+        const opening = signupPolicyPanel?.classList.contains("is-hidden");
+        if (opening) await ensureSignupPolicyLoaded();
+        setSignupPolicyPanelOpen(Boolean(opening));
+      });
+
+      loginModal?.addEventListener("click", (event) => {
+        if (event.target === loginModal) closeLoginModal();
+      });
+      signupModal?.addEventListener("click", (event) => {
+        if (event.target === signupModal) closeSignupModal();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        if (loginModal.classList.contains("open")) {
+          closeLoginModal();
+          return;
+        }
+        if (signupModal.classList.contains("open")) closeSignupModal();
+      });
+
+      logoutButton?.addEventListener("click", async () => {
+        try {
+          await apiFetch("/api/auth/logout", { method: "POST" });
+        } catch (error) {}
+        updateAuthUI(null);
+      });
+
+      loginForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearLoginMessage();
+        const formData = new FormData(loginForm);
+        const loginId = String(formData.get("loginId") || "")
+          .trim()
+          .toLowerCase();
+        const password = String(formData.get("password") || "");
+
+        if (!loginId || !password) {
+          setLoginMessage("error", "아이디와 비밀번호를 입력해 주세요.");
+          return;
+        }
+
+        try {
+          const response = await apiFetch("/api/auth/login", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ loginId, password }),
+          });
+          updateAuthUI(response.member);
+          setLoginMessage("success", "로그인되었습니다.");
+          window.setTimeout(() => {
+            closeLoginModal();
+            clearLoginMessage();
+            loginForm.reset();
+            moveToMemberPortal();
+          }, 450);
+        } catch (error) {
+          setLoginMessage("error", error.message || "로그인 중 오류가 발생했습니다.");
+        }
+      });
+
+      signupForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearFormMessage();
+
+        const formData = new FormData(signupForm);
+        const loginId = String(formData.get("loginId") || "")
+          .trim()
+          .toLowerCase();
+        const name = String(formData.get("name") || "").trim();
+        const email = String(formData.get("email") || "")
+          .trim()
+          .toLowerCase();
+        const company = String(formData.get("company") || "").trim();
+        const password = String(formData.get("password") || "");
+        const confirmPassword = String(formData.get("confirmPassword") || "");
+        const termsChecked = formData.get("terms") === "on";
+        const policyTermsChecked = formData.get("policyTerms") === "on";
+
+        if (!loginId || !name || !email || !company || !password || !confirmPassword) {
+          setFormMessage("error", "필수 항목을 모두 입력해 주세요.");
+          return;
+        }
+        if (!/^[a-z0-9_]{3,20}$/.test(loginId)) {
+          setFormMessage("error", "아이디는 영문 소문자/숫자/밑줄 조합 3~20자여야 합니다.");
+          return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setFormMessage("error", "이메일 형식을 확인해 주세요.");
+          return;
+        }
+        if (password.length < 8) {
+          setFormMessage("error", "비밀번호는 8자 이상이어야 합니다.");
+          return;
+        }
+        if (password !== confirmPassword) {
+          setFormMessage("error", "비밀번호 확인 값이 일치하지 않습니다.");
+          return;
+        }
+        if (!termsChecked) {
+          setFormMessage("error", "개인정보 수집 및 안내 수신 동의가 필요합니다.");
+          return;
+        }
+        if (!policyTermsChecked) {
+          setFormMessage("error", "회원가입약관 동의가 필요합니다.");
+          return;
+        }
+
+        try {
+          const response = await apiFetch("/api/auth/signup", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ loginId, name, email, company, password }),
+          });
+          updateAuthUI(response.member);
+          setFormMessage("success", "회원가입이 완료되어 자동 로그인되었습니다.");
+          signupForm.reset();
+          window.setTimeout(() => {
+            closeSignupModal();
+            clearFormMessage();
+            moveToMemberPortal();
+          }, 700);
+        } catch (error) {
+          setFormMessage("error", error.message || "회원가입 중 오류가 발생했습니다.");
+        }
+      });
+
+      (async () => {
+        initChannelTalk();
+        clearLegacyMemberTokens();
+        try {
+          const response = await apiFetch("/api/auth/me");
+          updateAuthUI(response.member);
+        } catch (error) {
+          updateAuthUI(null);
+        }
+      })();
+    </script>
   </body>
 </html>
