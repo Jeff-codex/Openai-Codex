@@ -1,5 +1,6 @@
 const MEMBER_TOKEN_KEY = "deliver_member_token_v1";
 const LANDING_PAGE_PATH = "../랜딩페이지-LandingPage/index.html";
+const CHANNEL_TALK_PLUGIN_KEY = "effcd765-65b5-49ca-b003-b18931fc6f38";
 const MIN_POINT_CHARGE_AMOUNT = 1000;
 const MAX_POINT_CHARGE_AMOUNT = 5000000;
 const DEFAULT_POINT_CHARGE_AMOUNT = 100000;
@@ -96,6 +97,46 @@ function getCookieValue(name) {
     .find((item) => item.startsWith(target));
   if (!part) return "";
   return decodeURIComponent(part.slice(target.length));
+}
+
+function initChannelTalk() {
+  const pluginKey = String(window.DLIVER_CHANNEL_TALK_PLUGIN_KEY || CHANNEL_TALK_PLUGIN_KEY || "").trim();
+  if (!pluginKey) return;
+
+  const w = window;
+  if (w.ChannelIO) {
+    w.ChannelIO("boot", { pluginKey });
+    return;
+  }
+  const ch = function () {
+    ch.c(arguments);
+  };
+  ch.q = [];
+  ch.c = function (args) {
+    ch.q.push(args);
+  };
+  w.ChannelIO = ch;
+
+  function loadScript() {
+    if (w.ChannelIOInitialized) return;
+    w.ChannelIOInitialized = true;
+    const s = document.createElement("script");
+    s.async = true;
+    s.src = "https://cdn.channel.io/plugin/ch-plugin-web.js";
+    const x = document.getElementsByTagName("script")[0];
+    x?.parentNode?.insertBefore(s, x);
+  }
+
+  if (document.readyState === "complete") {
+    loadScript();
+  } else {
+    w.addEventListener("DOMContentLoaded", loadScript);
+    w.addEventListener("load", loadScript);
+  }
+
+  w.ChannelIO("boot", {
+    pluginKey,
+  });
 }
 
 function setOrderMessage(type, text) {
@@ -687,6 +728,7 @@ function bindEvents() {
 
 async function init() {
   clearLegacyTokenStorage();
+  initChannelTalk();
   bindEvents();
   try {
     await refreshData();
