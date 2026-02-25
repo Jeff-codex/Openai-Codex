@@ -26,6 +26,7 @@ import {
   upsertReviewDocument,
   validateReviewFile,
 } from '../_lib/review_engine.js';
+import { POLICY_V1 } from '../../../src/lib/policy.v1.ts';
 
 const MAX_INPUT_CHARS = 8000;
 const GUEST_DAILY_LIMIT = 1;
@@ -92,10 +93,15 @@ async function consumeGuestLimit(env, key, currentCount) {
 }
 
 function parseReviewInput(formData) {
+  const industryRaw = String(formData.get('industry') || '').trim().toLowerCase();
+  const industry = ['general', 'medical', 'finance', 'realestate', 'diet'].includes(industryRaw)
+    ? industryRaw
+    : '';
   return {
     draftFile: formData.get('draftFile'),
     reviewMode: normalizeMode(formData.get('reviewMode')),
     reviewId: String(formData.get('reviewId') || '').trim(),
+    industry,
   };
 }
 
@@ -190,6 +196,7 @@ export async function onRequestPost(context) {
     const runResult = runRuleReview(trimmedText, {
       fileName: validation.fileName,
       extension: validation.extension,
+      industryOverride: input.industry || null,
     });
     if (runResult.isNonManuscript) {
       try {
@@ -197,7 +204,18 @@ export async function onRequestPost(context) {
       } catch (error) {
       }
       uploadedKey = '';
-      return jsonError('원고형 본문이 아닌 파일은 검수할 수 없습니다. 보도자료/홍보 원고 본문 파일로 다시 업로드해 주세요.', 422);
+      await writeSecurityAudit(context.env, {
+        eventType: 'review_analyze',
+        actorType: owner.actorType,
+        actorId: owner.actorId,
+        ip,
+        outcome: 'fail',
+        detail: `blocked_non_manuscript:reason=${String(runResult.blockReason || 'UNKNOWN')}`,
+      });
+      return jsonError(
+        POLICY_V1.BLOCK.USER_MESSAGE,
+        Number(POLICY_V1.BLOCK.HTTP_STATUS || 422)
+      );
     }
     const runNo = await getNextRunNumber(context.env, reviewId);
 

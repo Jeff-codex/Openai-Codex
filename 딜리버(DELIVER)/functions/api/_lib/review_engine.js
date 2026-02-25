@@ -1,4 +1,6 @@
 import { d1Execute, d1Query, nowIso, r2Delete } from './cloudflare_store.js';
+import { scoreTextV2 } from '../../../src/lib/score.v2.ts';
+import { POLICY_V1 } from '../../../src/lib/policy.v1.ts';
 
 const REVIEW_ALLOWED_EXTENSIONS = new Set(['doc', 'docx', 'pdf']);
 const REVIEW_ALLOWED_MIMES = new Set([
@@ -839,66 +841,145 @@ function buildSummary(scores, issueCount) {
   return `총 ${issueCount}개 개선 포인트가 탐지되었습니다. ${riskText} ${readabilityText}`;
 }
 
+function buildRiskBreakdownFromFindings(findings = []) {
+  const totals = { law: 0, disclosure: 0, exaggeration: 0, defamation: 0 };
+  for (const item of findings) {
+    const severity = Math.max(1, Math.min(5, Number(item?.severity || 1)));
+    const category = String(item?.category || '');
+    if (category === 'defamation') {
+      totals.defamation += severity * 12;
+      continue;
+    }
+    if (['exaggeration', 'guarantee', 'superlative', 'comparison', 'industry_medical', 'industry_finance', 'industry_realestate', 'industry_diet'].includes(category)) {
+      totals.exaggeration += severity * 10;
+      continue;
+    }
+    if (category === 'evidence') {
+      totals.disclosure += severity * 9;
+      continue;
+    }
+    if (['structure', 'readability'].includes(category)) {
+      totals.law += severity * 6;
+    }
+  }
+  return {
+    law: Math.min(100, Math.round(totals.law)),
+    disclosure: Math.min(100, Math.round(totals.disclosure)),
+    exaggeration: Math.min(100, Math.round(totals.exaggeration)),
+    defamation: Math.min(100, Math.round(totals.defamation)),
+  };
+}
+
+function inferBlockReason(suitability, normalized, sentences) {
+  const terms = Array.isArray(suitability?.matchedTerms) ? suitability.matchedTerms.join(' ') : '';
+  if (/(사업자등록|법인등록|개업연월일|등록번호|세무서|국세청)/i.test(terms)) {
+    return POLICY_V1.BLOCK.REASONS.BUSINESS_REG;
+  }
+  if (normalized.length < 120) return POLICY_V1.BLOCK.REASONS.LOW_CHAR;
+  if ((sentences || []).length < 3) return POLICY_V1.BLOCK.REASONS.LOW_SENT;
+  const ko = (normalized.match(/[가-힣]/g) || []).length;
+  const koRatio = ko / Math.max(1, normalized.length);
+  if (koRatio < 0.15) return POLICY_V1.BLOCK.REASONS.LOW_KO;
+  if (Number(suitability?.documentSignalScore || 0) >= 70) return POLICY_V1.BLOCK.REASONS.TABLE_HEAVY;
+  return POLICY_V1.BLOCK.REASONS.OCR_REQUIRED;
+}
+
+function detectCorruptedExtraction(normalized, sentences) {
+  const text = String(normalized || '');
+  const len = Math.max(1, text.length);
+  const koCount = (text.match(/[가-힣]/g) || []).length;
+  const koRatio = koCount / len;
+  const sentenceEndingCount = (text.match(/[.!?。！？]/g) || []).length;
+  const weirdCharCount = (text.match(/[^가-힣a-zA-Z0-9\s.,!?()\-:;'"%/]/g) || []).length;
+  const weirdRatio = weirdCharCount / len;
+  const pdfTokenHits = (text.match(/\b(stream|endobj|xref|trailer|obj)\b/gi) || []).length;
+  const hasPdfHeader = /^%PDF-\d\.\d/.test(text.slice(0, 24));
+  const hasPdfStruct = /(\/Filter\s*\/FlateDecode|\/Length\s+\d+|endobj|xref)/i.test(text.slice(0, 1200));
+
+  const likelyPdfBinaryLeak = (hasPdfHeader && hasPdfStruct) || pdfTokenHits >= 2;
+  const likelyNoiseText = (
+    len >= 120
+    && sentenceEndingCount <= 2
+    && koRatio < 0.12
+    && weirdRatio >= 0.11
+  );
+
+  return likelyPdfBinaryLeak || likelyNoiseText;
+}
+
 export function runRuleReview(text, options = {}) {
   const normalized = compactText(text);
   const sentences = splitSentences(normalized);
-
+  if (detectCorruptedExtraction(normalized, sentences)) {
+    return {
+      isNonManuscript: true,
+      blockReason: POLICY_V1.BLOCK.REASONS.OCR_REQUIRED,
+      scores: {
+        approval: 0,
+        risk: 100,
+        readability: 0,
+        branding: 0,
+      },
+      riskBreakdown: { law: 0, disclosure: 0, exaggeration: 0, defamation: 0 },
+      highlights: [
+        createIssue(
+          'document_type',
+          '필수수정',
+          0,
+          '',
+          '문서 텍스트 추출 품질이 낮아 원고형 본문을 확인할 수 없습니다.',
+          'OCR 가능한 PDF 또는 텍스트가 포함된 DOCX/PDF로 다시 업로드해 주세요.'
+        ),
+      ],
+      summary: POLICY_V1.BLOCK.USER_MESSAGE,
+    };
+  }
   const suitability = computeDocumentSuitability(normalized, sentences, options);
-  const risk = computeRisk(sentences);
-  const readability = computeReadability(normalized, sentences);
-  const branding = computeBranding(normalized);
-
-  let approval = Math.max(
-    0,
-    Math.min(
-      100,
-      Math.round(
-        100
-        - (risk.riskScore * 0.45)
-        - (readability.penalty * 0.35)
-        - (branding.penalty * 0.20)
-      )
-    )
-  );
-  let riskScore = risk.riskScore;
-  let readabilityScore = readability.score;
-  let brandingScore = branding.score;
-
   if (suitability.isNonManuscript) {
-    approval = Math.min(approval, REVIEW_POLICY.nonManuscriptScoreClamp.approvalMax);
-    riskScore = Math.max(riskScore, REVIEW_POLICY.nonManuscriptScoreClamp.riskMin);
-    readabilityScore = Math.min(readabilityScore, REVIEW_POLICY.nonManuscriptScoreClamp.readabilityMax);
-    brandingScore = Math.min(brandingScore, REVIEW_POLICY.nonManuscriptScoreClamp.brandingMax);
+    const blockReason = inferBlockReason(suitability, normalized, sentences);
+    return {
+      isNonManuscript: true,
+      blockReason,
+      scores: {
+        approval: 0,
+        risk: 100,
+        readability: 0,
+        branding: 0,
+      },
+      riskBreakdown: { law: 0, disclosure: 0, exaggeration: 0, defamation: 0 },
+      highlights: suitability.issues.slice(0, 24),
+      summary: POLICY_V1.BLOCK.USER_MESSAGE,
+    };
   }
 
-  const allIssues = [...suitability.issues, ...risk.issues, ...readability.issues, ...branding.issues];
-  allIssues.sort((a, b) => {
-    const aw = a.severity === '필수수정' ? 0 : 1;
-    const bw = b.severity === '필수수정' ? 0 : 1;
-    if (aw !== bw) return aw - bw;
-    return (a.sentenceIndex || 0) - (b.sentenceIndex || 0);
-  });
+  const scored = scoreTextV2(normalized, options.industryOverride || null);
+  const riskScore = Math.max(0, Math.min(100, 100 - Math.round(scored.subscores.risk)));
+  const readabilityScore = Math.max(0, Math.min(100, Math.round(scored.subscores.readability)));
+  const brandingScore = Math.max(0, Math.min(100, Math.round(scored.subscores.branding)));
+  const approvalScore = Math.max(0, Math.min(100, Math.round(scored.totalScore)));
 
-  const summary = suitability.isNonManuscript
-    ? '원고형 본문 패턴이 부족한 문서로 판단되어 검수 점수가 제한되었습니다. 보도자료 본문으로 다시 업로드해 주세요.'
-    : buildSummary(
-      {
-        risk: riskScore,
-        readability: readabilityScore,
-      },
-      allIssues.length
-    );
+  const highlights = (scored.topFindings || []).map((item, idx) => createIssue(
+    item.category,
+    Number(item.severity || 0) >= 4 ? '필수수정' : '권장수정',
+    idx + 1,
+    item.snippet || '',
+    item.rationale || '개선 포인트가 탐지되었습니다.',
+    item.fix_template || '표현을 완화하고 근거를 보강해 주세요.'
+  ));
+
+  const riskBreakdown = buildRiskBreakdownFromFindings(scored.allFindings || []);
+  const summary = `V2 점수 ${approvalScore}점 (${scored.policy.grade}). 핵심 이슈 ${highlights.length}건이 탐지되었습니다.`;
 
   return {
+    isNonManuscript: false,
     scores: {
-      approval,
+      approval: approvalScore,
       risk: riskScore,
       readability: readabilityScore,
       branding: brandingScore,
     },
-    isNonManuscript: suitability.isNonManuscript,
-    riskBreakdown: risk.breakdown,
-    highlights: allIssues.slice(0, 24),
+    riskBreakdown,
+    highlights: highlights.slice(0, 24),
     summary,
   };
 }

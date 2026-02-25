@@ -583,3 +583,12 @@
 - 딜리버(DELIVER)/01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html
 - 딜리버(DELIVER)/03_프로젝트문서-ProjectDocs/개발기록-DevelopmentJournal.md
 - 다음 작업: 카카오 공유 디버거에서 URL 스크랩 갱신(캐시 초기화) 후 실메신저 공유 카드 최종 확인
+
+## 2026-02-25 13:22:33 KST
+- 단계: review-engine-v2-policy-unification-and-hard-block-fix
+- 요약: 단계 완료 체크포인트 저장
+- 변경 파일:
+- 딜리버(DELIVER)/functions/api/_lib/review_engine.js
+- 딜리버(DELIVER)/functions/api/review/analyze.js
+- 딜리버(DELIVER)/src/
+- 다음 작업: 이어서 개발 진행
