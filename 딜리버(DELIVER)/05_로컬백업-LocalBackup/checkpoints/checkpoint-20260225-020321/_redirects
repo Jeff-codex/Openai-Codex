@@ -1,0 +1,8 @@
+https://www.dliver.co.kr/* https://dliver.co.kr/:splat 301!
+
+/self-order /01_서비스코드-ServiceCode/랜딩페이지-LandingPage/ 200
+/self-order/ /01_서비스코드-ServiceCode/랜딩페이지-LandingPage/ 200
+/회원전용페이지-MemberPortal/* /01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/:splat 301
+/관리자페이지-AdminPage/* /01_서비스코드-ServiceCode/관리자페이지-AdminPage/:splat 301
+/랜딩페이지-LandingPage/* /01_서비스코드-ServiceCode/랜딩페이지-LandingPage/:splat 301
+/공통데이터-SharedData/* /01_서비스코드-ServiceCode/공통데이터-SharedData/:splat 200

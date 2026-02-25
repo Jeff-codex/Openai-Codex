@@ -1,0 +1,4093 @@
+diff --git "a/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/app.js" "b/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/app.js"
+index 91114ab..f8cdc63 100644
+--- "a/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/app.js"
++++ "b/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/app.js"
+@@ -18,10 +18,13 @@ const state = {
+   logs: [],
+   securityLogs: [],
+   memberFilter: "",
++  memberRoleFilter: "",
+   memberPage: 1,
+   editingMemberId: "",
+   editingMediaId: "",
+   orderPage: 1,
++  orderFilter: "",
++  orderStatusFilter: "",
+   auditOutcomeFilter: "",
+   auditSearch: "",
+ };
+@@ -79,9 +82,32 @@ function escapeHtml(value) {
+     .replace(/'/g, "&#39;");
+ }
+ 
++function renderExpandableText(text, expandAt = 24, ellipsisClass = "cell-ellipsis") {
++  const source = String(text || "").trim();
++  const safeText = escapeHtml(source || "-");
++  if (!source || source.length <= expandAt) {
++    return `<span class="${ellipsisClass}" title="${safeText}">${safeText}</span>`;
++  }
++  const shortText = escapeHtml(`${source.slice(0, expandAt).trimEnd()}…`);
++  return `<details class="cell-details">
++    <summary>
++      <span class="${ellipsisClass}" title="${safeText}">${shortText}</span>
++      <span class="cell-more-chip">상세</span>
++    </summary>
++    <div class="cell-details-body">${safeText}</div>
++  </details>`;
++}
++
++function renderCompactInlineText(text, maxLength = 16, ellipsisClass = "mobile-ellipsis") {
++  const source = String(text || "").trim();
++  if (!source) return `<span class="${ellipsisClass}">-</span>`;
++  const clipped = source.length > maxLength ? `${source.slice(0, maxLength).trimEnd()}…` : source;
++  return `<span class="${ellipsisClass}" title="${escapeHtml(source)}">${escapeHtml(clipped)}</span>`;
++}
++
+ function renderEllipsisCell(value, fallback = "-") {
+   const text = String(value || "").trim() || String(fallback || "-");
+-  return `<span class="cell-ellipsis" title="${escapeHtml(text)}">${escapeHtml(text)}</span>`;
++  return renderExpandableText(text, 24, "cell-ellipsis");
+ }
+ 
+ function renderDateCell(value) {
+@@ -92,6 +118,10 @@ function renderDateCell(value) {
+   return `<span class="cell-ellipsis" title="${escapeHtml(titleText || "-")}">${escapeHtml(bodyText || "-")}</span>`;
+ }
+ 
++function getRoleLabel(role) {
++  return String(role || "").toLowerCase() === "admin" ? "관리자" : "회원";
++}
++
+ async function apiFetch(path, init = {}) {
+   const headers = { ...(init.headers || {}) };
+   const method = String(init.method || "GET").toUpperCase();
+@@ -209,7 +239,9 @@ function renderDashboard() {
+ 
+ function getFilteredMembers() {
+   const query = state.memberFilter.trim().toLowerCase();
++  const roleFilter = String(state.memberRoleFilter || "").trim().toLowerCase();
+   return state.members.filter((member) => {
++    if (roleFilter && String(member.role || "").toLowerCase() !== roleFilter) return false;
+     if (!query) return true;
+     return (
+       String(member.loginId || "").toLowerCase().includes(query) ||
+@@ -248,9 +280,13 @@ function renderMembersPagination(filteredMembers) {
+ 
+ function renderMembers() {
+   const tbody = document.getElementById("members-body");
++  const mobileList = document.getElementById("members-mobile-list");
+   const filtered = getFilteredMembers();
+   if (!filtered.length) {
+     tbody.innerHTML = `<tr><td colspan="8">회원 데이터가 없습니다.</td></tr>`;
++    if (mobileList instanceof HTMLElement) {
++      mobileList.innerHTML = `<div class="mobile-empty">회원 데이터가 없습니다.</div>`;
++    }
+     renderMembersPagination(filtered);
+     return;
+   }
+@@ -265,19 +301,58 @@ function renderMembers() {
+     .map(
+       (member) => `
+       <tr>
+-        <td class="col-created">${renderDateCell(member.createdAt)}</td>
+-        <td class="col-member-name">${renderEllipsisCell(member.name, "-")}</td>
+-        <td class="col-member-login">${renderEllipsisCell(member.loginId, "-")}</td>
+-        <td class="col-member-email">${renderEllipsisCell(member.email, "-")}</td>
+-        <td class="col-member-company">${renderEllipsisCell(member.company || "-", "-")}</td>
+-        <td class="col-member-point">${formatCurrency(member.pointBalance || 0)}</td>
+-        <td class="col-member-role">${member.role === "admin" ? "관리자" : "회원"}</td>
+-        <td class="col-member-action">
++        <td class="col-created" data-label="가입일">${renderDateCell(member.createdAt)}</td>
++        <td class="col-member-name" data-label="이름">${renderEllipsisCell(member.name, "-")}</td>
++        <td class="col-member-login" data-label="아이디">${renderEllipsisCell(member.loginId, "-")}</td>
++        <td class="col-member-email" data-label="이메일">${renderEllipsisCell(member.email, "-")}</td>
++        <td class="col-member-company" data-label="회사명">${renderEllipsisCell(member.company || "-", "-")}</td>
++        <td class="col-member-point" data-label="보유 포인트">${formatCurrency(member.pointBalance || 0)}</td>
++        <td class="col-member-role" data-label="권한">${member.role === "admin" ? "관리자" : "회원"}</td>
++        <td class="col-member-action" data-label="관리">
+           <button class="btn btn-light small" type="button" data-edit-member="${member.id}">회원정보 수정</button>
+         </td>
+       </tr>`
+     )
+     .join("");
++
++  if (mobileList instanceof HTMLElement) {
++    mobileList.innerHTML = list
++      .map((member) => {
++        const roleLabel = getRoleLabel(member.role);
++        const roleClass = String(member.role || "").toLowerCase() === "admin" ? "admin" : "member";
++        return `<article class="mobile-card">
++          <header class="mobile-card-head">
++            <div class="mobile-card-title-wrap">
++              <h3 class="mobile-card-title">${escapeHtml(String(member.name || "-"))}</h3>
++              <p class="mobile-card-sub">${renderCompactInlineText(member.email || "-", 22, "mobile-ellipsis")}</p>
++            </div>
++            <span class="mobile-role-badge ${roleClass}">${escapeHtml(roleLabel)}</span>
++          </header>
++          <div class="mobile-kv-grid">
++            <div class="mobile-kv">
++              <span class="mobile-kv-label">가입일</span>
++              <span class="mobile-kv-value">${escapeHtml(formatDateCompact(member.createdAt))}</span>
++            </div>
++            <div class="mobile-kv">
++              <span class="mobile-kv-label">아이디</span>
++              <div class="mobile-kv-value">${renderExpandableText(member.loginId || "-", 16, "mobile-ellipsis")}</div>
++            </div>
++            <div class="mobile-kv">
++              <span class="mobile-kv-label">회사명</span>
++              <div class="mobile-kv-value">${renderExpandableText(member.company || "-", 16, "mobile-ellipsis")}</div>
++            </div>
++            <div class="mobile-kv">
++              <span class="mobile-kv-label">보유 포인트</span>
++              <span class="mobile-kv-value">${escapeHtml(formatCurrency(member.pointBalance || 0))}</span>
++            </div>
++          </div>
++          <footer class="mobile-card-actions">
++            <button class="btn btn-light small" type="button" data-edit-member="${member.id}">회원정보 수정</button>
++          </footer>
++        </article>`;
++      })
++      .join("");
++  }
+   renderMembersPagination(filtered);
+ }
+ 
+@@ -295,18 +370,36 @@ function renderOrderMediaSelect() {
+     .join("");
+ }
+ 
+-function getTotalOrderPages() {
+-  return Math.max(1, Math.ceil(state.orders.length / ORDERS_PAGE_SIZE));
++function getFilteredOrders() {
++  const query = String(state.orderFilter || "")
++    .trim()
++    .toLowerCase();
++  const statusFilter = String(state.orderStatusFilter || "")
++    .trim()
++    .toLowerCase();
++  return state.orders.filter((order) => {
++    const status = String(order.status || "").toLowerCase();
++    if (statusFilter && status !== statusFilter) return false;
++    if (!query) return true;
++    const source = [order.title, order.memberLoginId, order.email, order.mediaName, order.status]
++      .map((item) => String(item || "").toLowerCase())
++      .join(" ");
++    return source.includes(query);
++  });
++}
++
++function getTotalOrderPages(filteredOrders) {
++  return Math.max(1, Math.ceil(filteredOrders.length / ORDERS_PAGE_SIZE));
+ }
+ 
+-function renderOrdersPagination() {
++function renderOrdersPagination(filteredOrders) {
+   const pager = document.getElementById("orders-pagination");
+   if (!pager) return;
+-  const totalPages = getTotalOrderPages();
++  const totalPages = getTotalOrderPages(filteredOrders);
+   const page = Math.min(Math.max(1, state.orderPage), totalPages);
+   state.orderPage = page;
+ 
+-  if (state.orders.length <= ORDERS_PAGE_SIZE) {
++  if (filteredOrders.length <= ORDERS_PAGE_SIZE) {
+     pager.innerHTML = "";
+     return;
+   }
+@@ -324,16 +417,34 @@ function renderOrdersPagination() {
+ 
+ function renderOrders() {
+   const tbody = document.getElementById("orders-body");
++  const mobileList = document.getElementById("orders-mobile-list");
++  const filtered = getFilteredOrders();
++  if (!filtered.length) {
++    if (!state.orders.length) {
++      tbody.innerHTML = `<tr><td colspan="8">등록된 주문이 없습니다.</td></tr>`;
++      if (mobileList instanceof HTMLElement) {
++        mobileList.innerHTML = `<div class="mobile-empty">등록된 주문이 없습니다.</div>`;
++      }
++    } else {
++      tbody.innerHTML = `<tr><td colspan="8">필터 조건에 맞는 주문이 없습니다.</td></tr>`;
++      if (mobileList instanceof HTMLElement) {
++        mobileList.innerHTML = `<div class="mobile-empty">필터 조건에 맞는 주문이 없습니다.</div>`;
++      }
++    }
++    renderOrdersPagination(filtered);
++    return;
++  }
++
+   if (!state.orders.length) {
+     tbody.innerHTML = `<tr><td colspan="8">등록된 주문이 없습니다.</td></tr>`;
+-    renderOrdersPagination();
++    renderOrdersPagination(filtered);
+     return;
+   }
+-  const totalPages = getTotalOrderPages();
++  const totalPages = getTotalOrderPages(filtered);
+   const page = Math.min(Math.max(1, state.orderPage), totalPages);
+   state.orderPage = page;
+   const start = (page - 1) * ORDERS_PAGE_SIZE;
+-  const list = state.orders.slice(start, start + ORDERS_PAGE_SIZE);
++  const list = filtered.slice(start, start + ORDERS_PAGE_SIZE);
+ 
+   tbody.innerHTML = list
+     .map((order) => {
+@@ -344,13 +455,13 @@ function renderOrders() {
+ 
+       return `
+       <tr>
+-        <td class="col-date">${renderDateCell(order.createdAt)}</td>
+-        <td class="col-title">${renderEllipsisCell(order.title, "-")}</td>
+-        <td class="col-login-id">${renderEllipsisCell(order.memberLoginId, "-")}</td>
+-        <td class="col-email">${renderEllipsisCell(order.email, "비회원/미매핑")}</td>
+-        <td class="col-media">${renderEllipsisCell(order.mediaName, "-")}</td>
+-        <td class="col-budget">${formatCurrency(order.budget)}</td>
+-        <td class="col-attachment">
++        <td class="col-date" data-label="접수일">${renderDateCell(order.createdAt)}</td>
++        <td class="col-title" data-label="주문명">${renderEllipsisCell(order.title, "-")}</td>
++        <td class="col-login-id" data-label="회원아이디">${renderEllipsisCell(order.memberLoginId, "-")}</td>
++        <td class="col-email" data-label="회원 이메일">${renderEllipsisCell(order.email, "비회원/미매핑")}</td>
++        <td class="col-media" data-label="매체">${renderEllipsisCell(order.mediaName, "-")}</td>
++        <td class="col-budget" data-label="예산">${formatCurrency(order.budget)}</td>
++        <td class="col-attachment" data-label="첨부 파일">
+           ${
+             order.hasAttachment
+               ? (() => {
+@@ -359,13 +470,13 @@ function renderOrders() {
+                   return `<div class="attach-actions">
+                   <button class="btn btn-light small" type="button" data-view-attachment="${order.id}">열람</button>
+                   <button class="btn btn-light small" type="button" data-download-attachment="${order.id}">저장</button>
+-                  <div class="attach-meta"><span class="file-ellipsis" title="${escapeHtml(attachmentLabel)}">${escapeHtml(attachmentLabel)}</span></div>
++                  <div class="attach-meta">${renderExpandableText(attachmentLabel, 26, "file-ellipsis")}</div>
+                 </div>`;
+                 })()
+               : `<span class="attach-empty">없음</span>`
+           }
+         </td>
+-        <td class="col-status">
++        <td class="col-status" data-label="상태">
+           <select data-order-status data-order-id="${order.id}">
+             ${statusOptions}
+           </select>
+@@ -373,7 +484,68 @@ function renderOrders() {
+       </tr>`;
+     })
+     .join("");
+-  renderOrdersPagination();
++
++  if (mobileList instanceof HTMLElement) {
++    mobileList.innerHTML = list
++      .map((order) => {
++        const statusOptions = ORDER_STATUS.map(
++          (status) =>
++            `<option value="${status.value}" ${order.status === status.value ? "selected" : ""}>${status.label}</option>`
++        ).join("");
++        const attachmentBlock = order.hasAttachment
++          ? (() => {
++              const attachmentName = String(order.attachmentName || "첨부파일");
++              const attachmentLabel = `${attachmentName} (${formatBytes(order.attachmentSize)})`;
++              return `<div class="mobile-attachment">
++                <div class="mobile-kv">
++                  <span class="mobile-kv-label">첨부 파일</span>
++                  <div class="mobile-kv-value">${renderExpandableText(attachmentLabel, 18, "mobile-ellipsis")}</div>
++                </div>
++                <div class="mobile-card-actions two">
++                  <button class="btn btn-light small" type="button" data-view-attachment="${order.id}">열람</button>
++                  <button class="btn btn-light small" type="button" data-download-attachment="${order.id}">저장</button>
++                </div>
++              </div>`;
++            })()
++          : `<div class="mobile-kv"><span class="mobile-kv-label">첨부 파일</span><span class="mobile-kv-value">없음</span></div>`;
++
++        return `<article class="mobile-card">
++          <header class="mobile-card-head">
++            <div class="mobile-card-title-wrap">
++              <h3 class="mobile-card-title">${renderCompactInlineText(order.title || "-", 18, "mobile-ellipsis")}</h3>
++              <p class="mobile-card-sub">${escapeHtml(formatDateCompact(order.createdAt))}</p>
++            </div>
++          </header>
++          <div class="mobile-kv-grid">
++            <div class="mobile-kv">
++              <span class="mobile-kv-label">회원아이디</span>
++              <div class="mobile-kv-value">${renderExpandableText(order.memberLoginId || "-", 14, "mobile-ellipsis")}</div>
++            </div>
++            <div class="mobile-kv">
++              <span class="mobile-kv-label">회원 이메일</span>
++              <div class="mobile-kv-value">${renderExpandableText(order.email || "비회원/미매핑", 16, "mobile-ellipsis")}</div>
++            </div>
++            <div class="mobile-kv">
++              <span class="mobile-kv-label">매체</span>
++              <div class="mobile-kv-value">${renderExpandableText(order.mediaName || "-", 14, "mobile-ellipsis")}</div>
++            </div>
++            <div class="mobile-kv">
++              <span class="mobile-kv-label">예산</span>
++              <span class="mobile-kv-value">${escapeHtml(formatCurrency(order.budget))}</span>
++            </div>
++          </div>
++          <div class="mobile-status-row">
++            <span class="mobile-kv-label">상태</span>
++            <select data-order-status data-order-id="${order.id}">
++              ${statusOptions}
++            </select>
++          </div>
++          ${attachmentBlock}
++        </article>`;
++      })
++      .join("");
++  }
++  renderOrdersPagination(filtered);
+ }
+ 
+ function renderMedia() {
+@@ -486,12 +658,12 @@ function renderSecurityLogs() {
+       const outcomeLabel = formatAuditOutcome(outcome);
+       return `
+         <tr>
+-          <td class="col-audit-time">${renderDateCell(log.createdAt)}</td>
+-          <td class="col-audit-event">${renderEllipsisCell(log.eventType || "-", "-")}</td>
+-          <td class="col-audit-actor">${renderEllipsisCell(`${log.actorType || "system"}:${log.actorId || "-"}`, "-")}</td>
+-          <td class="col-audit-result"><span class="audit-badge ${outcome}">${escapeHtml(outcomeLabel)}</span></td>
+-          <td class="col-audit-ip">${renderEllipsisCell(log.ip || "-", "-")}</td>
+-          <td class="col-audit-detail">${renderEllipsisCell(log.detail || "-", "-")}</td>
++          <td class="col-audit-time" data-label="발생시각">${renderDateCell(log.createdAt)}</td>
++          <td class="col-audit-event" data-label="이벤트">${renderEllipsisCell(log.eventType || "-", "-")}</td>
++          <td class="col-audit-actor" data-label="행위자">${renderEllipsisCell(`${log.actorType || "system"}:${log.actorId || "-"}`, "-")}</td>
++          <td class="col-audit-result" data-label="결과"><span class="audit-badge ${outcome}">${escapeHtml(outcomeLabel)}</span></td>
++          <td class="col-audit-ip" data-label="IP">${renderEllipsisCell(log.ip || "-", "-")}</td>
++          <td class="col-audit-detail" data-label="상세">${renderEllipsisCell(log.detail || "-", "-")}</td>
+         </tr>
+       `;
+     })
+@@ -518,7 +690,7 @@ async function refreshAdminData() {
+   state.logs = data.logs || [];
+   state.securityLogs = data.securityLogs || [];
+   state.memberPage = Math.min(state.memberPage, getTotalMemberPages(getFilteredMembers()));
+-  state.orderPage = Math.min(state.orderPage, getTotalOrderPages());
++  state.orderPage = Math.min(state.orderPage, getTotalOrderPages(getFilteredOrders()));
+   renderAll();
+ }
+ 
+@@ -779,6 +951,46 @@ function bindActions() {
+     renderMembers();
+   });
+ 
++  document.getElementById("member-role-filter")?.addEventListener("change", (event) => {
++    state.memberRoleFilter = String(event.target.value || "");
++    state.memberPage = 1;
++    renderMembers();
++  });
++
++  document.getElementById("member-filter-reset")?.addEventListener("click", () => {
++    state.memberFilter = "";
++    state.memberRoleFilter = "";
++    state.memberPage = 1;
++    const search = document.getElementById("member-search");
++    const role = document.getElementById("member-role-filter");
++    if (search instanceof HTMLInputElement) search.value = "";
++    if (role instanceof HTMLSelectElement) role.value = "";
++    renderMembers();
++  });
++
++  document.getElementById("order-search")?.addEventListener("input", (event) => {
++    state.orderFilter = String(event.target.value || "");
++    state.orderPage = 1;
++    renderOrders();
++  });
++
++  document.getElementById("order-status-filter")?.addEventListener("change", (event) => {
++    state.orderStatusFilter = String(event.target.value || "");
++    state.orderPage = 1;
++    renderOrders();
++  });
++
++  document.getElementById("order-filter-reset")?.addEventListener("click", () => {
++    state.orderFilter = "";
++    state.orderStatusFilter = "";
++    state.orderPage = 1;
++    const search = document.getElementById("order-search");
++    const status = document.getElementById("order-status-filter");
++    if (search instanceof HTMLInputElement) search.value = "";
++    if (status instanceof HTMLSelectElement) status.value = "";
++    renderOrders();
++  });
++
+   document.getElementById("audit-outcome-filter")?.addEventListener("change", (event) => {
+     state.auditOutcomeFilter = String(event.target.value || "");
+     renderSecurityLogs();
+diff --git "a/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/index.html" "b/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/index.html"
+index 78741ab..590a3dd 100644
+--- "a/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/index.html"
++++ "b/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/index.html"
+@@ -14,7 +14,7 @@
+       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap"
+       rel="stylesheet"
+     />
+-    <link rel="stylesheet" href="styles.css?v=20260224r4" />
++    <link rel="stylesheet" href="styles.css?v=20260224r10" />
+   </head>
+   <body>
+     <div class="bg-shape bg-shape-a"></div>
+@@ -39,13 +39,12 @@
+       <p class="sub">어드민 페이지는 관리자 전용 계정으로만 접근할 수 있습니다.</p>
+       <form id="admin-login-form" class="admin-auth-form" novalidate>
+         <label for="admin-login-id">아이디</label>
+-        <input id="admin-login-id" name="loginId" type="text" placeholder="admin" autocomplete="username" required />
++        <input id="admin-login-id" name="loginId" type="text" autocomplete="username" required />
+         <label for="admin-login-password">비밀번호</label>
+         <input
+           id="admin-login-password"
+           name="password"
+           type="password"
+-          placeholder="admin1234"
+           autocomplete="current-password"
+           required
+         />
+@@ -88,11 +87,22 @@
+         </article>
+ 
+         <article class="panel card hidden" id="panel-members">
+-          <div class="panel-head">
+-            <h2>회원 관리</h2>
+-            <input id="member-search" type="text" placeholder="이름/아이디/이메일 검색" />
++          <div class="panel-head panel-head-block">
++            <div>
++              <h2>회원 관리</h2>
++              <p class="sub">회원정보 조회, 권한 필터, 포인트/비밀번호 수정을 빠르게 처리합니다.</p>
++            </div>
++            <div class="table-tools">
++              <input id="member-search" type="text" placeholder="이름/아이디/이메일 검색" />
++              <select id="member-role-filter" aria-label="회원 권한 필터">
++                <option value="">권한 전체</option>
++                <option value="member">회원</option>
++                <option value="admin">관리자</option>
++              </select>
++              <button class="btn btn-light small" id="member-filter-reset" type="button">필터 초기화</button>
++            </div>
+           </div>
+-          <div class="table-wrap">
++          <div class="table-wrap members-desktop-wrap">
+             <table class="members-table">
+               <thead>
+                 <tr>
+@@ -109,13 +119,28 @@
+               <tbody id="members-body"></tbody>
+             </table>
+           </div>
++          <div class="members-mobile-list" id="members-mobile-list" aria-live="polite"></div>
+           <div class="pagination" id="members-pagination"></div>
+         </article>
+ 
+         <article class="panel card hidden" id="panel-orders">
+-          <div class="panel-head">
+-            <h2>주문 관리</h2>
+-            <p class="sub">주문 접수와 상태 변경을 한 화면에서 처리합니다.</p>
++          <div class="panel-head panel-head-block">
++            <div>
++              <h2>주문 관리</h2>
++              <p class="sub">주문 접수, 첨부 확인, 상태 변경을 한 화면에서 처리합니다.</p>
++            </div>
++            <div class="table-tools">
++              <input id="order-search" type="text" placeholder="주문명/회원아이디/이메일/매체 검색" />
++              <select id="order-status-filter" aria-label="주문 상태 필터">
++                <option value="">상태 전체</option>
++                <option value="received">접수</option>
++                <option value="reviewing">검수중</option>
++                <option value="queued">송출대기</option>
++                <option value="published">송출완료</option>
++                <option value="rejected">반려</option>
++              </select>
++              <button class="btn btn-light small" id="order-filter-reset" type="button">필터 초기화</button>
++            </div>
+           </div>
+ 
+           <form id="order-form" class="form-grid">
+@@ -126,7 +151,7 @@
+             <button class="btn btn-primary" type="submit">주문 등록</button>
+           </form>
+ 
+-          <div class="table-wrap">
++          <div class="table-wrap orders-desktop-wrap">
+             <table class="orders-table">
+               <thead>
+                 <tr>
+@@ -143,6 +168,7 @@
+               <tbody id="orders-body"></tbody>
+             </table>
+           </div>
++          <div class="orders-mobile-list" id="orders-mobile-list" aria-live="polite"></div>
+           <div class="pagination" id="orders-pagination"></div>
+         </article>
+ 
+@@ -303,6 +329,6 @@
+     </footer>
+ 
+     <script src="../공통데이터-SharedData/media_seed.js?v=20260223r11"></script>
+-    <script src="app.js?v=20260224r2"></script>
++    <script src="app.js?v=20260224r6"></script>
+   </body>
+ </html>
+diff --git "a/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/styles.css" "b/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/styles.css"
+index 4f658e8..e968ec7 100644
+--- "a/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/styles.css"
++++ "b/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\352\264\200\353\246\254\354\236\220\355\216\230\354\235\264\354\247\200-AdminPage/styles.css"
+@@ -15,6 +15,12 @@
+   box-sizing: border-box;
+ }
+ 
++html,
++body {
++  max-width: 100%;
++  overflow-x: hidden;
++}
++
+ body {
+   margin: 0;
+   min-height: 100vh;
+@@ -347,6 +353,26 @@ h2 {
+   flex-wrap: wrap;
+ }
+ 
++.panel-head-block {
++  align-items: flex-start;
++}
++
++.panel-head-block .sub {
++  margin-top: 0.34rem;
++}
++
++.table-tools {
++  width: min(760px, 100%);
++  display: grid;
++  grid-template-columns: minmax(0, 1.5fr) minmax(130px, 0.8fr) auto;
++  gap: 0.5rem;
++  align-items: center;
++}
++
++.table-tools .btn {
++  white-space: nowrap;
++}
++
+ .table-wrap {
+   overflow: auto;
+   border: 1px solid #d4e1f3;
+@@ -362,6 +388,141 @@ h2 {
+   align-items: center;
+ }
+ 
++.members-mobile-list,
++.orders-mobile-list {
++  display: none;
++}
++
++.mobile-empty {
++  border: 1px dashed #d3e1f4;
++  border-radius: 12px;
++  background: #f8fbff;
++  color: var(--muted);
++  font-size: 0.82rem;
++  padding: 0.74rem;
++  text-align: center;
++}
++
++.mobile-card {
++  border: 1px solid #d6e3f6;
++  border-radius: 14px;
++  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
++  box-shadow: var(--shadow-soft);
++  padding: 0.66rem;
++  display: grid;
++  gap: 0.58rem;
++}
++
++.mobile-card-head {
++  display: flex;
++  justify-content: space-between;
++  align-items: flex-start;
++  gap: 0.52rem;
++}
++
++.mobile-card-title-wrap {
++  min-width: 0;
++  display: grid;
++  gap: 0.24rem;
++}
++
++.mobile-card-title {
++  margin: 0;
++  color: #1a3f82;
++  font-size: 0.92rem;
++  line-height: 1.35;
++  font-weight: 700;
++}
++
++.mobile-card-sub {
++  margin: 0;
++  color: var(--muted);
++  font-size: 0.76rem;
++  line-height: 1.35;
++}
++
++.mobile-role-badge {
++  flex-shrink: 0;
++  border-radius: 999px;
++  padding: 0.18rem 0.5rem;
++  font-size: 0.7rem;
++  font-weight: 700;
++}
++
++.mobile-role-badge.member {
++  border: 1px solid #cde0fa;
++  background: #f2f8ff;
++  color: var(--primary);
++}
++
++.mobile-role-badge.admin {
++  border: 1px solid #f1c5cf;
++  background: #fff2f5;
++  color: #a10f35;
++}
++
++.mobile-kv-grid {
++  display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++  gap: 0.46rem;
++}
++
++.mobile-kv {
++  border: 1px solid #e1e9f7;
++  border-radius: 10px;
++  background: #fff;
++  padding: 0.44rem 0.5rem;
++  display: grid;
++  gap: 0.2rem;
++}
++
++.mobile-kv-label {
++  color: var(--muted);
++  font-size: 0.68rem;
++  font-weight: 700;
++  letter-spacing: 0.01em;
++}
++
++.mobile-kv-value {
++  color: var(--text);
++  font-size: 0.8rem;
++  line-height: 1.35;
++}
++
++.mobile-ellipsis {
++  display: block;
++  width: 100%;
++  overflow: hidden;
++  text-overflow: ellipsis;
++  white-space: nowrap;
++}
++
++.mobile-card-actions {
++  display: grid;
++  grid-template-columns: 1fr;
++  gap: 0.42rem;
++}
++
++.mobile-card-actions.two {
++  grid-template-columns: 1fr 1fr;
++}
++
++.mobile-status-row {
++  display: grid;
++  grid-template-columns: 44px minmax(0, 1fr);
++  align-items: center;
++  gap: 0.46rem;
++}
++
++.mobile-status-row select {
++  width: 100%;
++}
++
++.mobile-attachment {
++  display: grid;
++  gap: 0.42rem;
++}
++
+ .pager-btn {
+   border: 1px solid #d2e0f5;
+   background: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+@@ -404,6 +565,11 @@ th {
+   min-width: 1120px;
+ }
+ 
++.members-table td {
++  white-space: normal;
++  vertical-align: top;
++}
++
+ .members-table .col-created {
+   width: 14%;
+ }
+@@ -500,6 +666,46 @@ th {
+   white-space: nowrap;
+ }
+ 
++.cell-details {
++  display: block;
++  width: 100%;
++}
++
++.cell-details summary {
++  list-style: none;
++  display: flex;
++  align-items: center;
++  gap: 0.34rem;
++  cursor: pointer;
++}
++
++.cell-details summary::-webkit-details-marker {
++  display: none;
++}
++
++.cell-more-chip {
++  flex-shrink: 0;
++  border: 1px solid #d2e0f5;
++  border-radius: 999px;
++  padding: 0.1rem 0.42rem;
++  font-size: 0.68rem;
++  color: var(--primary);
++  background: #f4f8ff;
++}
++
++.cell-details-body {
++  margin-top: 0.34rem;
++  border: 1px dashed #d5e3f6;
++  border-radius: 8px;
++  background: #f8fbff;
++  padding: 0.34rem 0.42rem;
++  color: var(--text);
++  font-size: 0.75rem;
++  line-height: 1.35;
++  white-space: normal;
++  word-break: break-word;
++}
++
+ .form-grid {
+   display: grid;
+   grid-template-columns: repeat(5, minmax(0, 1fr));
+@@ -811,6 +1017,14 @@ select:focus {
+     grid-template-columns: 1fr 1fr;
+   }
+ 
++  .table-tools {
++    grid-template-columns: 1fr 1fr;
++  }
++
++  .table-tools .btn {
++    grid-column: 1 / -1;
++  }
++
+   .stats-grid {
+     grid-template-columns: repeat(2, minmax(0, 1fr));
+   }
+@@ -842,6 +1056,15 @@ select:focus {
+     grid-template-columns: 1fr;
+   }
+ 
++  .table-tools {
++    grid-template-columns: 1fr;
++  }
++
++  .table-tools .btn {
++    grid-column: auto;
++    width: 100%;
++  }
++
+   .stats-grid {
+     grid-template-columns: 1fr;
+   }
+@@ -863,3 +1086,27 @@ select:focus {
+     width: calc(100% - 2rem);
+   }
+ }
++
++@media (max-width: 820px) {
++  .members-desktop-wrap,
++  .orders-desktop-wrap {
++    display: none;
++  }
++
++  .members-mobile-list,
++  .orders-mobile-list {
++    display: grid;
++    gap: 0.58rem;
++  }
++}
++
++@media (max-width: 360px) {
++  .mobile-kv-grid,
++  .mobile-card-actions.two {
++    grid-template-columns: 1fr;
++  }
++
++  .mobile-card {
++    padding: 0.58rem;
++  }
++}
+diff --git "a/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\353\236\234\353\224\251\355\216\230\354\235\264\354\247\200-LandingPage/index.html" "b/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\353\236\234\353\224\251\355\216\230\354\235\264\354\247\200-LandingPage/index.html"
+index 5e22800..4a25cea 100644
+--- "a/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\353\236\234\353\224\251\355\216\230\354\235\264\354\247\200-LandingPage/index.html"
++++ "b/\353\224\234\353\246\254\353\262\204(DELIVER)/01_\354\204\234\353\271\204\354\212\244\354\275\224\353\223\234-ServiceCode/\353\236\234\353\224\251\355\216\230\354\235\264\354\247\200-LandingPage/index.html"
+@@ -12,7 +12,7 @@
+     <meta name="naver-site-verification" content="db80323608f2018fab38668c4820913ec3ab3414" />
+     <meta name="author" content="Hwik" />
+     <meta name="theme-color" content="#0038b8" />
+-    <link rel="canonical" href="https://dliver.co.kr/" />
++    <link rel="canonical" href="https://dliver.co.kr/self-order" />
+     <meta property="og:type" content="website" />
+     <meta property="og:locale" content="ko_KR" />
+     <meta property="og:site_name" content="HWIK" />
+@@ -21,7 +21,7 @@
+       property="og:description"
+       content="회원전용 셀프주문 방식으로 매체 선택부터 주문 등록, 원고 첨부, 진행현황 확인까지 한 번에 처리하는 언론송출 플랫폼."
+     />
+-    <meta property="og:url" content="https://dliver.co.kr/" />
++    <meta property="og:url" content="https://dliver.co.kr/self-order" />
+     <meta
+       property="og:image"
+       content="https://dliver.co.kr/og-share-clean-20260224-v2.jpg"
+@@ -1942,6 +1942,20 @@ body.modal-open {
+         syncModalBodyState();
+       }
+ 
++      function shouldOpenSignupFromEntry() {
++        const hash = String(window.location.hash || "").toLowerCase();
++        const query = new URLSearchParams(window.location.search);
++        return hash === "#signup" || hash === "#join" || query.get("signup") === "1";
++      }
++
++      function consumeSignupHash() {
++        const hash = String(window.location.hash || "").toLowerCase();
++        if (hash !== "#signup" && hash !== "#join") return;
++        if (!window.history || typeof window.history.replaceState !== "function") return;
++        const cleanUrl = window.location.pathname + window.location.search;
++        window.history.replaceState(null, "", cleanUrl);
++      }
++
+       loginOpenButtons.forEach((button) => button.addEventListener("click", openLoginModal));
+       signupOpenButtons.forEach((button) => button.addEventListener("click", openSignupModal));
+       loginCloseButton?.addEventListener("click", closeLoginModal);
+@@ -2083,12 +2097,18 @@ body.modal-open {
+       (async () => {
+         initChannelTalk();
+         clearLegacyMemberTokens();
++        let member = null;
+         try {
+           const response = await apiFetch("/api/auth/me");
+-          updateAuthUI(response.member);
++          member = response.member;
++          updateAuthUI(member);
+         } catch (error) {
+           updateAuthUI(null);
+         }
++        if (!member && shouldOpenSignupFromEntry()) {
++          openSignupModal();
++          consumeSignupHash();
++        }
+       })();
+     </script>
+   </body>
+diff --git "a/\353\224\234\353\246\254\353\262\204(DELIVER)/03_\355\224\204\353\241\234\354\240\235\355\212\270\353\254\270\354\204\234-ProjectDocs/\352\260\234\353\260\234\354\233\220\354\271\231-DevelopmentPrinciples.md" "b/\353\224\234\353\246\254\353\262\204(DELIVER)/03_\355\224\204\353\241\234\354\240\235\355\212\270\353\254\270\354\204\234-ProjectDocs/\352\260\234\353\260\234\354\233\220\354\271\231-DevelopmentPrinciples.md"
+index f64dfb5..608891b 100644
+--- "a/\353\224\234\353\246\254\353\262\204(DELIVER)/03_\355\224\204\353\241\234\354\240\235\355\212\270\353\254\270\354\204\234-ProjectDocs/\352\260\234\353\260\234\354\233\220\354\271\231-DevelopmentPrinciples.md"
++++ "b/\353\224\234\353\246\254\353\262\204(DELIVER)/03_\355\224\204\353\241\234\354\240\235\355\212\270\353\254\270\354\204\234-ProjectDocs/\352\260\234\353\260\234\354\233\220\354\271\231-DevelopmentPrinciples.md"
+@@ -32,3 +32,11 @@
+ - 데이터베이스 백업은 `database_backup_all.sh`(Cloudflare D1 스냅샷)로 tar.gz 아카이브를 생성해 보관한다.
+ - 저장공간 최적화를 위해 `optimize_storage.sh` 보관 정책을 항상 유지한다.
+ - 작업 중단 후 재개 시 `딜리버` 명령으로 프로젝트 상태를 먼저 확인한다.
++
++## 6) 퍼스트 랜딩 검수엔진 고정값
++- 루트 메인 랜딩의 원고 검수 기능은 초기 단계에서 LLM 호출을 금지한다.
++- 점수/피드백은 규칙엔진 100%로 처리하며, OpenAI API 비용을 발생시키지 않는다.
++- 허용 파일 형식은 `doc`, `docx`, `pdf`로 고정한다.
++- 비회원 체험은 1일 1회로 제한하고 재점수는 회원 전환을 기본으로 한다.
++- 검수 데이터 보관 기간은 30일로 유지한다.
++- 세부 기준 문서: `03_프로젝트문서-ProjectDocs/퍼스트랜딩-검수엔진-고정정책.md`
+diff --git "a/\353\224\234\353\246\254\353\262\204(DELIVER)/README.md" "b/\353\224\234\353\246\254\353\262\204(DELIVER)/README.md"
+index df407c6..a0d7acb 100644
+--- "a/\353\224\234\353\246\254\353\262\204(DELIVER)/README.md"
++++ "b/\353\224\234\353\246\254\353\262\204(DELIVER)/README.md"
+@@ -20,12 +20,19 @@
+ - 환경 변수 기준 파일: `01_서비스코드-ServiceCode/.env.cloudflare.example`
+ - 실토큰/시크릿은 저장소 바깥 비밀파일(예: `~/.deliver-secrets/.env.cloudflare.local`)에서만 관리
+ - 세부 원칙 문서: `03_프로젝트문서-ProjectDocs/개발원칙-DevelopmentPrinciples.md`
++- 퍼스트 랜딩 검수엔진 고정 정책: `03_프로젝트문서-ProjectDocs/퍼스트랜딩-검수엔진-고정정책.md`
++- 퍼스트 랜딩 검수 기능은 초기 단계에서 LLM 호출 없이 규칙엔진 100%로 운영
+ - 매 단계 완료 후 `완료/미완료` 요약 체크리스트 제공을 기본 원칙으로 적용
+ - 단계별 Windows 접속 경로(절대경로 + `file:///`)는 요청 시에만 제공
+ - 개발 순서는 `Admin MVP + 프론트 병행`을 기본값으로 적용
+ 
+-## 현재 랜딩페이지 위치
++## 현재 퍼스트 랜딩 위치 (루트 메인)
++- `index.html`
++- `01_서비스코드-ServiceCode/랜딩페이지-FirstLandingPage/index.html`
++
++## 세컨드 랜딩 위치 (기존 셀프주문)
+ - `01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html`
++- 접근 경로: `https://dliver.co.kr/self-order`
+ 
+ ## 현재 관리자페이지 위치
+ - `01_서비스코드-ServiceCode/관리자페이지-AdminPage/index.html`
+@@ -41,10 +48,11 @@
+ 
+ ## Cloudflare 데이터 문서
+ - `08_데이터베이스-Database/01_마이그레이션-Migrations/003_init_d1_schema.sql`
++- `08_데이터베이스-Database/01_마이그레이션-Migrations/004_review_engine_schema.sql`
+ - `03_프로젝트문서-ProjectDocs/AdminMVP-운영구성-AdminMVPBlueprint.md`
+ - `03_프로젝트문서-ProjectDocs/Cloudflare연동가이드-CloudflareSetupGuide.md`
+ 
+-루트 `index.html`은 위 경로로 자동 이동하도록 구성되어 있습니다.
++루트 `index.html`은 퍼스트 랜딩(원고 검수 페이지) 본문을 직접 렌더링하도록 구성되어 있습니다.
+ 
+ ## 운영 안정화 워크플로우
+ 0. 로컬 시크릿 로드(필수)
+@@ -88,6 +96,7 @@ cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
+ ```bash
+ cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
+ npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/003_init_d1_schema.sql
++npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/004_review_engine_schema.sql
+ ```
+ 
+ 7. D1 데이터베이스 목록 확인
+diff --git "a/\353\224\234\353\246\254\353\262\204(DELIVER)/_redirects" "b/\353\224\234\353\246\254\353\262\204(DELIVER)/_redirects"
+index c968062..83ebcc4 100644
+--- "a/\353\224\234\353\246\254\353\262\204(DELIVER)/_redirects"
++++ "b/\353\224\234\353\246\254\353\262\204(DELIVER)/_redirects"
+@@ -1,9 +1,4 @@
+ https://www.dliver.co.kr/* https://dliver.co.kr/:splat 301!
+ 
+-/01_서비스코드-ServiceCode/랜딩페이지-LandingPage / 301!
+-/01_서비스코드-ServiceCode/랜딩페이지-LandingPage/ / 301!
+-/01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html / 301!
+-
+-/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EB%9E%9C%EB%94%A9%ED%8E%98%EC%9D%B4%EC%A7%80-LandingPage / 301!
+-/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EB%9E%9C%EB%94%A9%ED%8E%98%EC%9D%B4%EC%A7%80-LandingPage/ / 301!
+-/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EB%9E%9C%EB%94%A9%ED%8E%98%EC%9D%B4%EC%A7%80-LandingPage/index.html / 301!
++/self-order /01_서비스코드-ServiceCode/랜딩페이지-LandingPage/ 200
++/self-order/ /01_서비스코드-ServiceCode/랜딩페이지-LandingPage/ 200
+diff --git "a/\353\224\234\353\246\254\353\262\204(DELIVER)/functions/_middleware.js" "b/\353\224\234\353\246\254\353\262\204(DELIVER)/functions/_middleware.js"
+index 51e0766..c0eaa57 100644
+--- "a/\353\224\234\353\246\254\353\262\204(DELIVER)/functions/_middleware.js"
++++ "b/\353\224\234\353\246\254\353\262\204(DELIVER)/functions/_middleware.js"
+@@ -7,20 +7,17 @@ const CSRF_EXEMPT_PATHS = new Set([
+   "/api/auth/signup",
+   "/api/admin/login",
+   "/api/health",
++  "/api/review/analyze",
+ ]);
+ 
+ const RATE_LIMIT_RULES = [
+   { prefix: "/api/admin/login", key: "admin-login", limit: 8, windowSec: 60 },
+   { prefix: "/api/auth/login", key: "member-login", limit: 10, windowSec: 60 },
+   { prefix: "/api/auth/signup", key: "member-signup", limit: 6, windowSec: 300 },
++  { prefix: "/api/review/analyze", key: "review-analyze", limit: 6, windowSec: 60 },
+   { prefix: "/api/", key: "api-general", limit: 240, windowSec: 60 },
+ ];
+ 
+-const LANDING_ALIAS_PREFIXES = [
+-  "/01_서비스코드-ServiceCode/랜딩페이지-LandingPage",
+-  "/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EB%9E%9C%EB%94%A9%ED%8E%98%EC%9D%B4%EC%A7%80-LandingPage",
+-];
+-
+ const DEFAULT_ALLOWED_ORIGINS = [
+   "https://dliver.co.kr",
+   "https://admin.dliver.co.kr",
+@@ -28,22 +25,6 @@ const DEFAULT_ALLOWED_ORIGINS = [
+   "https://dev.dliver.co.kr",
+ ];
+ 
+-function safeDecodePath(pathname) {
+-  try {
+-    return decodeURIComponent(pathname);
+-  } catch (error) {
+-    return pathname;
+-  }
+-}
+-
+-function isLandingAliasPath(pathname) {
+-  const decoded = safeDecodePath(pathname);
+-  return LANDING_ALIAS_PREFIXES.some((prefix) => {
+-    return pathname === prefix || pathname === `${prefix}/` || pathname === `${prefix}/index.html` || decoded === prefix
+-      || decoded === `${prefix}/` || decoded === `${prefix}/index.html`;
+-  });
+-}
+-
+ function randomToken(size = 18) {
+   const bytes = new Uint8Array(size);
+   crypto.getRandomValues(bytes);
+@@ -184,12 +165,6 @@ export async function onRequest(context) {
+     return Response.redirect(requestUrl.toString(), 301);
+   }
+ 
+-  if (!isApiRequest && (method === "GET" || method === "HEAD") && isLandingAliasPath(pathname)) {
+-    requestUrl.pathname = "/";
+-    requestUrl.hash = "";
+-    return Response.redirect(requestUrl.toString(), 301);
+-  }
+-
+   if (isApiRequest && method === "OPTIONS") {
+     if (origin && !allowedOrigins.has(origin)) {
+       const denied = jsonErrorResponse(403, "허용되지 않은 Origin입니다.", requestId);
+diff --git "a/\353\224\234\353\246\254\353\262\204(DELIVER)/index.html" "b/\353\224\234\353\246\254\353\262\204(DELIVER)/index.html"
+index d6c674f..b59d0dd 100644
+--- "a/\353\224\234\353\246\254\353\262\204(DELIVER)/index.html"
++++ "b/\353\224\234\353\246\254\353\262\204(DELIVER)/index.html"
+@@ -2,2105 +2,1087 @@
+ <html lang="ko">
+   <head>
+     <meta charset="UTF-8" />
+-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>HWIK | 회원전용 셀프 언론송출 주문 플랫폼</title>
++    <meta name="viewport" content="width=device-width, initial-scale=1" />
++    <title>DLIVER | 원고 검수</title>
+     <meta
+       name="description"
+-      content="회원전용 셀프주문 방식으로 매체 선택부터 주문 등록, 원고 첨부, 진행현황 확인까지 한 번에 처리하는 언론송출 플랫폼."
++      content="DOC/DOCX/PDF 원고를 업로드하고 승인가능성, 리스크, 가독성, 브랜딩 적합도를 빠르게 확인하세요."
+     />
+-    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+-    <meta name="naver-site-verification" content="db80323608f2018fab38668c4820913ec3ab3414" />
+-    <meta name="author" content="Hwik" />
+-    <meta name="theme-color" content="#0038b8" />
+-    <link rel="canonical" href="https://dliver.co.kr/" />
+-    <meta property="og:type" content="website" />
+-    <meta property="og:locale" content="ko_KR" />
+-    <meta property="og:site_name" content="HWIK" />
+-    <meta property="og:title" content="HWIK | 회원전용 셀프 언론송출 주문 플랫폼" />
+-    <meta
+-      property="og:description"
+-      content="회원전용 셀프주문 방식으로 매체 선택부터 주문 등록, 원고 첨부, 진행현황 확인까지 한 번에 처리하는 언론송출 플랫폼."
+-    />
+-    <meta property="og:url" content="https://dliver.co.kr/" />
+-    <meta
+-      property="og:image"
+-      content="https://dliver.co.kr/og-share-clean-20260224-v2.jpg"
+-    />
+-    <meta property="og:image:secure_url" content="https://dliver.co.kr/og-share-clean-20260224-v2.jpg" />
+-    <meta property="og:image:type" content="image/jpeg" />
+-    <meta property="og:image:width" content="1200" />
+-    <meta property="og:image:height" content="630" />
+-    <meta property="og:image:alt" content="HWIK 서비스 대표 이미지" />
+-    <meta name="twitter:card" content="summary_large_image" />
+-    <meta name="twitter:title" content="HWIK | 회원전용 셀프 언론송출 주문 플랫폼" />
+-    <meta
+-      name="twitter:description"
+-      content="회원전용 셀프주문 방식으로 매체 선택부터 주문 등록, 원고 첨부, 진행현황 확인까지 한 번에 처리하는 언론송출 플랫폼."
+-    />
+-    <meta
+-      name="twitter:image"
+-      content="https://dliver.co.kr/og-share-clean-20260224-v2.jpg"
+-    />
+-    <link rel="icon" type="image/png" href="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/hwik-icon-180.png" />
+-    <script>
+-      (function () {
+-        const host = String(window.location.hostname || "").toLowerCase();
+-        const origin = window.location.origin;
+-        if (host.startsWith("admin.")) {
+-          window.location.replace(`${origin}/01_서비스코드-ServiceCode/관리자페이지-AdminPage/index.html`);
+-        } else if (host.startsWith("member.") || host.startsWith("portal.")) {
+-          window.location.replace(`${origin}/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/index.html`);
+-        }
+-      })();
+-    </script>
+-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+-    <link
+-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap"
+-      rel="stylesheet"
+-    />
+-    <script type="application/ld+json">
+-      {
+-        "@context": "https://schema.org",
+-        "@type": "Organization",
+-        "name": "HWIK",
+-        "url": "https://dliver.co.kr/",
+-        "logo": "https://dliver.co.kr/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B3%B5%ED%86%B5%EB%8D%B0%EC%9D%B4%ED%84%B0-SharedData/brand/hwik-logo-wordmark-primary.png"
++    <link rel="icon" type="image/svg+xml" href="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/favicon.svg" />
++    <style>
++      :root {
++        --bg: #f5f7fb;
++        --text: #202124;
++        --sub: #5f6368;
++        --line: #dadce0;
++        --blue: #1a73e8;
++        --blue-soft: #e8f0fe;
++        --ok: #137333;
++        --warn: #c5221f;
+       }
+-    </script>
+-    <script type="application/ld+json">
+-      {
+-        "@context": "https://schema.org",
+-        "@type": "WebSite",
+-        "name": "HWIK",
+-        "url": "https://dliver.co.kr/",
+-        "inLanguage": "ko-KR"
++
++      * {
++        box-sizing: border-box;
+       }
+-    </script>
+-    <script type="application/ld+json">
+-      {
+-        "@context": "https://schema.org",
+-        "@type": "Service",
+-        "serviceType": "언론보도 송출 주문 서비스",
+-        "provider": {
+-          "@type": "Organization",
+-          "name": "HWIK",
+-          "url": "https://dliver.co.kr/"
+-        },
+-        "areaServed": "KR",
+-        "audience": {
+-          "@type": "Audience",
+-          "audienceType": "회원 전용"
+-        },
+-        "url": "https://dliver.co.kr/"
++
++      body {
++        margin: 0;
++        min-height: 100vh;
++        font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
++        color: var(--text);
++        background: radial-gradient(circle at 50% -20%, #ffffff 0%, var(--bg) 55%, #eef2f9 100%);
++      }
++
++      .page {
++        min-height: 100vh;
++        display: grid;
++        grid-template-rows: auto 1fr auto;
++      }
++
++      .top-nav {
++        width: min(1080px, calc(100% - 32px));
++        margin: 20px auto 0;
++        display: flex;
++        justify-content: flex-end;
++        gap: 16px;
++        font-size: 14px;
++      }
++
++      .top-nav a,
++      .top-nav .top-link-btn {
++        color: #3c4043;
++        text-decoration: none;
++        background: transparent;
++        border: 0;
++        padding: 0;
++        margin: 0;
++        font: inherit;
++        cursor: pointer;
++      }
++
++      .top-nav a:hover,
++      .top-nav .top-link-btn:hover {
++        color: var(--blue);
++      }
++
++      .main {
++        display: grid;
++        place-items: center;
++        padding: 20px 16px 40px;
++      }
++
++      .hero {
++        width: min(960px, 100%);
++        display: grid;
++        gap: 20px;
++        justify-items: center;
++      }
++
++      .visual {
++        width: min(720px, 100%);
++        min-height: 220px;
++        position: relative;
++        display: grid;
++        place-items: center;
++      }
++
++      .logo-stage,
++      .result-stage {
++        grid-area: 1 / 1;
++        transition: opacity 420ms ease, transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 420ms ease;
++      }
++
++      .logo-stage {
++        opacity: 1;
++        transform: translateY(0) scale(1);
++      }
++
++      .logo-image {
++        width: min(520px, 88vw);
++        max-height: 180px;
++        object-fit: contain;
++        filter: drop-shadow(0 10px 30px rgba(26, 115, 232, 0.18));
++      }
++
++      .visual.is-analyzing .logo-stage {
++        animation: logoPulse 900ms ease-in-out infinite;
++      }
++
++      .visual.result-ready .logo-stage {
++        opacity: 0;
++        transform: translateY(-14px) scale(0.92);
++        filter: blur(2px);
++      }
++
++      @keyframes logoPulse {
++        0% { transform: scale(1); }
++        50% { transform: scale(1.018); }
++        100% { transform: scale(1); }
++      }
++
++      .result-stage {
++        width: 100%;
++        opacity: 0;
++        transform: translateY(18px) scale(0.96);
++        pointer-events: none;
++      }
++
++      .visual.result-ready .result-stage {
++        opacity: 1;
++        transform: translateY(0) scale(1);
++        pointer-events: auto;
++      }
++
++      .result-panel {
++        width: 100%;
++        border: 1px solid var(--line);
++        border-radius: 24px;
++        background: rgba(255, 255, 255, 0.88);
++        backdrop-filter: blur(8px);
++        padding: 20px;
++        display: grid;
++        gap: 14px;
++      }
++
++      .score-row {
++        display: grid;
++        gap: 10px;
++        grid-template-columns: repeat(4, minmax(120px, 1fr));
++      }
++
++      .score-chip {
++        border: 1px solid #d2e3fc;
++        background: #f8fbff;
++        border-radius: 14px;
++        padding: 12px;
++      }
++
++      .score-chip b {
++        display: block;
++        font-size: 13px;
++        color: #3c4043;
++        margin-bottom: 6px;
++      }
++
++      .score-chip strong {
++        font-size: 28px;
++        line-height: 1;
++        color: #1967d2;
++      }
++
++      .summary {
++        margin: 0;
++        font-size: 15px;
++        line-height: 1.5;
++        color: #1f2937;
++      }
++
++      .risk {
++        margin: 0;
++        padding: 0;
++        list-style: none;
++        display: flex;
++        flex-wrap: wrap;
++        gap: 8px;
++      }
++
++      .risk li {
++        border: 1px solid #d2e3fc;
++        border-radius: 999px;
++        padding: 6px 10px;
++        font-size: 12px;
++        color: #174ea6;
++        background: #f2f7ff;
++      }
++
++      .upload-form {
++        width: min(860px, 100%);
++      }
++
++      .upload-bar {
++        width: 100%;
++        border: 1px solid var(--line);
++        border-radius: 999px;
++        background: #fff;
++        min-height: 58px;
++        padding: 8px;
++        display: grid;
++        grid-template-columns: minmax(160px, 220px) 1fr auto auto;
++        gap: 8px;
++        align-items: center;
++        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
++      }
++
++      .file-pick {
++        height: 42px;
++        border-radius: 999px;
++        border: 1px solid #c6dafc;
++        background: var(--blue-soft);
++        color: #174ea6;
++        font-weight: 700;
++        font-size: 13px;
++        display: grid;
++        place-items: center;
++        cursor: pointer;
++        padding: 0 14px;
++        white-space: nowrap;
++      }
++
++      .file-pick input {
++        display: none;
++      }
++
++      .file-name {
++        min-width: 0;
++        padding: 0 6px;
++        font-size: 14px;
++        color: #3c4043;
++        white-space: nowrap;
++        overflow: hidden;
++        text-overflow: ellipsis;
++      }
++
++      .btn {
++        height: 42px;
++        border-radius: 999px;
++        border: 0;
++        cursor: pointer;
++        font-size: 14px;
++        font-weight: 700;
++        padding: 0 18px;
++      }
++
++      .btn-primary {
++        background: var(--blue);
++        color: #fff;
++      }
++
++      .btn-ghost {
++        background: #fff;
++        color: #174ea6;
++        border: 1px solid #c6dafc;
++      }
++
++      .btn:disabled {
++        opacity: 0.6;
++        cursor: default;
++      }
++
++      .support-note {
++        margin: 12px 0 0;
++        text-align: center;
++        font-size: 14px;
++        color: #5f6368;
++      }
++
++      .status {
++        margin: 10px 0 0;
++        text-align: center;
++        font-size: 14px;
++        color: #3c4043;
++        min-height: 22px;
++      }
++
++      .status.ok { color: var(--ok); }
++      .status.error { color: var(--warn); }
++
++      .member-entry {
++        margin-top: 8px;
++        display: grid;
++        justify-items: center;
++        gap: 8px;
++      }
++
++      .member-entry[hidden] {
++        display: none;
++      }
++
++      .member-entry-note {
++        margin: 0;
++        font-size: 13px;
++        color: #1f3b74;
++      }
++
++      .feedback {
++        width: min(860px, 100%);
++        margin: 6px 0 0;
++        padding: 0;
++        list-style: none;
++        display: grid;
++        gap: 8px;
++      }
++
++      .feedback li {
++        border: 1px solid #e5e7eb;
++        border-radius: 12px;
++        background: #fff;
++        padding: 10px 12px;
++        font-size: 13px;
++        color: #374151;
++      }
++
++      .feedback li b {
++        color: #1d4ed8;
++        margin-right: 6px;
++      }
++
++      .is-hidden {
++        display: none !important;
++      }
++
++      body.modal-open {
++        overflow: hidden;
++      }
++
++      .modal {
++        position: fixed;
++        inset: 0;
++        z-index: 120;
++        display: none;
++        align-items: center;
++        justify-content: center;
++        padding: 1.1rem;
++        background: rgba(16, 30, 62, 0.55);
++        backdrop-filter: blur(2px);
++      }
++
++      .modal.open {
++        display: flex;
++      }
++
++      .modal-card {
++        width: min(520px, 100%);
++        max-height: min(92vh, 860px);
++        overflow: auto;
++        border-radius: 18px;
++        border: 1px solid #d3def3;
++        background: #fff;
++        box-shadow: 0 18px 42px rgba(15, 34, 76, 0.24);
++        padding: 1.1rem;
++      }
++
++      .modal-head {
++        display: flex;
++        align-items: flex-start;
++        justify-content: space-between;
++        gap: 0.7rem;
++        margin-bottom: 0.86rem;
++      }
++
++      .modal-head h3 {
++        margin: 0;
++        color: #09318c;
++        font-size: 1.1rem;
++      }
++
++      .eyebrow {
++        display: inline-block;
++        margin-bottom: 0.2rem;
++        font-size: 0.72rem;
++        font-weight: 700;
++        letter-spacing: 0.08em;
++        color: #5677b8;
++      }
++
++      .signup-form {
++        display: grid;
++        gap: 0.68rem;
++      }
++
++      .input-row {
++        display: grid;
++        gap: 0.34rem;
++      }
++
++      .input-row label {
++        color: #2d4066;
++        font-size: 0.81rem;
++        font-weight: 700;
++      }
++
++      .input-row input,
++      .input-row textarea {
++        width: 100%;
++        border-radius: 10px;
++        border: 1px solid #cad7f0;
++        background: #fff;
++        padding: 0.67rem 0.72rem;
++        font-size: 0.9rem;
++        font-family: inherit;
++        color: var(--text);
++      }
++
++      .input-row textarea {
++        resize: vertical;
++      }
++
++      .input-row input:focus,
++      .input-row textarea:focus {
++        border-color: #6791e5;
++        outline: 0;
++        box-shadow: 0 0 0 3px rgba(8, 128, 240, 0.12);
++      }
++
++      .form-terms {
++        display: flex;
++        align-items: flex-start;
++        gap: 0.5rem;
++        color: #4d5d7a;
++        font-size: 0.82rem;
++        line-height: 1.58;
++      }
++
++      .form-terms input[type="checkbox"] {
++        margin-top: 0.18rem;
++        accent-color: var(--blue);
++      }
++
++      .terms-inline-link {
++        border: 0;
++        background: transparent;
++        padding: 0;
++        margin: 0;
++        color: var(--blue);
++        font-weight: 700;
++        text-decoration: underline;
++        cursor: pointer;
++      }
++
++      .terms-panel {
++        margin-top: 0.16rem;
++        border-radius: 10px;
++        border: 1px solid var(--line);
++        background: #f8fbff;
++        padding: 0.6rem;
++        max-height: 220px;
++        overflow: auto;
++      }
++
++      .terms-panel pre {
++        margin: 0;
++        white-space: pre-wrap;
++        font-family: "Noto Sans KR", sans-serif;
++        font-size: 0.77rem;
++        color: #40506c;
++        line-height: 1.56;
++      }
++
++      .terms-table {
++        width: 100%;
++        border-collapse: collapse;
++        font-size: 0.77rem;
++      }
++
++      .terms-table th,
++      .terms-table td {
++        border: 1px solid #d5e0f4;
++        padding: 0.46rem;
++        text-align: left;
++        vertical-align: top;
++      }
++
++      .terms-table th {
++        width: 28%;
++        background: #eef4ff;
++        color: #21417d;
++      }
++
++      .form-message {
++        margin: 0;
++        min-height: 1.1rem;
++        font-size: 0.82rem;
++        color: #4d5d7a;
++      }
++
++      .form-message.success {
++        color: var(--ok);
++      }
++
++      .form-message.error {
++        color: var(--warn);
++      }
++
++      .footer {
++        width: min(960px, calc(100% - 32px));
++        margin: 0 auto 18px;
++        padding-top: 14px;
++        border-top: 1px solid #e1e6f0;
++        color: #7f8da3;
++        font-size: 12px;
++        line-height: 1.6;
++        text-align: center;
++      }
++
++      @media (max-width: 860px) {
++        .visual {
++          min-height: 180px;
++        }
++
++        .score-row {
++          grid-template-columns: repeat(2, minmax(120px, 1fr));
++        }
++
++        .upload-bar {
++          grid-template-columns: 1fr 1fr;
++          grid-auto-rows: auto;
++          border-radius: 18px;
++          padding: 10px;
++        }
++
++        .file-name {
++          grid-column: 1 / -1;
++          order: 3;
++          padding: 0 4px 4px;
++        }
++
++        .btn {
++          width: 100%;
++        }
++
++        .top-nav .top-link-btn {
++          width: auto;
++        }
+       }
+-    </script>
+-    <style>
+-:root {
+-  --bg: #f1f5fc;
+-  --bg-soft: #f7f9fd;
+-  --surface: #ffffff;
+-  --surface-2: #f5f8ff;
+-  --text: #111a2e;
+-  --text-sub: #5f6b84;
+-  --line: #d7e0f0;
+-  --line-strong: #c0cde6;
+-  --primary: #0038b8;
+-  --primary-deep: #002878;
+-  --primary-soft: #0890f8;
+-  --radius-xl: 24px;
+-  --radius-lg: 18px;
+-  --radius-md: 12px;
+-  --radius-sm: 10px;
+-  --shadow-sm: 0 6px 20px rgba(16, 35, 72, 0.07);
+-  --shadow-md: 0 14px 36px rgba(16, 35, 72, 0.12);
+-  --shadow-lg: 0 24px 54px rgba(10, 31, 95, 0.2);
+-  --glow-soft: rgba(8, 128, 240, 0.14);
+-  --glow-deep: rgba(0, 56, 184, 0.2);
+-  --danger: #d93025;
+-  --success: #0f9d58;
+-}
+-
+-* {
+-  box-sizing: border-box;
+-}
+-
+-html {
+-  scroll-behavior: smooth;
+-}
+-
+-body {
+-  margin: 0;
+-  font-family: "Noto Sans KR", sans-serif;
+-  color: var(--text);
+-  background:
+-    radial-gradient(680px 320px at -3% -4%, rgba(8, 144, 248, 0.1), transparent 64%),
+-    radial-gradient(820px 380px at 104% 92%, rgba(0, 56, 184, 0.08), transparent 70%),
+-    linear-gradient(180deg, #fbfdff 0%, var(--bg) 44%, #edf2fa 100%);
+-}
+-
+-img {
+-  max-width: 100%;
+-  display: block;
+-}
+-
+-a {
+-  color: inherit;
+-  text-decoration: none;
+-}
+-
+-.container {
+-  width: min(1140px, calc(100% - 2.8rem));
+-  margin: 0 auto;
+-}
+-
+-.top-nav {
+-  position: sticky;
+-  top: 0;
+-  z-index: 50;
+-  background: rgba(251, 253, 255, 0.92);
+-  backdrop-filter: blur(10px);
+-  border-bottom: 1px solid rgba(192, 205, 230, 0.68);
+-  box-shadow: 0 4px 12px rgba(19, 40, 84, 0.05);
+-}
+-
+-.nav-inner {
+-  display: flex;
+-  align-items: center;
+-  justify-content: space-between;
+-  gap: 1rem;
+-  min-height: 68px;
+-}
+-
+-.brand {
+-  width: clamp(96px, 8.2vw, 122px);
+-  flex-shrink: 0;
+-  line-height: 0;
+-}
+-
+-.brand-logo {
+-  width: 100%;
+-  height: auto;
+-}
+-
+-.nav-links {
+-  display: flex;
+-  align-items: center;
+-  gap: 1.2rem;
+-  font-size: 0.85rem;
+-  color: var(--text-sub);
+-  font-weight: 700;
+-}
+-
+-.nav-links a {
+-  transition: color 0.15s ease;
+-}
+-
+-.nav-links a:hover {
+-  color: var(--primary);
+-}
+-
+-.nav-actions {
+-  display: flex;
+-  align-items: center;
+-  gap: 0.45rem;
+-  flex-wrap: wrap;
+-  justify-content: flex-end;
+-}
+-
+-.chip {
+-  display: inline-flex;
+-  align-items: center;
+-  border-radius: 999px;
+-  background: #e8efff;
+-  color: var(--primary-deep);
+-  border: 1px solid #c6d6ff;
+-  padding: 0.44rem 0.72rem;
+-  font-size: 0.78rem;
+-  font-weight: 700;
+-}
+-
+-.login-chip {
+-  max-width: 158px;
+-  white-space: nowrap;
+-  overflow: hidden;
+-  text-overflow: ellipsis;
+-}
+-
+-.btn {
+-  appearance: none;
+-  border: 1px solid transparent;
+-  border-radius: 12px;
+-  padding: 0.64rem 1rem;
+-  font-size: 0.86rem;
+-  font-weight: 700;
+-  cursor: pointer;
+-  display: inline-flex;
+-  align-items: center;
+-  justify-content: center;
+-  white-space: nowrap;
+-  transition: transform 0.18s ease, box-shadow 0.22s ease, background-color 0.18s ease, border-color 0.18s ease,
+-    color 0.18s ease;
+-}
+-
+-.btn:hover {
+-  transform: translateY(-1px);
+-}
+-
+-.btn-primary {
+-  color: #fff;
+-  border-color: #00349f;
+-  background: linear-gradient(145deg, #2386ea 0%, var(--primary) 56%, var(--primary-deep) 100%);
+-  box-shadow: 0 10px 24px rgba(0, 56, 184, 0.24);
+-}
+-
+-.btn-primary:hover {
+-  box-shadow: 0 14px 30px rgba(0, 56, 184, 0.3);
+-}
+-
+-.btn-outline {
+-  color: var(--primary-deep);
+-  background: #fff;
+-  border-color: #b8c9eb;
+-}
+-
+-.btn-ghost {
+-  color: #244377;
+-  background: #fff;
+-  border-color: #d3def2;
+-}
+-
+-.btn-ghost:hover,
+-.btn-outline:hover {
+-  background: #f7faff;
+-  border-color: #9bb3e4;
+-}
+-
+-section {
+-  padding: 4.8rem 0;
+-}
+-
+-.section-head {
+-  max-width: 760px;
+-  margin-bottom: 1.6rem;
+-}
+-
+-.eyebrow {
+-  display: inline-flex;
+-  align-items: center;
+-  margin-bottom: 0.78rem;
+-  border-radius: 999px;
+-  background: #e8efff;
+-  color: var(--primary);
+-  border: 1px solid #c6d6ff;
+-  padding: 0.32rem 0.72rem;
+-  font-size: 0.73rem;
+-  font-weight: 800;
+-  letter-spacing: 0.06em;
+-}
+-
+-h1,
+-h2,
+-h3 {
+-  margin: 0;
+-  line-height: 1.3;
+-}
+-
+-h1,
+-h2 {
+-  font-family: "Montserrat", "Noto Sans KR", sans-serif;
+-  letter-spacing: -0.02em;
+-}
+-
+-h1 {
+-  font-size: clamp(2rem, 3.2vw, 3.05rem);
+-}
+-
+-h2 {
+-  font-size: clamp(1.55rem, 2.4vw, 2.22rem);
+-}
+-
+-.copy,
+-.hero-sub {
+-  color: var(--text-sub);
+-  line-height: 1.72;
+-  font-size: clamp(0.93rem, 1.4vw, 1.01rem);
+-}
+-
+-#hero {
+-  padding-top: 3.2rem;
+-  padding-bottom: 3.8rem;
+-}
+-
+-.hero-grid {
+-  display: grid;
+-  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+-  gap: 1rem;
+-}
+-
+-.hero-copy,
+-.hero-card,
+-.metric,
+-.step,
+-.card,
+-.faq-item,
+-.cta-wrap {
+-  border: 1px solid var(--line);
+-  border-radius: var(--radius-lg);
+-  background: var(--surface);
+-  box-shadow: var(--shadow-sm);
+-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+-}
+-
+-.hero-copy {
+-  padding: clamp(1.5rem, 2.6vw, 2.25rem);
+-  background:
+-    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+-  box-shadow: 0 10px 24px rgba(11, 125, 232, 0.08), var(--shadow-sm);
+-  position: relative;
+-  overflow: hidden;
+-  isolation: isolate;
+-}
+-
+-.hero-copy::after {
+-  content: "";
+-  position: absolute;
+-  inset: auto -32% -62% auto;
+-  width: 360px;
+-  height: 360px;
+-  border-radius: 50%;
+-  background: radial-gradient(circle, rgba(8, 144, 248, 0.1) 0%, rgba(8, 144, 248, 0) 68%);
+-  pointer-events: none;
+-  z-index: -1;
+-}
+-
+-.hero-sub {
+-  margin-top: 0.95rem;
+-}
+-
+-.hero-actions {
+-  margin-top: 1.28rem;
+-  display: flex;
+-  gap: 0.56rem;
+-  flex-wrap: wrap;
+-}
+-
+-.hero-card {
+-  padding: 1.1rem;
+-  display: grid;
+-  gap: 0.58rem;
+-  background:
+-    linear-gradient(155deg, #f4f8ff 0%, #e9f1ff 48%, #dde9ff 100%);
+-  border-color: #bcd0f2;
+-  color: #1a2f57;
+-  box-shadow: 0 14px 34px rgba(26, 74, 150, 0.14);
+-  position: relative;
+-  overflow: hidden;
+-  isolation: isolate;
+-}
+-
+-.hero-card::before {
+-  content: "";
+-  position: absolute;
+-  inset: -42% auto auto -36%;
+-  width: 240px;
+-  height: 240px;
+-  background: radial-gradient(circle, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0) 66%);
+-  pointer-events: none;
+-  z-index: -1;
+-}
+-
+-.hero-card h3 {
+-  font-family: "Montserrat", "Noto Sans KR", sans-serif;
+-  font-size: 1.03rem;
+-  color: #0e3f8f;
+-}
+-
+-.hero-panel {
+-  border-radius: var(--radius-md);
+-  border: 1px solid #c9daf8;
+-  background: rgba(255, 255, 255, 0.68);
+-  padding: 0.74rem 0.84rem;
+-}
+-
+-.hero-panel strong {
+-  display: block;
+-  margin-bottom: 0.25rem;
+-  color: #184892;
+-  font-size: 0.86rem;
+-}
+-
+-.hero-panel p {
+-  margin: 0;
+-  color: #4e6288;
+-  font-size: 0.82rem;
+-  line-height: 1.58;
+-}
+-
+-#proof,
+-#reviews {
+-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(236, 243, 254, 0.42) 100%);
+-}
+-
+-.proof-grid {
+-  display: grid;
+-  grid-template-columns: repeat(4, minmax(0, 1fr));
+-  gap: 0.78rem;
+-}
+-
+-.metric {
+-  padding: 1rem 0.9rem;
+-  text-align: center;
+-  box-shadow: 0 8px 18px rgba(8, 117, 223, 0.08), var(--shadow-sm);
+-}
+-
+-.metric-value {
+-  display: block;
+-  font-family: "Montserrat", "Noto Sans KR", sans-serif;
+-  font-size: clamp(1.26rem, 2.1vw, 1.7rem);
+-  color: #052d86;
+-}
+-
+-.metric-label {
+-  margin-top: 0.28rem;
+-  color: var(--text-sub);
+-  font-size: 0.82rem;
+-}
+-
+-.process-grid {
+-  display: grid;
+-  grid-template-columns: repeat(4, minmax(0, 1fr));
+-  gap: 0.78rem;
+-}
+-
+-.step {
+-  padding: 0.96rem 0.9rem;
+-  box-shadow: 0 8px 18px rgba(15, 143, 247, 0.08), var(--shadow-sm);
+-}
+-
+-.step-num {
+-  width: 30px;
+-  height: 30px;
+-  border-radius: 999px;
+-  display: inline-flex;
+-  align-items: center;
+-  justify-content: center;
+-  margin-bottom: 0.56rem;
+-  color: #fff;
+-  font-family: "Montserrat", "Noto Sans KR", sans-serif;
+-  font-size: 0.8rem;
+-  font-weight: 700;
+-  background: linear-gradient(145deg, var(--primary-soft), var(--primary));
+-}
+-
+-.step h3 {
+-  font-size: 0.98rem;
+-  margin-bottom: 0.36rem;
+-}
+-
+-.step p {
+-  margin: 0;
+-  color: var(--text-sub);
+-  font-size: 0.84rem;
+-  line-height: 1.62;
+-}
+-
+-.pricing-wrap {
+-  display: grid;
+-  grid-template-columns: repeat(2, minmax(0, 1fr));
+-  gap: 0.82rem;
+-  align-items: stretch;
+-}
+-
+-.card {
+-  padding: 1rem;
+-}
+-
+-.auth-note {
+-  margin-top: 0.62rem;
+-  display: inline-flex;
+-  align-items: center;
+-  border-radius: 10px;
+-  border: 1px solid #c5d8ff;
+-  background: #eaf2ff;
+-  color: #1f3f79;
+-  padding: 0.44rem 0.66rem;
+-  font-size: 0.8rem;
+-  font-weight: 700;
+-}
+-
+-.pricing-table {
+-  width: 100%;
+-  border-collapse: collapse;
+-  border-radius: 12px;
+-  overflow: hidden;
+-  border: 1px solid var(--line);
+-}
+-
+-.pricing-table th,
+-.pricing-table td {
+-  padding: 0.75rem 0.66rem;
+-  border-bottom: 1px solid var(--line);
+-  text-align: left;
+-  font-size: 0.85rem;
+-}
+-
+-.pricing-table th {
+-  background: #e9f0ff;
+-  color: #18386f;
+-  font-size: 0.79rem;
+-}
+-
+-.pricing-table tbody tr:last-child td {
+-  border-bottom: 0;
+-}
+-
+-.pricing-emphasis-title {
+-  margin: 0 0 0.45rem;
+-  font-family: "Montserrat", "Noto Sans KR", sans-serif;
+-  font-size: clamp(1.18rem, 1.9vw, 1.42rem);
+-  color: #0b2f87;
+-}
+-
+-.pricing-caption {
+-  margin: 0 0 0.7rem;
+-  color: #5b6e91;
+-  font-size: 0.86rem;
+-  line-height: 1.62;
+-}
+-
+-.pricing-badges {
+-  display: flex;
+-  flex-wrap: wrap;
+-  gap: 0.44rem;
+-  margin-bottom: 0.72rem;
+-}
+-
+-.pricing-badge {
+-  display: inline-flex;
+-  align-items: center;
+-  border-radius: 999px;
+-  border: 1px solid #bfd2f7;
+-  background: #eef4ff;
+-  color: #17478f;
+-  font-size: 0.76rem;
+-  font-weight: 700;
+-  padding: 0.3rem 0.62rem;
+-}
+-
+-.pricing-disclaimer {
+-  margin: 0.62rem 0 0;
+-  color: #647495;
+-  font-size: 0.76rem;
+-  line-height: 1.55;
+-}
+-
+-.pricing-note {
+-  background: linear-gradient(180deg, #f6f9ff 0%, #ffffff 100%);
+-  display: flex;
+-  flex-direction: column;
+-}
+-
+-.pricing-wrap > .card {
+-  height: 100%;
+-  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+-}
+-
+-.pricing-note .hero-actions {
+-  margin-top: auto !important;
+-  padding-top: 1rem;
+-  margin-bottom: 0;
+-}
+-
+-.pricing-note h3 {
+-  color: #0b2f87;
+-  margin-bottom: 0.45rem;
+-}
+-
+-.checklist {
+-  margin: 0.78rem 0 0;
+-  padding: 0;
+-  list-style: none;
+-  display: grid;
+-  gap: 0.42rem;
+-}
+-
+-.pricing-note .checklist {
+-  margin-bottom: 0;
+-}
+-
+-.checklist li {
+-  display: flex;
+-  gap: 0.44rem;
+-  color: #2a446f;
+-  font-size: 0.86rem;
+-}
+-
+-.check {
+-  color: #0875df;
+-  font-weight: 800;
+-}
+-
+-.media-network {
+-  position: relative;
+-}
+-
+-.media-film {
+-  position: relative;
+-  overflow: hidden;
+-  border-radius: 24px;
+-  border: 1px solid rgba(132, 156, 194, 0.26);
+-  padding: 0.6rem 0;
+-  background:
+-    radial-gradient(115% 160% at 0% 0%, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 58%),
+-    linear-gradient(180deg, #f3f7ff 0%, #e9f0fb 100%);
+-  box-shadow: 0 14px 28px rgba(16, 45, 96, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+-}
+-
+-.media-film-mask {
+-  position: absolute;
+-  inset: 0;
+-  background:
+-    linear-gradient(90deg, rgba(233, 240, 252, 0.98) 0%, rgba(233, 240, 252, 0) 11%, rgba(233, 240, 252, 0) 89%, rgba(233, 240, 252, 0.98) 100%);
+-  z-index: 1;
+-  pointer-events: none;
+-}
+-
+-.media-track-wrap {
+-  display: flex;
+-  width: max-content;
+-  animation: media-scroll 68s linear infinite;
+-}
+-
+-.media-track {
+-  display: flex;
+-  align-items: center;
+-  gap: 0.95rem;
+-  padding: 1.28rem 1.22rem;
+-}
+-
+-.media-logo {
+-  --accent: #1f457f;
+-  min-width: 274px;
+-  height: 118px;
+-  border-radius: 20px;
+-  border: 1px solid rgba(148, 168, 200, 0.26);
+-  background: linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%);
+-  box-shadow: 0 12px 24px rgba(16, 44, 96, 0.11);
+-  display: inline-flex;
+-  align-items: center;
+-  justify-content: center;
+-  padding: 0.7rem 1.15rem 0.5rem;
+-  position: relative;
+-  overflow: hidden;
+-}
+-
+-.media-logo::before {
+-  content: "";
+-  position: absolute;
+-  left: 0;
+-  right: 0;
+-  top: 0;
+-  height: 4px;
+-  background: linear-gradient(90deg, var(--accent) 0%, #eef3fd 100%);
+-  opacity: 0.62;
+-  pointer-events: none;
+-}
+-
+-.media-logo::after {
+-  content: "";
+-  position: absolute;
+-  inset: -140% auto auto -36%;
+-  width: 170px;
+-  height: 280px;
+-  background: linear-gradient(110deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.62) 52%, rgba(255, 255, 255, 0) 100%);
+-  transform: rotate(15deg);
+-  opacity: 0.68;
+-}
+-
+-.media-logo img {
+-  width: 100%;
+-  max-width: 214px;
+-  max-height: 62px;
+-  object-fit: contain;
+-  filter: drop-shadow(0 1px 1px rgba(14, 30, 68, 0.06));
+-}
+-
+-.media-logo.google img {
+-  max-height: 68px;
+-}
+-
+-.media-logo.nate {
+-  --accent: #ee3f3f;
+-}
+-
+-.media-logo.naver {
+-  --accent: #03c75a;
+-}
+-
+-.media-logo.daum {
+-  --accent: #1665ff;
+-}
+-
+-.media-logo.google {
+-  --accent: #4285f4;
+-}
+-
+-.media-logo.chosun {
+-  --accent: #0f3a8a;
+-}
+-
+-.media-logo.joongang {
+-  --accent: #163a84;
+-}
+-
+-.media-logo.donga {
+-  --accent: #0f4a96;
+-}
+-
+-.media-logo.hankyoreh {
+-  --accent: #3f4f6f;
+-}
+-
+-.media-logo.maeil {
+-  --accent: #2d57a9;
+-}
+-
+-.media-logo.reuters {
+-  --accent: #ff6a00;
+-}
+-
+-.faq-list {
+-  display: grid;
+-  gap: 0.6rem;
+-}
+-
+-.faq-item {
+-  overflow: hidden;
+-  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+-}
+-
+-.faq-question {
+-  width: 100%;
+-  border: 0;
+-  background: transparent;
+-  cursor: pointer;
+-  display: flex;
+-  align-items: center;
+-  justify-content: space-between;
+-  gap: 0.7rem;
+-  text-align: left;
+-  padding: 0.9rem 0.95rem;
+-  color: var(--text);
+-  font-size: 0.9rem;
+-  font-weight: 700;
+-}
+-
+-.faq-question span:last-child {
+-  width: 22px;
+-  height: 22px;
+-  border-radius: 999px;
+-  background: #e9f0ff;
+-  border: 1px solid #c6d6ff;
+-  color: #085dcb;
+-  display: inline-flex;
+-  align-items: center;
+-  justify-content: center;
+-  flex-shrink: 0;
+-}
+-
+-.faq-panel {
+-  max-height: 0;
+-  overflow: hidden;
+-  transition: max-height 0.24s ease;
+-}
+-
+-.faq-panel-inner {
+-  border-top: 1px solid var(--line);
+-  padding: 0.72rem 0.95rem 0.95rem;
+-  color: var(--text-sub);
+-  line-height: 1.66;
+-  font-size: 0.87rem;
+-}
+-
+-#contact {
+-  background: linear-gradient(180deg, rgba(234, 242, 255, 0.45) 0%, rgba(255, 255, 255, 0.95) 100%);
+-}
+-
+-.cta-wrap {
+-  padding: clamp(1.1rem, 2.2vw, 1.7rem);
+-  background: linear-gradient(140deg, #eef4ff 0%, #ffffff 65%);
+-}
+-
+-footer {
+-  border-top: 1px solid rgba(192, 205, 230, 0.72);
+-  background: #f4f8fe;
+-}
+-
+-.footer-line {
+-  display: flex;
+-  flex-wrap: wrap;
+-  gap: 0.5rem 1.1rem;
+-  padding: 1.1rem 0 1.3rem;
+-  color: #60708b;
+-  font-size: 0.78rem;
+-}
+-
+-.modal {
+-  position: fixed;
+-  inset: 0;
+-  z-index: 120;
+-  display: none;
+-  align-items: center;
+-  justify-content: center;
+-  padding: 1.1rem;
+-  background: rgba(16, 30, 62, 0.55);
+-  backdrop-filter: blur(2px);
+-}
+-
+-.modal.open {
+-  display: flex;
+-}
+-
+-.modal-card {
+-  width: min(520px, 100%);
+-  max-height: min(92vh, 860px);
+-  overflow: auto;
+-  border-radius: 18px;
+-  border: 1px solid #d3def3;
+-  background: #fff;
+-  box-shadow: var(--shadow-lg);
+-  padding: 1.1rem;
+-}
+-
+-.modal-head {
+-  display: flex;
+-  align-items: flex-start;
+-  justify-content: space-between;
+-  gap: 0.7rem;
+-  margin-bottom: 0.86rem;
+-}
+-
+-.modal-head h3 {
+-  font-family: "Montserrat", "Noto Sans KR", sans-serif;
+-  color: #09318c;
+-  font-size: 1.1rem;
+-}
+-
+-.signup-form {
+-  display: grid;
+-  gap: 0.68rem;
+-}
+-
+-.input-row {
+-  display: grid;
+-  gap: 0.34rem;
+-}
+-
+-.input-row label {
+-  color: #2d4066;
+-  font-size: 0.81rem;
+-  font-weight: 700;
+-}
+-
+-.input-row input,
+-.input-row textarea {
+-  width: 100%;
+-  border-radius: 10px;
+-  border: 1px solid #cad7f0;
+-  background: #fff;
+-  padding: 0.67rem 0.72rem;
+-  font-size: 0.9rem;
+-  font-family: inherit;
+-  color: var(--text);
+-}
+-
+-.input-row textarea {
+-  resize: vertical;
+-}
+-
+-.input-row input:focus,
+-.input-row textarea:focus {
+-  border-color: #6791e5;
+-  outline: 0;
+-  box-shadow: 0 0 0 3px rgba(8, 128, 240, 0.12);
+-}
+-
+-.form-terms {
+-  display: flex;
+-  align-items: flex-start;
+-  gap: 0.5rem;
+-  color: #4d5d7a;
+-  font-size: 0.82rem;
+-  line-height: 1.58;
+-}
+-
+-.form-terms input[type="checkbox"] {
+-  margin-top: 0.18rem;
+-  accent-color: var(--primary);
+-}
+-
+-.terms-inline-link {
+-  border: 0;
+-  background: transparent;
+-  padding: 0;
+-  margin: 0;
+-  color: var(--primary);
+-  font-weight: 700;
+-  text-decoration: underline;
+-  cursor: pointer;
+-}
+-
+-.terms-panel {
+-  margin-top: 0.16rem;
+-  border-radius: 10px;
+-  border: 1px solid var(--line);
+-  background: #f8fbff;
+-  padding: 0.6rem;
+-  max-height: 220px;
+-  overflow: auto;
+-}
+-
+-.terms-panel pre {
+-  margin: 0;
+-  white-space: pre-wrap;
+-  font-family: "Noto Sans KR", sans-serif;
+-  font-size: 0.77rem;
+-  color: #40506c;
+-  line-height: 1.56;
+-}
+-
+-.terms-table {
+-  width: 100%;
+-  border-collapse: collapse;
+-  font-size: 0.77rem;
+-}
+-
+-.terms-table th,
+-.terms-table td {
+-  border: 1px solid #d5e0f4;
+-  padding: 0.46rem;
+-  text-align: left;
+-  vertical-align: top;
+-}
+-
+-.terms-table th {
+-  width: 28%;
+-  background: #eef4ff;
+-  color: #21417d;
+-}
+-
+-.form-message {
+-  margin: 0.12rem 0 0;
+-  min-height: 1.15rem;
+-  font-size: 0.82rem;
+-  font-weight: 600;
+-  color: #687896;
+-}
+-
+-.form-message.error {
+-  color: var(--danger);
+-}
+-
+-.form-message.success {
+-  color: var(--success);
+-}
+-
+-.is-hidden {
+-  display: none !important;
+-}
+-
+-body.modal-open {
+-  overflow: hidden;
+-}
+-
+-.reveal {
+-  opacity: 0;
+-  transform: translateY(14px) scale(0.988);
+-  filter: blur(2.5px);
+-  transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1), transform 0.58s cubic-bezier(0.22, 1, 0.36, 1),
+-    filter 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+-}
+-
+-.reveal.on {
+-  opacity: 1;
+-  transform: none;
+-  filter: blur(0);
+-}
+-
+-.hero-card.reveal.on {
+-  animation: hero-card-float 6.4s ease-in-out infinite;
+-}
+-
+-#contact .cta-wrap.reveal.on {
+-  animation: cta-glow 5.8s ease-in-out infinite;
+-}
+-
+-@keyframes hero-card-float {
+-  0% {
+-    transform: translateY(0px);
+-    box-shadow: 0 14px 34px rgba(26, 74, 150, 0.14);
+-  }
+-  50% {
+-    transform: translateY(-4px);
+-    box-shadow: 0 20px 42px rgba(26, 74, 150, 0.18);
+-  }
+-  100% {
+-    transform: translateY(0px);
+-    box-shadow: 0 14px 34px rgba(26, 74, 150, 0.14);
+-  }
+-}
+-
+-@keyframes cta-glow {
+-  0% {
+-    box-shadow: var(--shadow-sm);
+-  }
+-  50% {
+-    box-shadow: 0 14px 32px rgba(8, 128, 240, 0.18);
+-  }
+-  100% {
+-    box-shadow: var(--shadow-sm);
+-  }
+-}
+-
+-@keyframes media-scroll {
+-  from {
+-    transform: translateX(0);
+-  }
+-  to {
+-    transform: translateX(-50%);
+-  }
+-}
+-
+-@media (hover: hover) and (pointer: fine) {
+-  .metric:hover,
+-  .step:hover,
+-  .faq-item:hover,
+-  .pricing-wrap > .card:hover {
+-    transform: translateY(-3px);
+-    border-color: #bfd0ee;
+-    box-shadow: 0 14px 28px rgba(16, 44, 96, 0.12);
+-  }
+-
+-  .media-logo:hover {
+-    transform: translateY(-4px) scale(1.015);
+-    border-color: rgba(152, 175, 210, 0.34);
+-    box-shadow: 0 16px 26px rgba(11, 36, 78, 0.14);
+-  }
+-}
+-
+-@media (prefers-reduced-motion: reduce) {
+-  .reveal,
+-  .reveal.on,
+-  .hero-card.reveal.on,
+-  #contact .cta-wrap.reveal.on,
+-  .btn,
+-  .metric,
+-  .step,
+-  .media-track-wrap,
+-  .media-logo,
+-  .faq-item,
+-  .pricing-wrap > .card {
+-    transition: none !important;
+-    animation: none !important;
+-    transform: none !important;
+-    filter: none !important;
+-  }
+-}
+-
+-@media (max-width: 1120px) {
+-  .hero-grid,
+-  .pricing-wrap {
+-    grid-template-columns: 1fr;
+-  }
+-
+-  .process-grid {
+-    grid-template-columns: repeat(2, minmax(0, 1fr));
+-  }
+-
+-  .proof-grid {
+-    grid-template-columns: repeat(2, minmax(0, 1fr));
+-  }
+-}
+-
+-@media (max-width: 900px) {
+-  .container {
+-    width: min(1140px, calc(100% - 1.5rem));
+-  }
+-
+-  .nav-links {
+-    display: none;
+-  }
+-
+-  .nav-inner {
+-    min-height: 62px;
+-  }
+-
+-  section {
+-    padding: 3.9rem 0;
+-  }
+-
+-  #hero {
+-    padding-top: 2.5rem;
+-  }
+-
+-  .hero-copy,
+-  .hero-card,
+-  .card,
+-  .metric,
+-  .step,
+-  .faq-item {
+-    border-radius: 14px;
+-  }
+-}
+-
+-@media (max-width: 680px) {
+-  .btn {
+-    padding: 0.62rem 0.86rem;
+-    font-size: 0.83rem;
+-  }
+-
+-  .nav-actions {
+-    gap: 0.34rem;
+-  }
+-
+-  .proof-grid,
+-  .process-grid {
+-    grid-template-columns: 1fr;
+-  }
+-
+-  .media-film {
+-    border-radius: 20px;
+-  }
+-
+-  .media-track {
+-    gap: 0.68rem;
+-    padding: 1.05rem 0.74rem;
+-  }
+-
+-  .media-logo {
+-    min-width: 206px;
+-    height: 96px;
+-    padding: 0.66rem 0.82rem 0.48rem;
+-  }
+-
+-  .media-logo img {
+-    max-width: 162px;
+-    max-height: 48px;
+-  }
+-
+-  .media-logo.google img {
+-    max-height: 54px;
+-  }
+-
+-  .hero-actions {
+-    flex-direction: column;
+-    align-items: stretch;
+-  }
+-
+-  .hero-actions .btn {
+-    width: 100%;
+-  }
+-
+-  .footer-line {
+-    font-size: 0.74rem;
+-    padding: 1rem 0 1.2rem;
+-  }
+-
+-  .modal {
+-    padding: 0.5rem;
+-    align-items: flex-end;
+-  }
+-
+-  .modal-card {
+-    max-height: 95vh;
+-    border-radius: 14px 14px 8px 8px;
+-    padding: 0.94rem;
+-  }
+-
+-  .modal-head .btn {
+-    padding: 0.42rem 0.62rem;
+-    font-size: 0.77rem;
+-  }
+-
+-  .eyebrow {
+-    font-size: 0.7rem;
+-  }
+-
+-  .terms-panel {
+-    max-height: 176px;
+-  }
+-}
+     </style>
+   </head>
+   <body>
+-    <header class="top-nav" aria-label="메인 내비게이션">
+-      <div class="container nav-inner">
+-        <a class="brand" href="#hero" aria-label="HWIK 홈으로 이동">
+-          <img class="brand-logo" src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/hwik-logo-wordmark-primary.png" alt="HWIK" />
+-        </a>
+-        <nav class="nav-links" aria-label="페이지 섹션">
+-          <a href="#reviews">노출 네트워크</a>
+-          <a href="#pricing">매체/단가</a>
+-          <a href="#process">서비스 절차</a>
+-          <a href="#proof">핵심 장점</a>
+-          <a href="#faq">FAQ</a>
+-          <a href="#contact">문의</a>
+-        </nav>
+-        <div class="nav-actions">
+-          <button class="btn btn-ghost" type="button" data-open-login id="top-login-button">로그인</button>
+-          <button class="btn btn-ghost" type="button" data-open-signup id="top-signup-button">회원가입</button>
+-          <span class="chip login-chip is-hidden" id="nav-login-state" aria-live="polite"></span>
+-          <button class="btn btn-ghost is-hidden" type="button" id="logout-button">로그아웃</button>
+-        </div>
+-      </div>
+-    </header>
+-
+-    <main>
+-      <section id="hero" aria-labelledby="hero-title">
+-        <div class="container hero-grid">
+-          <div class="hero-copy reveal">
+-            <span class="eyebrow">MEMBER-ONLY SELF ORDER</span>
+-            <h1 id="hero-title">
+-              복잡한 언론홍보<br />
+-              HWIK으로 빠르고 간편하게
+-            </h1>
+-            <p class="hero-sub">
+-              회원가입 후 매체별 단가를 확인하고 원하는 매체를 직접 선택해 바로 주문하세요.<br />
+-              주문 접수부터 진행 상태, 포인트 현황까지 대시보드에서 실시간으로 확인할 수 있습니다.
+-            </p>
+-            <div class="hero-actions">
+-              <a class="btn btn-primary" href="#contact" data-cta="consult">셀프주문 시작 안내</a>
+-              <button class="btn btn-outline" type="button" data-open-signup>회원가입 후 셀프주문</button>
++    <div class="page">
++      <nav class="top-nav" aria-label="빠른 이동">
++        <a href="/self-order">언론홍보</a>
++        <button id="openSignupBtn" class="top-link-btn" type="button">회원가입</button>
++      </nav>
++
++      <main class="main">
++        <section class="hero" aria-label="원고 검수">
++          <div id="visual" class="visual" aria-live="polite">
++            <div class="logo-stage">
++              <img
++                class="logo-image"
++                src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png"
++                alt="DLIVER"
++              />
++            </div>
++            <div class="result-stage" id="resultStage">
++              <div class="result-panel">
++                <div class="score-row">
++                  <div class="score-chip"><b>승인가능성</b><strong id="approvalScore">-</strong></div>
++                  <div class="score-chip"><b>리스크점수</b><strong id="riskScore">-</strong></div>
++                  <div class="score-chip"><b>가독성 점수</b><strong id="readabilityScore">-</strong></div>
++                  <div class="score-chip"><b>브랜딩 적합도</b><strong id="brandingScore">-</strong></div>
++                </div>
++                <p class="summary" id="summaryText">검수 완료 후 요약이 표시됩니다.</p>
++                <ul class="risk" id="riskList">
++                  <li>법: -</li>
++                  <li>표시: -</li>
++                  <li>과장: -</li>
++                  <li>비방: -</li>
++                </ul>
++              </div>
+             </div>
+           </div>
+ 
+-          <article class="hero-card reveal" aria-label="서비스 핵심 포인트">
+-            <h3>로그인 후 3분 내 주문 등록</h3>
+-            <div class="hero-panel">
+-              <strong>01. 매체 직접 선택</strong>
+-              <p>회원 전용 매체 목록에서 단가와 특성을 비교한 뒤 원하는 매체를 직접 고를 수 있습니다.</p>
+-            </div>
+-            <div class="hero-panel">
+-              <strong>02. 원고 첨부 후 주문 등록</strong>
+-              <p>작성 완료한 원고를 첨부하고 요청사항을 입력하면 즉시 주문 접수가 완료됩니다.</p>
++          <form id="reviewForm" class="upload-form">
++            <div class="upload-bar">
++              <label class="file-pick">
++                파일 첨부
++                <input id="draftFile" name="draftFile" type="file" accept=".doc,.docx,.pdf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required />
++              </label>
++              <div id="fileName" class="file-name">선택된 파일 없음</div>
++              <button id="analyzeBtn" class="btn btn-primary" type="submit">검수</button>
++              <button id="rescoreBtn" class="btn btn-ghost" type="button" hidden>수정 후 재점수</button>
+             </div>
+-            <div class="hero-panel">
+-              <strong>03. 대시보드 실시간 확인</strong>
+-              <p>포인트 사용 내역과 주문 상태를 실시간으로 확인하고, 결과까지 한 번에 관리할 수 있습니다.</p>
++            <p class="support-note">지원포맷:DOC/DOCX/PDF , 비회원 체험1회 제공, 이후 회원 전환시 재점수 가능, 검수결과 30일 보관 후 자동 정리</p>
++            <p id="statusText" class="status">파일을 첨부한 뒤 검수를 시작해 주세요.</p>
++            <div id="memberEntryBox" class="member-entry" hidden>
++              <p class="member-entry-note">회원가입이 완료되었습니다. 아래 버튼으로 회원전용페이지로 이동하세요.</p>
++              <a class="btn btn-ghost" href="/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/">회원전용페이지 이동</a>
+             </div>
+-          </article>
+-        </div>
+-      </section>
+-
+-      <section id="reviews" aria-labelledby="reviews-title">
+-        <div class="container">
+-          <div class="section-head reveal">
+-            <span class="eyebrow">MEDIA NETWORK</span>
+-            <h2 id="reviews-title">주요 포털·메이저 언론사 노출 네트워크</h2>
+-            <p class="copy">HWIK 주문은 주요 포털과 메이저 언론사 노출 전략을 기준으로 운영됩니다.</p>
+-          </div>
++          </form>
+ 
+-          <div class="media-network reveal" aria-label="주요 노출 채널 애니메이션">
+-            <div class="media-film">
+-              <div class="media-film-mask" aria-hidden="true"></div>
+-              <div class="media-track-wrap">
+-                <div class="media-track">
+-                  <span class="media-logo naver"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/naver.svg" alt="NAVER 로고" loading="lazy" /></span>
+-                  <span class="media-logo daum"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/daum.svg" alt="DAUM 로고" loading="lazy" /></span>
+-                  <span class="media-logo nate"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/nate.svg" alt="NATE 로고" loading="lazy" /></span>
+-                  <span class="media-logo google"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/google.svg" alt="Google 로고" loading="lazy" /></span>
+-                  <span class="media-logo chosun"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/chosun.svg" alt="조선일보 로고" loading="lazy" /></span>
+-                  <span class="media-logo joongang"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/joongang.svg" alt="중앙일보 로고" loading="lazy" /></span>
+-                  <span class="media-logo donga"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/donga.svg" alt="동아일보 로고" loading="lazy" /></span>
+-                  <span class="media-logo hankyoreh"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/hankyoreh.svg" alt="한겨레 로고" loading="lazy" /></span>
+-                  <span class="media-logo maeil"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/maeil.svg" alt="매일경제 로고" loading="lazy" /></span>
+-                  <span class="media-logo reuters"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/reuters.svg" alt="Reuters 로고" loading="lazy" /></span>
+-                </div>
+-                <div class="media-track" aria-hidden="true">
+-                  <span class="media-logo naver"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/naver.svg" alt="" loading="lazy" /></span>
+-                  <span class="media-logo daum"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/daum.svg" alt="" loading="lazy" /></span>
+-                  <span class="media-logo nate"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/nate.svg" alt="" loading="lazy" /></span>
+-                  <span class="media-logo google"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/google.svg" alt="" loading="lazy" /></span>
+-                  <span class="media-logo chosun"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/chosun.svg" alt="" loading="lazy" /></span>
+-                  <span class="media-logo joongang"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/joongang.svg" alt="" loading="lazy" /></span>
+-                  <span class="media-logo donga"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/donga.svg" alt="" loading="lazy" /></span>
+-                  <span class="media-logo hankyoreh"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/hankyoreh.svg" alt="" loading="lazy" /></span>
+-                  <span class="media-logo maeil"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/maeil.svg" alt="" loading="lazy" /></span>
+-                  <span class="media-logo reuters"><img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/media-logos/reuters.svg" alt="" loading="lazy" /></span>
+-                </div>
+-              </div>
++          <ul id="feedbackList" class="feedback" aria-live="polite"></ul>
++        </section>
++      </main>
++
++      <div class="modal" id="signup-modal" aria-hidden="true">
++        <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="signup-title">
++          <div class="modal-head">
++            <div>
++              <span class="eyebrow">MEMBER SIGNUP</span>
++              <h3 id="signup-title">HWIK 회원가입</h3>
+             </div>
+-          </div>
+-        </div>
+-      </section>
+-
+-      <section id="pricing" aria-labelledby="pricing-title">
+-        <div class="container">
+-          <div class="section-head reveal">
+-            <span class="eyebrow">MEDIA & PRICING</span>
+-            <h2 id="pricing-title">회원전용 매체/단가 안내</h2>
+-            <p class="copy">회원가입 후 매체별 단가를 확인하고, 셀프주문으로 즉시 접수할 수 있습니다.</p>
+-            <p class="auth-note" id="member-status">회원전용 서비스입니다. 회원가입 후 단가 확인과 셀프주문이 가능합니다.</p>
++            <button class="btn btn-ghost" type="button" data-close-signup>닫기</button>
+           </div>
+ 
+-          <div class="pricing-wrap">
+-            <article class="card reveal" aria-label="매체 단가 문의 안내">
+-              <h3 class="pricing-emphasis-title">송출 단가 최저 5만원부터 시작</h3>
+-              <p class="pricing-caption">
+-                매체 성격과 노출 범위에 따라 단가가 달라집니다. 회원가입 후 조건별 시작단가를 확인하고 바로 주문할 수 있습니다.
+-              </p>
+-              <div class="pricing-badges" aria-label="단가 핵심 포인트">
+-                <span class="pricing-badge">최저 50,000원부터</span>
+-                <span class="pricing-badge">매체별 맞춤 단가</span>
+-                <span class="pricing-badge">회원 전용 즉시 확인</span>
+-              </div>
+-              <table class="pricing-table">
+-                <thead>
++          <p class="copy" style="margin-bottom: 1rem">가입 완료 즉시 회원전용 단가 확인과 셀프주문을 시작할 수 있습니다.</p>
++
++          <form class="signup-form" id="signup-form" novalidate>
++            <div class="input-row">
++              <label for="signup-login-id">아이디</label>
++              <input
++                id="signup-login-id"
++                name="loginId"
++                type="text"
++                autocomplete="username"
++                required
++              />
++            </div>
++            <div class="input-row">
++              <label for="signup-name">이름</label>
++              <input id="signup-name" name="name" type="text" placeholder="홍길동" required />
++            </div>
++            <div class="input-row">
++              <label for="signup-email">이메일</label>
++              <input id="signup-email" name="email" type="email" placeholder="name@company.com" required />
++            </div>
++            <div class="input-row">
++              <label for="signup-company">회사명</label>
++              <input id="signup-company" name="company" type="text" placeholder="HWIK COMPANY" required />
++            </div>
++            <div class="input-row">
++              <label for="signup-password">비밀번호</label>
++              <input
++                id="signup-password"
++                name="password"
++                type="password"
++                placeholder="비밀번호 8자 이상"
++                autocomplete="new-password"
++                required
++              />
++            </div>
++            <div class="input-row">
++              <label for="signup-confirm-password">비밀번호 확인</label>
++              <input
++                id="signup-confirm-password"
++                name="confirmPassword"
++                type="password"
++                placeholder="비밀번호를 다시 입력하세요"
++                autocomplete="new-password"
++                required
++              />
++            </div>
++            <label class="form-terms" for="signup-terms">
++              <input id="signup-terms" name="terms" type="checkbox" required />
++              <span>
++                <button
++                  class="terms-inline-link"
++                  type="button"
++                  data-toggle-signup-privacy
++                  aria-expanded="false"
++                  aria-controls="signup-privacy-panel"
++                >
++                  개인정보 수집
++                </button>
++                및 서비스 안내 수신에 동의합니다.
++              </span>
++            </label>
++            <div class="terms-panel is-hidden" id="signup-privacy-panel" aria-hidden="true">
++              <table class="terms-table" aria-label="개인정보 수집 안내">
++                <tbody>
+                   <tr>
+-                    <th>상품 유형</th>
+-                    <th>시작 단가</th>
+-                    <th>운영 포인트</th>
++                    <th scope="row">개인정보처리방침안내</th>
++                    <td>회원가입 및 서비스 운영을 위해 아래 항목을 수집합니다.</td>
+                   </tr>
+-                </thead>
+-                <tbody>
+                   <tr>
+-                    <td>기본 기사형</td>
+-                    <td>50,000원~</td>
+-                    <td>브랜드/서비스 기본 노출</td>
++                    <th scope="row">목적</th>
++                    <td>이용자 식별 및 본인여부 확인 / 고객서비스 이용에 관한 통지 및 CS대응을 위한 이용자 식별</td>
+                   </tr>
+                   <tr>
+-                    <td>확장 노출형</td>
+-                    <td>120,000원~</td>
+-                    <td>카테고리 확장 송출</td>
++                    <th scope="row">항목</th>
++                    <td>아이디, 이름, 비밀번호 / 연락처(이메일)</td>
+                   </tr>
+                   <tr>
+-                    <td>프리미엄 패키지형</td>
+-                    <td>300,000원~</td>
+-                    <td>전략형 캠페인 운영</td>
++                    <th scope="row">보유기간</th>
++                    <td>회원 탈퇴 시까지 / 회원 탈퇴 시까지</td>
+                   </tr>
+                 </tbody>
+               </table>
+-              <p class="pricing-disclaimer">실제 견적은 원고 주제/매체 조합/희망 일정에 따라 달라질 수 있습니다.</p>
+-            </article>
+-
+-            <aside class="card pricing-note reveal" aria-label="단가 정책 안내">
+-              <h3>회원전용 주문 기준</h3>
+-              <p class="copy">
+-                셀프주문 기반으로 매체를 선택하면 사용 포인트가 자동 반영되며, 원고 첨부와 주문 등록을 한 번에 처리합니다.
+-                주문 이후 상태 변경도 대시보드에서 실시간으로 확인할 수 있습니다.
+-              </p>
+-              <ul class="checklist">
+-                <li><span class="check">✓</span> 회원 로그인 시 매체 단가 즉시 확인</li>
+-                <li><span class="check">✓</span> 매체 선택 시 사용 포인트 자동 반영</li>
+-                <li><span class="check">✓</span> 원고 첨부 후 주문 상태 실시간 추적</li>
+-                <li><span class="check">✓</span> 주문 완료 후 원고 검열 및 송출</li>
+-              </ul>
+-              <div class="hero-actions">
+-                <button class="btn btn-primary" type="button" data-open-signup>회원가입 후 셀프주문 시작</button>
+-              </div>
+-            </aside>
+-          </div>
+-        </div>
+-      </section>
+-
+-      <section id="process" aria-labelledby="process-title">
+-        <div class="container">
+-          <div class="section-head reveal">
+-            <span class="eyebrow">PROCESS</span>
+-            <h2 id="process-title">가입 후 바로 주문하는 4단계</h2>
+-            <p class="copy">회원가입 이후 상담 대기 없이, 필요한 순간 즉시 셀프주문을 진행할 수 있습니다.</p>
+-          </div>
+-
+-          <div class="process-grid">
+-            <article class="step reveal">
+-              <span class="step-num">01</span>
+-              <h3>회원가입/로그인</h3>
+-              <p>회원 인증 후 전용 포털에 진입하면 매체 단가와 주문 기능을 바로 사용할 수 있습니다.</p>
+-            </article>
+-            <article class="step reveal">
+-              <span class="step-num">02</span>
+-              <h3>매체 선택</h3>
+-              <p>카테고리별 매체를 비교해 원하는 매체를 직접 선택하고 사용 포인트를 즉시 확인합니다.</p>
+-            </article>
+-            <article class="step reveal">
+-              <span class="step-num">03</span>
+-              <h3>원고 첨부/주문 등록</h3>
+-              <p>작성된 원고를 첨부하고 요청사항을 입력하면 주문이 즉시 등록됩니다.</p>
+-            </article>
+-            <article class="step reveal">
+-              <span class="step-num">04</span>
+-              <h3>실시간 상태 확인</h3>
+-              <p>접수, 검수중, 송출대기, 송출완료 상태를 회원 대시보드에서 실시간으로 추적합니다.</p>
+-            </article>
+-          </div>
+-        </div>
+-      </section>
+-
+-      <section id="proof" aria-labelledby="proof-title">
+-        <div class="container">
+-          <div class="section-head reveal">
+-            <span class="eyebrow">SELF ORDER BENEFITS</span>
+-            <h2 id="proof-title">회원전용 셀프주문의 핵심 장점</h2>
+-            <p class="copy">상담 대기 없이 필요한 시점에 직접 주문하고, 모든 진행상태를 즉시 확인할 수 있습니다.</p>
+-          </div>
+-          <div class="proof-grid">
+-            <article class="metric reveal">
+-              <strong class="metric-value">121+</strong>
+-              <p class="metric-label">회원 전용 매체 데이터</p>
+-            </article>
+-            <article class="metric reveal">
+-              <strong class="metric-value">24/7</strong>
+-              <p class="metric-label">셀프 주문 가능 시간</p>
+-            </article>
+-            <article class="metric reveal">
+-              <strong class="metric-value">LIVE</strong>
+-              <p class="metric-label">주문 상태 실시간 반영</p>
+-            </article>
+-            <article class="metric reveal">
+-              <strong class="metric-value">ONE</strong>
+-              <p class="metric-label">주문·첨부·현황 원스톱</p>
+-            </article>
+-          </div>
+-        </div>
+-      </section>
+-
+-      <section id="faq" aria-labelledby="faq-title">
+-        <div class="container">
+-          <div class="section-head reveal">
+-            <span class="eyebrow">FAQ</span>
+-            <h2 id="faq-title">자주 묻는 질문</h2>
+-          </div>
+-
+-          <div class="faq-list">
+-            <article class="faq-item reveal">
+-              <button class="faq-question" aria-expanded="false">
+-                <span>셀프주문을 하려면 먼저 무엇을 준비해야 하나요?</span>
+-                <span>+</span>
+-              </button>
+-              <div class="faq-panel">
+-                <div class="faq-panel-inner">
+-                  회원가입 후 주문명, 매체 선택, 원고 파일, 요청사항만 입력하면 바로 주문 접수가 가능합니다.
+-                </div>
+-              </div>
+-            </article>
+-
+-            <article class="faq-item reveal">
+-              <button class="faq-question" aria-expanded="false">
+-                <span>원고 파일 첨부는 어떤 방식으로 진행되나요?</span>
+-                <span>+</span>
+-              </button>
+-              <div class="faq-panel">
+-                <div class="faq-panel-inner">
+-                  회원전용 포털의 주문 등록 화면에서 원고 파일을 업로드하면 주문 건에 첨부되어 관리자와 즉시 공유됩니다.
+-                </div>
+-              </div>
+-            </article>
+-
+-            <article class="faq-item reveal">
+-              <button class="faq-question" aria-expanded="false">
+-                <span>주문 진행 상태는 어디서 확인하나요?</span>
+-                <span>+</span>
+-              </button>
+-              <div class="faq-panel">
+-                <div class="faq-panel-inner">
+-                  회원전용 페이지의 주문 현황에서 접수, 검수중, 송출대기, 송출완료 상태를 실시간으로 확인할 수 있습니다.
+-                </div>
+-              </div>
+-            </article>
+-          </div>
+-        </div>
+-      </section>
+-
+-      <section id="contact" aria-labelledby="contact-title">
+-        <div class="container">
+-          <article class="card cta-wrap reveal">
+-            <div>
+-              <span class="eyebrow">CONTACT</span>
+-              <h2 id="contact-title">회원전용 셀프주문이 처음이라면, 빠르게 안내해드립니다.</h2>
+-              <p class="copy">우측 하단 채널톡을 통해 상담주시면 빠르게 안내해드립니다.</p>
+             </div>
+-          </article>
+-        </div>
+-      </section>
+-    </main>
+-
+-    <div class="modal" id="login-modal" aria-hidden="true">
+-      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="login-title">
+-        <div class="modal-head">
+-          <div>
+-            <span class="eyebrow">MEMBER LOGIN</span>
+-            <h3 id="login-title">HWIK 로그인</h3>
+-          </div>
+-          <button class="btn btn-ghost" type="button" data-close-login>닫기</button>
+-        </div>
+-
+-        <p class="copy" style="margin-bottom: 1rem">가입한 아이디와 비밀번호로 로그인하세요.</p>
+-
+-        <form class="signup-form" id="login-form" novalidate>
+-          <div class="input-row">
+-            <label for="login-id">아이디</label>
+-            <input
+-              id="login-id"
+-              name="loginId"
+-              type="text"
+-              placeholder="아이디 입력"
+-              autocomplete="username"
+-              required
+-            />
+-          </div>
+-          <div class="input-row">
+-            <label for="login-password">비밀번호</label>
+-            <input
+-              id="login-password"
+-              name="password"
+-              type="password"
+-              placeholder="비밀번호 입력"
+-              autocomplete="current-password"
+-              required
+-            />
+-          </div>
+-          <p class="form-message" id="login-message" aria-live="polite"></p>
+-          <button class="btn btn-primary" type="submit">로그인</button>
+-        </form>
+-      </article>
+-    </div>
++            <div class="form-terms form-terms-policy">
++              <input id="signup-policy-terms" name="policyTerms" type="checkbox" required aria-label="회원가입약관 동의" />
++              <span>
++                <button
++                  class="terms-inline-link"
++                  type="button"
++                  data-toggle-signup-policy
++                  aria-expanded="false"
++                  aria-controls="signup-policy-panel"
++                >
++                  회원가입약관
++                </button>
++                에 동의합니다.
++              </span>
++            </div>
++            <div class="terms-panel is-hidden" id="signup-policy-panel" aria-hidden="true">
++              <pre id="signup-policy-content">회원가입약관을 불러오는 중입니다.</pre>
++            </div>
+ 
+-    <div class="modal" id="signup-modal" aria-hidden="true">
+-      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="signup-title">
+-        <div class="modal-head">
+-          <div>
+-            <span class="eyebrow">MEMBER SIGNUP</span>
+-            <h3 id="signup-title">HWIK 회원가입</h3>
+-          </div>
+-          <button class="btn btn-ghost" type="button" data-close-signup>닫기</button>
+-        </div>
+-
+-        <p class="copy" style="margin-bottom: 1rem">가입 완료 즉시 회원전용 단가 확인과 셀프주문을 시작할 수 있습니다.</p>
+-
+-        <form class="signup-form" id="signup-form" novalidate>
+-          <div class="input-row">
+-            <label for="signup-login-id">아이디</label>
+-            <input
+-              id="signup-login-id"
+-              name="loginId"
+-              type="text"
+-              autocomplete="username"
+-              required
+-            />
+-          </div>
+-          <div class="input-row">
+-            <label for="signup-name">이름</label>
+-            <input id="signup-name" name="name" type="text" placeholder="홍길동" required />
+-          </div>
+-          <div class="input-row">
+-            <label for="signup-email">이메일</label>
+-            <input id="signup-email" name="email" type="email" placeholder="name@company.com" required />
+-          </div>
+-          <div class="input-row">
+-            <label for="signup-company">회사명</label>
+-            <input id="signup-company" name="company" type="text" placeholder="HWIK COMPANY" required />
+-          </div>
+-          <div class="input-row">
+-            <label for="signup-password">비밀번호</label>
+-            <input
+-              id="signup-password"
+-              name="password"
+-              type="password"
+-              placeholder="비밀번호 8자 이상"
+-              autocomplete="new-password"
+-              required
+-            />
+-          </div>
+-          <div class="input-row">
+-            <label for="signup-confirm-password">비밀번호 확인</label>
+-            <input
+-              id="signup-confirm-password"
+-              name="confirmPassword"
+-              type="password"
+-              placeholder="비밀번호를 다시 입력하세요"
+-              autocomplete="new-password"
+-              required
+-            />
+-          </div>
+-          <label class="form-terms" for="signup-terms">
+-            <input id="signup-terms" name="terms" type="checkbox" required />
+-            <span>
+-              <button
+-                class="terms-inline-link"
+-                type="button"
+-                data-toggle-signup-privacy
+-                aria-expanded="false"
+-                aria-controls="signup-privacy-panel"
+-              >
+-                개인정보 수집
+-              </button>
+-              및 서비스 안내 수신에 동의합니다.
+-            </span>
+-          </label>
+-          <div class="terms-panel is-hidden" id="signup-privacy-panel" aria-hidden="true">
+-            <table class="terms-table" aria-label="개인정보 수집 안내">
+-              <tbody>
+-                <tr>
+-                  <th scope="row">개인정보처리방침안내</th>
+-                  <td>회원가입 및 서비스 운영을 위해 아래 항목을 수집합니다.</td>
+-                </tr>
+-                <tr>
+-                  <th scope="row">목적</th>
+-                  <td>이용자 식별 및 본인여부 확인 / 고객서비스 이용에 관한 통지 및 CS대응을 위한 이용자 식별</td>
+-                </tr>
+-                <tr>
+-                  <th scope="row">항목</th>
+-                  <td>아이디, 이름, 비밀번호 / 연락처(이메일)</td>
+-                </tr>
+-                <tr>
+-                  <th scope="row">보유기간</th>
+-                  <td>회원 탈퇴 시까지 / 회원 탈퇴 시까지</td>
+-                </tr>
+-              </tbody>
+-            </table>
+-          </div>
+-          <div class="form-terms form-terms-policy">
+-            <input id="signup-policy-terms" name="policyTerms" type="checkbox" required aria-label="회원가입약관 동의" />
+-            <span>
+-              <button
+-                class="terms-inline-link"
+-                type="button"
+-                data-toggle-signup-policy
+-                aria-expanded="false"
+-                aria-controls="signup-policy-panel"
+-              >
+-                회원가입약관
+-              </button>
+-              에 동의합니다.
+-            </span>
+-          </div>
+-          <div class="terms-panel is-hidden" id="signup-policy-panel" aria-hidden="true">
+-            <pre id="signup-policy-content">회원가입약관을 불러오는 중입니다.</pre>
+-          </div>
++            <p class="form-message" id="signup-message" aria-live="polite"></p>
+ 
+-          <p class="form-message" id="signup-message" aria-live="polite"></p>
++            <button class="btn btn-primary" type="submit">회원가입 완료</button>
++          </form>
++        </article>
++      </div>
+ 
+-          <button class="btn btn-primary" type="submit">회원가입 완료</button>
+-        </form>
+-      </article>
++      <footer class="footer">
++        © 2026 뎁스코퍼레이션. All rights reserved.<br />
++        사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804<br />
++        운영정보: 우측 하단 채널톡 상담 운영
++      </footer>
+     </div>
+ 
+-    <footer>
+-      <div class="container footer-line">
+-        <span>© 2026 뎁스코퍼레이션. All rights reserved.</span>
+-        <span>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804</span>
+-        <span>운영정보: 우측 하단 채널톡 상담 운영</span>
+-      </div>
+-    </footer>
+-
+     <script>
+-      const LEGACY_MEMBER_TOKEN_KEY = "deliver_member_token_v1";
+-      const MEMBER_PORTAL_PATH = "/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/index.html?v=20260224r4";
+-      const CHANNEL_TALK_PLUGIN_KEY = "effcd765-65b5-49ca-b003-b18931fc6f38";
+-      const SIGNUP_POLICY_PATH = "/01_서비스코드-ServiceCode/공통데이터-SharedData/signup-policy.txt?v=20260224r1";
+-
+-      const revealItems = document.querySelectorAll(".reveal");
+-      const observer = new IntersectionObserver(
+-        (entries) => {
+-          entries.forEach((entry) => {
+-            if (entry.isIntersecting) {
+-              entry.target.classList.add("on");
+-              observer.unobserve(entry.target);
+-            }
+-          });
+-        },
+-        { threshold: 0.18 }
+-      );
+-      revealItems.forEach((item) => observer.observe(item));
+-
+-      const faqButtons = document.querySelectorAll(".faq-question");
+-      faqButtons.forEach((button) => {
+-        button.addEventListener("click", () => {
+-          const expanded = button.getAttribute("aria-expanded") === "true";
+-          button.setAttribute("aria-expanded", String(!expanded));
+-          const symbol = button.querySelector("span:last-child");
+-          if (symbol) symbol.textContent = expanded ? "+" : "−";
+-          const panel = button.nextElementSibling;
+-          if (panel) panel.style.maxHeight = expanded ? "0px" : panel.scrollHeight + "px";
+-        });
+-      });
++      (function redirectSubdomains() {
++        var host = location.hostname;
++        if (host === 'admin.dliver.co.kr' && !location.pathname.startsWith('/01_서비스코드-ServiceCode/관리자페이지-AdminPage/')) {
++          location.replace('/01_서비스코드-ServiceCode/관리자페이지-AdminPage/');
++          return;
++        }
++        if (host === 'staging.dliver.co.kr' && location.pathname === '/') {
++          location.replace('/self-order');
++          return;
++        }
++      })();
+ 
+-      const loginModal = document.getElementById("login-modal");
+-      const loginForm = document.getElementById("login-form");
+-      const loginMessage = document.getElementById("login-message");
+-      const loginOpenButtons = document.querySelectorAll("[data-open-login]");
+-      const loginCloseButton = document.querySelector("[data-close-login]");
+-      const signupModal = document.getElementById("signup-modal");
+-      const signupForm = document.getElementById("signup-form");
+-      const signupMessage = document.getElementById("signup-message");
+-      const memberStatus = document.getElementById("member-status");
+-      const navLoginState = document.getElementById("nav-login-state");
+-      const logoutButton = document.getElementById("logout-button");
+-      const signupOpenButtons = document.querySelectorAll("[data-open-signup]");
+-      const signupCloseButton = document.querySelector("[data-close-signup]");
+-      const signupPrivacyToggleButton = document.querySelector("[data-toggle-signup-privacy]");
+-      const signupPrivacyPanel = document.getElementById("signup-privacy-panel");
+-      const signupPolicyToggleButton = document.querySelector("[data-toggle-signup-policy]");
+-      const signupPolicyPanel = document.getElementById("signup-policy-panel");
+-      const signupPolicyContent = document.getElementById("signup-policy-content");
+-      let signupPolicyLoaded = false;
+-
+-      function clearLegacyMemberTokens() {
+-        try {
+-          localStorage.removeItem(LEGACY_MEMBER_TOKEN_KEY);
+-        } catch (error) {}
+-        try {
+-          sessionStorage.removeItem(LEGACY_MEMBER_TOKEN_KEY);
+-        } catch (error) {}
++      var state = {
++        reviewId: '',
++        mode: 'first',
++      };
++      var SIGNUP_POLICY_PATH = '/01_서비스코드-ServiceCode/공통데이터-SharedData/signup-policy.txt?v=20260224r1';
++      var signupPolicyLoaded = false;
++
++      var els = {
++        form: document.getElementById('reviewForm'),
++        file: document.getElementById('draftFile'),
++        fileName: document.getElementById('fileName'),
++        analyzeBtn: document.getElementById('analyzeBtn'),
++        rescoreBtn: document.getElementById('rescoreBtn'),
++        openSignupBtn: document.getElementById('openSignupBtn'),
++        closeSignupBtn: document.querySelector('[data-close-signup]'),
++        signupModal: document.getElementById('signup-modal'),
++        signupForm: document.getElementById('signup-form'),
++        signupMessage: document.getElementById('signup-message'),
++        signupPrivacyToggleButton: document.querySelector('[data-toggle-signup-privacy]'),
++        signupPrivacyPanel: document.getElementById('signup-privacy-panel'),
++        signupPolicyToggleButton: document.querySelector('[data-toggle-signup-policy]'),
++        signupPolicyPanel: document.getElementById('signup-policy-panel'),
++        signupPolicyContent: document.getElementById('signup-policy-content'),
++        memberEntryBox: document.getElementById('memberEntryBox'),
++        visual: document.getElementById('visual'),
++        status: document.getElementById('statusText'),
++        summary: document.getElementById('summaryText'),
++        feedbackList: document.getElementById('feedbackList'),
++        approval: document.getElementById('approvalScore'),
++        risk: document.getElementById('riskScore'),
++        readability: document.getElementById('readabilityScore'),
++        branding: document.getElementById('brandingScore'),
++        riskList: document.getElementById('riskList'),
++      };
++
++      function setStatus(message, type) {
++        els.status.textContent = message;
++        els.status.className = 'status' + (type ? ' ' + type : '');
+       }
+ 
+       function getCookieValue(name) {
+-        const source = String(document.cookie || "");
+-        const target = `${String(name || "")}=`;
+-        const part = source
+-          .split(";")
+-          .map((item) => item.trim())
+-          .find((item) => item.startsWith(target));
+-        if (!part) return "";
+-        return decodeURIComponent(part.slice(target.length));
+-      }
+-
+-      function getMemberPortalUrl() {
+-        const url = new URL(MEMBER_PORTAL_PATH, window.location.href);
+-        return url.toString();
+-      }
+-
+-      function initChannelTalk() {
+-        const pluginKey = String(window.DLIVER_CHANNEL_TALK_PLUGIN_KEY || CHANNEL_TALK_PLUGIN_KEY || "").trim();
+-        if (!pluginKey) return;
+-
+-        const w = window;
+-        if (w.ChannelIO) return;
+-        const ch = function () {
+-          ch.c(arguments);
+-        };
+-        ch.q = [];
+-        ch.c = function (args) {
+-          ch.q.push(args);
+-        };
+-        w.ChannelIO = ch;
+-
+-        function loadScript() {
+-          if (w.ChannelIOInitialized) return;
+-          w.ChannelIOInitialized = true;
+-          const s = document.createElement("script");
+-          s.async = true;
+-          s.src = "https://cdn.channel.io/plugin/ch-plugin-web.js";
+-          const x = document.getElementsByTagName("script")[0];
+-          x.parentNode?.insertBefore(s, x);
+-        }
+-
+-        if (document.readyState === "complete") {
+-          loadScript();
+-        } else {
+-          w.addEventListener("DOMContentLoaded", loadScript);
+-          w.addEventListener("load", loadScript);
+-        }
+-
+-        w.ChannelIO("boot", {
+-          pluginKey,
+-        });
++        var pattern = new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()\\[\\]\\\\/+^]/g, '\\$&') + '=([^;]*)');
++        var match = document.cookie.match(pattern);
++        return match ? decodeURIComponent(match[1]) : '';
+       }
+ 
+-      async function apiFetch(path, init = {}) {
+-        const headers = { ...(init.headers || {}) };
+-        const method = String(init.method || "GET").toUpperCase();
+-        if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+-          const csrf = getCookieValue("deliver_csrf");
+-          if (csrf) headers["x-csrf-token"] = csrf;
++      async function apiFetch(path, init) {
++        var options = init || {};
++        var headers = Object.assign({}, options.headers || {});
++        var method = String(options.method || 'GET').toUpperCase();
++        if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
++          var csrf = getCookieValue('deliver_csrf');
++          if (csrf) headers['x-csrf-token'] = csrf;
+         }
+-        const response = await fetch(path, { ...init, headers, credentials: "same-origin" });
+-        const data = await response.json().catch(() => ({}));
++        var response = await fetch(path, Object.assign({}, options, { headers: headers, credentials: 'same-origin' }));
++        var data = await response.json().catch(function () { return {}; });
+         if (!response.ok || data.ok === false) {
+-          throw new Error(data.message || `API ${response.status}`);
++          throw new Error(data.message || ('API ' + response.status));
+         }
+         return data;
+       }
+ 
+       function setFormMessage(type, text) {
+-        signupMessage.className = "form-message " + type;
+-        signupMessage.textContent = text;
++        if (!els.signupMessage) return;
++        els.signupMessage.className = 'form-message ' + type;
++        els.signupMessage.textContent = text;
+       }
+ 
+       function clearFormMessage() {
+-        signupMessage.className = "form-message";
+-        signupMessage.textContent = "";
++        if (!els.signupMessage) return;
++        els.signupMessage.className = 'form-message';
++        els.signupMessage.textContent = '';
+       }
+ 
+       async function ensureSignupPolicyLoaded() {
+-        if (signupPolicyLoaded || !(signupPolicyContent instanceof HTMLElement)) return;
++        if (signupPolicyLoaded || !(els.signupPolicyContent instanceof HTMLElement)) return;
+         try {
+-          const response = await fetch(SIGNUP_POLICY_PATH, { credentials: "same-origin", cache: "no-store" });
+-          const text = await response.text();
+-          const normalized = String(text || "").trim();
+-          signupPolicyContent.textContent = normalized || "회원가입약관 내용이 비어 있습니다.";
++          var response = await fetch(SIGNUP_POLICY_PATH, { credentials: 'same-origin', cache: 'no-store' });
++          var text = await response.text();
++          var normalized = String(text || '').trim();
++          els.signupPolicyContent.textContent = normalized || '회원가입약관 내용이 비어 있습니다.';
+         } catch (error) {
+-          signupPolicyContent.textContent = "회원가입약관을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
++          els.signupPolicyContent.textContent = '회원가입약관을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+         }
+         signupPolicyLoaded = true;
+       }
+ 
+       function setSignupPolicyPanelOpen(isOpen) {
+-        if (!(signupPolicyPanel instanceof HTMLElement) || !(signupPolicyToggleButton instanceof HTMLElement)) return;
+-        signupPolicyPanel.classList.toggle("is-hidden", !isOpen);
+-        signupPolicyPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+-        signupPolicyToggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
++        if (!(els.signupPolicyPanel instanceof HTMLElement) || !(els.signupPolicyToggleButton instanceof HTMLElement)) return;
++        els.signupPolicyPanel.classList.toggle('is-hidden', !isOpen);
++        els.signupPolicyPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
++        els.signupPolicyToggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+       }
+ 
+       function setSignupPrivacyPanelOpen(isOpen) {
+-        if (!(signupPrivacyPanel instanceof HTMLElement) || !(signupPrivacyToggleButton instanceof HTMLElement)) return;
+-        signupPrivacyPanel.classList.toggle("is-hidden", !isOpen);
+-        signupPrivacyPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+-        signupPrivacyToggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
++        if (!(els.signupPrivacyPanel instanceof HTMLElement) || !(els.signupPrivacyToggleButton instanceof HTMLElement)) return;
++        els.signupPrivacyPanel.classList.toggle('is-hidden', !isOpen);
++        els.signupPrivacyPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
++        els.signupPrivacyToggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
++      }
++
++      function syncModalBodyState() {
++        if (els.signupModal?.classList.contains('open')) {
++          document.body.classList.add('modal-open');
++          return;
++        }
++        document.body.classList.remove('modal-open');
+       }
+ 
+-      function setLoginMessage(type, text) {
+-        loginMessage.className = "form-message " + type;
+-        loginMessage.textContent = text;
++      function openSignupModal() {
++        if (!els.signupModal) return;
++        clearFormMessage();
++        setSignupPrivacyPanelOpen(false);
++        setSignupPolicyPanelOpen(false);
++        els.signupModal.classList.add('open');
++        els.signupModal.setAttribute('aria-hidden', 'false');
++        syncModalBodyState();
++        document.getElementById('signup-login-id')?.focus();
+       }
+ 
+-      function clearLoginMessage() {
+-        loginMessage.className = "form-message";
+-        loginMessage.textContent = "";
++      function closeSignupModal() {
++        if (!els.signupModal) return;
++        els.signupModal.classList.remove('open');
++        els.signupModal.setAttribute('aria-hidden', 'true');
++        setSignupPrivacyPanelOpen(false);
++        setSignupPolicyPanelOpen(false);
++        syncModalBodyState();
+       }
+ 
+-      function moveToMemberPortal() {
+-        window.location.href = getMemberPortalUrl();
++      function showMemberEntryButton() {
++        if (!els.memberEntryBox) return;
++        els.memberEntryBox.hidden = false;
+       }
+ 
+-      function syncModalBodyState() {
+-        if (loginModal.classList.contains("open") || signupModal.classList.contains("open")) {
+-          document.body.classList.add("modal-open");
+-          return;
+-        }
+-        document.body.classList.remove("modal-open");
++      function setBusy(busy) {
++        els.analyzeBtn.disabled = busy;
++        els.rescoreBtn.disabled = busy;
++        if (busy) els.visual.classList.add('is-analyzing');
++        else els.visual.classList.remove('is-analyzing');
+       }
+ 
+-      function updateMemberStatus(member) {
+-        if (!memberStatus) return;
+-        if (member && member.name) {
+-          memberStatus.textContent = member.name + "님 로그인 상태입니다. 회원전용 단가 확인과 셀프주문이 가능합니다.";
+-        } else {
+-          memberStatus.textContent = "회원전용 서비스입니다. 회원가입 후 단가 확인과 셀프주문이 가능합니다.";
+-        }
++      function toInt(value) {
++        var n = Number(value || 0);
++        if (!Number.isFinite(n)) return 0;
++        return Math.max(0, Math.min(100, Math.round(n)));
+       }
+ 
+-      function setAuthButtonsVisibility(isLoggedIn) {
+-        loginOpenButtons.forEach((button) => button.classList.toggle("is-hidden", isLoggedIn));
+-        signupOpenButtons.forEach((button) => button.classList.toggle("is-hidden", isLoggedIn));
++      function renderScores(data) {
++        var scores = data && data.scores ? data.scores : {};
++        var risk = data && data.riskBreakdown ? data.riskBreakdown : {};
++
++        els.approval.textContent = toInt(scores.approval);
++        els.risk.textContent = toInt(scores.risk);
++        els.readability.textContent = toInt(scores.readability);
++        els.branding.textContent = toInt(scores.branding);
++        els.summary.textContent = data && data.summary ? data.summary : '요약 정보가 없습니다.';
++
++        els.riskList.innerHTML = [
++          '<li>법: ' + toInt(risk.law) + '</li>',
++          '<li>표시: ' + toInt(risk.disclosure) + '</li>',
++          '<li>과장: ' + toInt(risk.exaggeration) + '</li>',
++          '<li>비방: ' + toInt(risk.defamation) + '</li>',
++        ].join('');
+       }
+ 
+-      function updateAuthUI(member) {
+-        const isLoggedIn = Boolean(member && member.name && member.email);
+-        updateMemberStatus(member);
+-        setAuthButtonsVisibility(isLoggedIn);
+-        if (isLoggedIn) {
+-          if (navLoginState) {
+-            navLoginState.textContent = member.name + "님 로그인";
+-            navLoginState.classList.remove("is-hidden");
+-          }
+-          if (logoutButton) {
+-            logoutButton.classList.remove("is-hidden");
+-          }
+-        } else {
+-          if (navLoginState) {
+-            navLoginState.textContent = "";
+-            navLoginState.classList.add("is-hidden");
+-          }
+-          if (logoutButton) {
+-            logoutButton.classList.add("is-hidden");
+-          }
++      function renderFeedback(data) {
++        var list = Array.isArray(data && data.highlights) ? data.highlights : [];
++        if (!list.length) {
++          els.feedbackList.innerHTML = '<li><b>안내</b>즉시 수정이 필요한 항목이 감지되지 않았습니다.</li>';
++          return;
+         }
+-      }
+ 
+-      function openLoginModal() {
+-        closeSignupModal();
+-        loginModal.classList.add("open");
+-        loginModal.setAttribute("aria-hidden", "false");
+-        syncModalBodyState();
+-        clearLoginMessage();
+-        document.getElementById("login-id")?.focus();
++        els.feedbackList.innerHTML = list.slice(0, 6).map(function (item) {
++          var severity = item && item.severity ? item.severity : '권장수정';
++          var reason = item && item.reason ? item.reason : '개선 포인트가 탐지되었습니다.';
++          var suggestion = item && item.suggestion ? item.suggestion : '';
++          return '<li><b>' + severity + '</b>' + reason + (suggestion ? ' ' + suggestion : '') + '</li>';
++        }).join('');
+       }
+ 
+-      function closeLoginModal() {
+-        loginModal.classList.remove("open");
+-        loginModal.setAttribute("aria-hidden", "true");
+-        syncModalBodyState();
+-      }
++      async function runAnalyze(mode) {
++        var file = els.file.files && els.file.files[0];
++        if (!file) {
++          setStatus('검수할 파일을 먼저 첨부해 주세요.', 'error');
++          return;
++        }
+ 
+-      function openSignupModal() {
+-        closeLoginModal();
+-        signupModal.classList.add("open");
+-        signupModal.setAttribute("aria-hidden", "false");
+-        syncModalBodyState();
+-        clearFormMessage();
+-        setSignupPrivacyPanelOpen(false);
+-        setSignupPolicyPanelOpen(false);
+-        document.getElementById("signup-login-id")?.focus();
+-      }
++        if (mode === 'first') {
++          state.reviewId = '';
++        }
+ 
+-      function closeSignupModal() {
+-        signupModal.classList.remove("open");
+-        signupModal.setAttribute("aria-hidden", "true");
+-        setSignupPrivacyPanelOpen(false);
+-        setSignupPolicyPanelOpen(false);
+-        syncModalBodyState();
++        var fd = new FormData();
++        fd.append('draftFile', file);
++        fd.append('reviewMode', mode);
++        if (mode === 'rescore' && state.reviewId) {
++          fd.append('reviewId', state.reviewId);
++        }
++
++        setBusy(true);
++        setStatus(mode === 'rescore' ? '재점수 중입니다...' : '검수 중입니다...');
++
++        try {
++          var response = await fetch('/api/review/analyze', {
++            method: 'POST',
++            credentials: 'include',
++            body: fd,
++          });
++          var data = await response.json().catch(function () { return {}; });
++          if (!response.ok || !data.ok) {
++            throw new Error(data && data.message ? data.message : '검수 처리에 실패했습니다.');
++          }
++
++          state.reviewId = data.reviewId || state.reviewId;
++          state.mode = mode;
++          renderScores(data);
++          renderFeedback(data);
++
++          els.visual.classList.add('result-ready');
++          els.rescoreBtn.hidden = false;
++          setStatus('검수 완료. 수정 후 재점수로 개선도를 확인하세요.', 'ok');
++        } catch (error) {
++          setStatus(error && error.message ? error.message : '검수 처리 중 오류가 발생했습니다.', 'error');
++        } finally {
++          setBusy(false);
++        }
+       }
+ 
+-      loginOpenButtons.forEach((button) => button.addEventListener("click", openLoginModal));
+-      signupOpenButtons.forEach((button) => button.addEventListener("click", openSignupModal));
+-      loginCloseButton?.addEventListener("click", closeLoginModal);
+-      signupCloseButton?.addEventListener("click", closeSignupModal);
+-      signupPrivacyToggleButton?.addEventListener("click", (event) => {
+-        event.preventDefault();
+-        const opening = signupPrivacyPanel?.classList.contains("is-hidden");
+-        setSignupPrivacyPanelOpen(Boolean(opening));
++      els.file.addEventListener('change', function () {
++        var file = els.file.files && els.file.files[0];
++        els.fileName.textContent = file ? file.name : '선택된 파일 없음';
+       });
+-      signupPolicyToggleButton?.addEventListener("click", async (event) => {
++
++      els.form.addEventListener('submit', function (event) {
+         event.preventDefault();
+-        const opening = signupPolicyPanel?.classList.contains("is-hidden");
+-        if (opening) await ensureSignupPolicyLoaded();
+-        setSignupPolicyPanelOpen(Boolean(opening));
++        runAnalyze('first');
+       });
+ 
+-      loginModal?.addEventListener("click", (event) => {
+-        if (event.target === loginModal) closeLoginModal();
++      els.rescoreBtn.addEventListener('click', function () {
++        runAnalyze('rescore');
+       });
+-      signupModal?.addEventListener("click", (event) => {
+-        if (event.target === signupModal) closeSignupModal();
++
++      els.openSignupBtn?.addEventListener('click', function () {
++        openSignupModal();
+       });
+ 
+-      document.addEventListener("keydown", (event) => {
+-        if (event.key !== "Escape") return;
+-        if (loginModal.classList.contains("open")) {
+-          closeLoginModal();
+-          return;
+-        }
+-        if (signupModal.classList.contains("open")) closeSignupModal();
++      els.closeSignupBtn?.addEventListener('click', function () {
++        closeSignupModal();
+       });
+ 
+-      logoutButton?.addEventListener("click", async () => {
+-        try {
+-          await apiFetch("/api/auth/logout", { method: "POST" });
+-        } catch (error) {}
+-        updateAuthUI(null);
++      els.signupPrivacyToggleButton?.addEventListener('click', function (event) {
++        event.preventDefault();
++        var opening = els.signupPrivacyPanel?.classList.contains('is-hidden');
++        setSignupPrivacyPanelOpen(Boolean(opening));
+       });
+ 
+-      loginForm?.addEventListener("submit", async (event) => {
++      els.signupPolicyToggleButton?.addEventListener('click', async function (event) {
+         event.preventDefault();
+-        clearLoginMessage();
+-        const formData = new FormData(loginForm);
+-        const loginId = String(formData.get("loginId") || "")
+-          .trim()
+-          .toLowerCase();
+-        const password = String(formData.get("password") || "");
+-
+-        if (!loginId || !password) {
+-          setLoginMessage("error", "아이디와 비밀번호를 입력해 주세요.");
+-          return;
+-        }
++        var opening = els.signupPolicyPanel?.classList.contains('is-hidden');
++        if (opening) await ensureSignupPolicyLoaded();
++        setSignupPolicyPanelOpen(Boolean(opening));
++      });
+ 
+-        try {
+-          const response = await apiFetch("/api/auth/login", {
+-            method: "POST",
+-            headers: { "content-type": "application/json" },
+-            body: JSON.stringify({ loginId, password }),
+-          });
+-          updateAuthUI(response.member);
+-          setLoginMessage("success", "로그인되었습니다.");
+-          window.setTimeout(() => {
+-            closeLoginModal();
+-            clearLoginMessage();
+-            loginForm.reset();
+-            moveToMemberPortal();
+-          }, 450);
+-        } catch (error) {
+-          setLoginMessage("error", error.message || "로그인 중 오류가 발생했습니다.");
+-        }
++      els.signupModal?.addEventListener('click', function (event) {
++        if (event.target === els.signupModal) closeSignupModal();
++      });
++
++      document.addEventListener('keydown', function (event) {
++        if (event.key === 'Escape') closeSignupModal();
+       });
+ 
+-      signupForm?.addEventListener("submit", async (event) => {
++      els.signupForm?.addEventListener('submit', async function (event) {
+         event.preventDefault();
+         clearFormMessage();
+ 
+-        const formData = new FormData(signupForm);
+-        const loginId = String(formData.get("loginId") || "")
+-          .trim()
+-          .toLowerCase();
+-        const name = String(formData.get("name") || "").trim();
+-        const email = String(formData.get("email") || "")
+-          .trim()
+-          .toLowerCase();
+-        const company = String(formData.get("company") || "").trim();
+-        const password = String(formData.get("password") || "");
+-        const confirmPassword = String(formData.get("confirmPassword") || "");
+-        const termsChecked = formData.get("terms") === "on";
+-        const policyTermsChecked = formData.get("policyTerms") === "on";
++        var formData = new FormData(els.signupForm);
++        var loginId = String(formData.get('loginId') || '').trim().toLowerCase();
++        var name = String(formData.get('name') || '').trim();
++        var email = String(formData.get('email') || '').trim().toLowerCase();
++        var company = String(formData.get('company') || '').trim();
++        var password = String(formData.get('password') || '');
++        var confirmPassword = String(formData.get('confirmPassword') || '');
++        var termsChecked = formData.get('terms') === 'on';
++        var policyTermsChecked = formData.get('policyTerms') === 'on';
+ 
+         if (!loginId || !name || !email || !company || !password || !confirmPassword) {
+-          setFormMessage("error", "필수 항목을 모두 입력해 주세요.");
++          setFormMessage('error', '필수 항목을 모두 입력해 주세요.');
+           return;
+         }
+         if (!/^[a-z0-9_]{3,20}$/.test(loginId)) {
+-          setFormMessage("error", "아이디는 영문 소문자/숫자/밑줄 조합 3~20자여야 합니다.");
++          setFormMessage('error', '아이디는 영문 소문자/숫자/밑줄 조합 3~20자여야 합니다.');
+           return;
+         }
+-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+-          setFormMessage("error", "이메일 형식을 확인해 주세요.");
++        if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
++          setFormMessage('error', '이메일 형식을 확인해 주세요.');
+           return;
+         }
+         if (password.length < 8) {
+-          setFormMessage("error", "비밀번호는 8자 이상이어야 합니다.");
++          setFormMessage('error', '비밀번호는 8자 이상이어야 합니다.');
+           return;
+         }
+         if (password !== confirmPassword) {
+-          setFormMessage("error", "비밀번호 확인 값이 일치하지 않습니다.");
++          setFormMessage('error', '비밀번호 확인 값이 일치하지 않습니다.');
+           return;
+         }
+         if (!termsChecked) {
+-          setFormMessage("error", "개인정보 수집 및 안내 수신 동의가 필요합니다.");
++          setFormMessage('error', '개인정보 수집 및 안내 수신 동의가 필요합니다.');
+           return;
+         }
+         if (!policyTermsChecked) {
+-          setFormMessage("error", "회원가입약관 동의가 필요합니다.");
++          setFormMessage('error', '회원가입약관 동의가 필요합니다.');
+           return;
+         }
+ 
+         try {
+-          const response = await apiFetch("/api/auth/signup", {
+-            method: "POST",
+-            headers: { "content-type": "application/json" },
+-            body: JSON.stringify({ loginId, name, email, company, password }),
++          await apiFetch('/api/auth/signup', {
++            method: 'POST',
++            headers: {
++              'content-type': 'application/json',
++            },
++            body: JSON.stringify({
++              loginId: loginId,
++              name: name,
++              email: email,
++              company: company,
++              password: password,
++            }),
+           });
+-          updateAuthUI(response.member);
+-          setFormMessage("success", "회원가입이 완료되어 자동 로그인되었습니다.");
+-          signupForm.reset();
+-          window.setTimeout(() => {
++
++          setFormMessage('success', '회원가입이 완료되었습니다.');
++          setStatus('회원가입 완료. 회원전용페이지 이동 버튼이 활성화되었습니다.', 'ok');
++          showMemberEntryButton();
++          els.signupForm.reset();
++          window.setTimeout(function () {
+             closeSignupModal();
+             clearFormMessage();
+-            moveToMemberPortal();
+           }, 700);
+         } catch (error) {
+-          setFormMessage("error", error.message || "회원가입 중 오류가 발생했습니다.");
++          setFormMessage('error', error && error.message ? error.message : '회원가입 중 오류가 발생했습니다.');
+         }
+       });
+-
+-      (async () => {
+-        initChannelTalk();
+-        clearLegacyMemberTokens();
+-        try {
+-          const response = await apiFetch("/api/auth/me");
+-          updateAuthUI(response.member);
+-        } catch (error) {
+-          updateAuthUI(null);
+-        }
+-      })();
+     </script>
+   </body>
+ </html>

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "경제/비즈니스",
+    "category": "경제",
+    "member_price_label": "회원전용",
+    "is_active": true
+  },
+  {
+    "name": "IT/테크",
+    "category": "IT",
+    "member_price_label": "회원전용",
+    "is_active": true
+  },
+  {
+    "name": "라이프/컬처",
+    "category": "라이프",
+    "member_price_label": "회원전용",
+    "is_active": true
+  },
+  {
+    "name": "종합 포털 제휴",
+    "category": "포털",
+    "member_price_label": "회원전용",
+    "is_active": true
+  }
+]

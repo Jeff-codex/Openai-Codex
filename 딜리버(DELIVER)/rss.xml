@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>딜리버 (DLIVER)</title>
+    <link>https://dliver.co.kr/</link>
+    <description>딜리버 공식 페이지 업데이트 피드</description>
+    <language>ko-kr</language>
+    <lastBuildDate>Wed, 25 Feb 2026 01:20:00 +0900</lastBuildDate>
+
+    <item>
+      <title>딜리버 메인 랜딩 - 원고 검수</title>
+      <link>https://dliver.co.kr/</link>
+      <guid isPermaLink="true">https://dliver.co.kr/</guid>
+      <pubDate>Wed, 25 Feb 2026 01:20:00 +0900</pubDate>
+      <description>보도자료 원고 검수 페이지</description>
+    </item>
+
+    <item>
+      <title>딜리버 셀프주문 페이지</title>
+      <link>https://dliver.co.kr/self-order</link>
+      <guid isPermaLink="true">https://dliver.co.kr/self-order</guid>
+      <pubDate>Wed, 25 Feb 2026 01:20:00 +0900</pubDate>
+      <description>회원전용 셀프 언론송출 주문 페이지</description>
+    </item>
+  </channel>
+</rss>

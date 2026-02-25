@@ -1,0 +1,1137 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DLIVER | 원고 검수</title>
+    <meta
+      name="description"
+      content="DOC/DOCX/PDF 원고를 업로드하고 승인가능성, 리스크, 가독성, 브랜딩 적합도를 빠르게 확인하세요."
+    />
+    <link rel="icon" type="image/svg+xml" href="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/favicon.svg" />
+    <style>
+      :root {
+        --bg: #f5f7fb;
+        --text: #202124;
+        --sub: #5f6368;
+        --line: #dadce0;
+        --blue: #1a73e8;
+        --blue-soft: #e8f0fe;
+        --ok: #137333;
+        --warn: #c5221f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Segoe UI', sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at 50% -20%, #ffffff 0%, var(--bg) 55%, #eef2f9 100%);
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .top-nav {
+        width: min(1080px, calc(100% - 32px));
+        margin: 20px auto 0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        font-size: 14px;
+      }
+
+      .top-nav a,
+      .top-nav .top-link-btn {
+        color: #3c4043;
+        text-decoration: none;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .top-nav a:hover,
+      .top-nav .top-link-btn:hover {
+        color: var(--blue);
+      }
+
+      .main {
+        display: grid;
+        place-items: center;
+        padding: 20px 16px 40px;
+      }
+
+      .hero {
+        width: min(960px, 100%);
+        display: grid;
+        gap: 20px;
+        justify-items: center;
+      }
+
+      .visual {
+        width: min(720px, 100%);
+        min-height: 220px;
+        position: relative;
+        display: grid;
+        place-items: center;
+      }
+
+      .logo-stage,
+      .result-stage {
+        grid-area: 1 / 1;
+        transition: opacity 420ms ease, transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 420ms ease;
+      }
+
+      .logo-stage {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      .logo-image {
+        width: min(520px, 88vw);
+        max-height: 180px;
+        object-fit: contain;
+        filter: drop-shadow(0 10px 30px rgba(26, 115, 232, 0.18));
+      }
+
+      .visual.is-analyzing .logo-stage {
+        animation: logoPulse 900ms ease-in-out infinite;
+      }
+
+      .visual.result-ready .logo-stage {
+        opacity: 0;
+        transform: translateY(-14px) scale(0.92);
+        filter: blur(2px);
+      }
+
+      @keyframes logoPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.018); }
+        100% { transform: scale(1); }
+      }
+
+      .result-stage {
+        width: 100%;
+        opacity: 0;
+        transform: translateY(18px) scale(0.96);
+        pointer-events: none;
+      }
+
+      .visual.result-ready .result-stage {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .result-panel {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(8px);
+        padding: 20px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .score-row {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(4, minmax(120px, 1fr));
+      }
+
+      .score-chip {
+        border: 1px solid #d2e3fc;
+        background: #f8fbff;
+        border-radius: 14px;
+        padding: 12px;
+      }
+
+      .score-chip b {
+        display: block;
+        font-size: 13px;
+        color: #3c4043;
+        margin-bottom: 6px;
+      }
+
+      .score-chip strong {
+        font-size: 28px;
+        line-height: 1;
+        color: #1967d2;
+      }
+
+      .summary {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.5;
+        color: #1f2937;
+      }
+
+      .risk {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .risk li {
+        border: 1px solid #d2e3fc;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: #174ea6;
+        background: #f2f7ff;
+      }
+
+      .upload-form {
+        width: min(860px, 100%);
+      }
+
+      .upload-bar {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        min-height: 58px;
+        padding: 8px;
+        display: grid;
+        grid-template-columns: minmax(160px, 220px) 1fr auto auto;
+        gap: 8px;
+        align-items: center;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+      }
+
+      .file-pick {
+        height: 42px;
+        border-radius: 999px;
+        border: 1px solid #c6dafc;
+        background: var(--blue-soft);
+        color: #174ea6;
+        font-weight: 700;
+        font-size: 13px;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        padding: 0 14px;
+        white-space: nowrap;
+      }
+
+      .file-pick input {
+        display: none;
+      }
+
+      .file-name {
+        min-width: 0;
+        padding: 0 6px;
+        font-size: 14px;
+        color: #3c4043;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .btn {
+        height: 42px;
+        border-radius: 999px;
+        border: 0;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 0 18px;
+      }
+
+      .btn-primary {
+        background: var(--blue);
+        color: #fff;
+      }
+
+      .btn-ghost {
+        background: #fff;
+        color: #174ea6;
+        border: 1px solid #c6dafc;
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+
+      .support-note {
+        margin: 12px 0 0;
+        text-align: center;
+        font-size: 14px;
+        color: #5f6368;
+      }
+
+      .status {
+        margin: 10px 0 0;
+        text-align: center;
+        font-size: 14px;
+        color: #3c4043;
+        min-height: 22px;
+      }
+
+      .status.ok { color: var(--ok); }
+      .status.error { color: var(--warn); }
+
+      .member-entry {
+        margin-top: 8px;
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+      }
+
+      .member-entry[hidden] {
+        display: none;
+      }
+
+      .member-entry-note {
+        margin: 0;
+        font-size: 13px;
+        color: #1f3b74;
+      }
+
+      .feedback {
+        width: min(860px, 100%);
+        margin: 6px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 8px;
+      }
+
+      .feedback li {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #fff;
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #374151;
+      }
+
+      .feedback li b {
+        color: #1d4ed8;
+        margin-right: 6px;
+      }
+
+      .is-hidden {
+        display: none !important;
+      }
+
+      body.modal-open {
+        overflow: hidden;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 120;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1.1rem;
+        background: rgba(16, 30, 62, 0.55);
+        backdrop-filter: blur(2px);
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal-card {
+        width: min(520px, 100%);
+        max-height: min(92vh, 860px);
+        overflow: auto;
+        border-radius: 18px;
+        border: 1px solid #d3def3;
+        background: #fff;
+        box-shadow: 0 18px 42px rgba(15, 34, 76, 0.24);
+        padding: 1.1rem;
+      }
+
+      .modal-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.7rem;
+        margin-bottom: 0.86rem;
+      }
+
+      .modal-head h3 {
+        margin: 0;
+        color: #09318c;
+        font-size: 1.1rem;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        margin-bottom: 0.2rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: #5677b8;
+      }
+
+      .signup-form {
+        display: grid;
+        gap: 0.68rem;
+      }
+
+      .input-row {
+        display: grid;
+        gap: 0.34rem;
+      }
+
+      .input-row label {
+        color: #2d4066;
+        font-size: 0.81rem;
+        font-weight: 700;
+      }
+
+      .input-row input,
+      .input-row textarea {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #cad7f0;
+        background: #fff;
+        padding: 0.67rem 0.72rem;
+        font-size: 0.9rem;
+        font-family: inherit;
+        color: var(--text);
+      }
+
+      .input-row textarea {
+        resize: vertical;
+      }
+
+      .input-row input:focus,
+      .input-row textarea:focus {
+        border-color: #6791e5;
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(8, 128, 240, 0.12);
+      }
+
+      .form-terms {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        color: #4d5d7a;
+        font-size: 0.82rem;
+        line-height: 1.58;
+      }
+
+      .form-terms input[type="checkbox"] {
+        margin-top: 0.18rem;
+        accent-color: var(--blue);
+      }
+
+      .terms-inline-link {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        color: var(--blue);
+        font-weight: 700;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .terms-panel {
+        margin-top: 0.16rem;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #f8fbff;
+        padding: 0.6rem;
+        max-height: 220px;
+        overflow: auto;
+      }
+
+      .terms-panel pre {
+        margin: 0;
+        white-space: pre-wrap;
+        font-family: "Noto Sans KR", sans-serif;
+        font-size: 0.77rem;
+        color: #40506c;
+        line-height: 1.56;
+      }
+
+      .terms-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.77rem;
+      }
+
+      .terms-table th,
+      .terms-table td {
+        border: 1px solid #d5e0f4;
+        padding: 0.46rem;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .terms-table th {
+        width: 28%;
+        background: #eef4ff;
+        color: #21417d;
+      }
+
+      .form-message {
+        margin: 0;
+        min-height: 1.1rem;
+        font-size: 0.82rem;
+        color: #4d5d7a;
+      }
+
+      .form-message.success {
+        color: var(--ok);
+      }
+
+      .form-message.error {
+        color: var(--warn);
+      }
+
+      .footer {
+        width: min(960px, calc(100% - 32px));
+        margin: 0 auto 18px;
+        padding-top: 14px;
+        border-top: 1px solid #e1e6f0;
+        color: #7f8da3;
+        font-size: 12px;
+        line-height: 1.6;
+        text-align: center;
+      }
+
+      @media (max-width: 860px) {
+        .visual {
+          min-height: 180px;
+        }
+
+        .score-row {
+          grid-template-columns: repeat(2, minmax(120px, 1fr));
+        }
+
+        .upload-bar {
+          grid-template-columns: 1fr 1fr;
+          grid-auto-rows: auto;
+          border-radius: 18px;
+          padding: 10px;
+        }
+
+        .file-name {
+          grid-column: 1 / -1;
+          order: 3;
+          padding: 0 4px 4px;
+        }
+
+        .btn {
+          width: 100%;
+        }
+
+        .top-nav .top-link-btn {
+          width: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <nav class="top-nav" aria-label="빠른 이동">
+        <a href="/self-order">언론홍보</a>
+        <button id="openSignupBtn" class="top-link-btn" type="button">회원가입</button>
+      </nav>
+
+      <main class="main">
+        <section class="hero" aria-label="원고 검수">
+          <div id="visual" class="visual" aria-live="polite">
+            <div class="logo-stage">
+              <img
+                class="logo-image"
+                src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-nav-tight.png"
+                alt="DLIVER"
+              />
+            </div>
+            <div class="result-stage" id="resultStage">
+              <div class="result-panel">
+                <div class="score-row">
+                  <div class="score-chip"><b>승인가능성</b><strong id="approvalScore">-</strong></div>
+                  <div class="score-chip"><b>리스크점수</b><strong id="riskScore">-</strong></div>
+                  <div class="score-chip"><b>가독성 점수</b><strong id="readabilityScore">-</strong></div>
+                  <div class="score-chip"><b>브랜딩 적합도</b><strong id="brandingScore">-</strong></div>
+                </div>
+                <p class="summary" id="summaryText">검수 완료 후 요약이 표시됩니다.</p>
+                <ul class="risk" id="riskList">
+                  <li>법: -</li>
+                  <li>표시: -</li>
+                  <li>과장: -</li>
+                  <li>비방: -</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <form id="reviewForm" class="upload-form">
+            <div class="upload-bar">
+              <label class="file-pick">
+                파일 첨부
+                <input id="draftFile" name="draftFile" type="file" accept=".doc,.docx,.pdf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required />
+              </label>
+              <div id="fileName" class="file-name">선택된 파일 없음</div>
+              <button id="analyzeBtn" class="btn btn-primary" type="submit">검수</button>
+              <button id="rescoreBtn" class="btn btn-ghost" type="button" hidden>수정 후 재점수</button>
+            </div>
+            <p class="support-note">지원포맷:DOC/DOCX/PDF , 비회원 체험1회 제공, 이후 회원 전환시 재점수 가능, 검수결과 30일 보관 후 자동 정리</p>
+            <p id="statusText" class="status">파일을 첨부한 뒤 검수를 시작해 주세요.</p>
+            <div id="memberEntryBox" class="member-entry" hidden>
+              <p class="member-entry-note">회원가입이 완료되었습니다. 아래 버튼으로 회원전용페이지로 이동하세요.</p>
+              <a class="btn btn-ghost" href="/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/">회원전용페이지 이동</a>
+            </div>
+          </form>
+
+          <ul id="feedbackList" class="feedback" aria-live="polite"></ul>
+        </section>
+      </main>
+
+      <div class="modal" id="signup-modal" aria-hidden="true">
+        <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="signup-title">
+          <div class="modal-head">
+            <div>
+              <span class="eyebrow">MEMBER SIGNUP</span>
+              <h3 id="signup-title">딜리버 회원가입</h3>
+            </div>
+            <button class="btn btn-ghost" type="button" data-close-signup>닫기</button>
+          </div>
+
+          <p class="copy" style="margin-bottom: 1rem">가입 완료 즉시 회원전용 단가 확인과 셀프주문을 시작할 수 있습니다.</p>
+
+          <form class="signup-form" id="signup-form" novalidate>
+            <div class="input-row">
+              <label for="signup-login-id">아이디</label>
+              <input
+                id="signup-login-id"
+                name="loginId"
+                type="text"
+                autocomplete="username"
+                required
+              />
+            </div>
+            <div class="input-row">
+              <label for="signup-name">이름</label>
+              <input id="signup-name" name="name" type="text" placeholder="홍길동" required />
+            </div>
+            <div class="input-row">
+              <label for="signup-email">이메일</label>
+              <input id="signup-email" name="email" type="email" placeholder="name@company.com" required />
+            </div>
+            <div class="input-row">
+              <label for="signup-company">회사명</label>
+              <input id="signup-company" name="company" type="text" placeholder="딜리버 COMPANY" required />
+            </div>
+            <div class="input-row">
+              <label for="signup-password">비밀번호</label>
+              <input
+                id="signup-password"
+                name="password"
+                type="password"
+                placeholder="비밀번호 8자 이상"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+            <div class="input-row">
+              <label for="signup-confirm-password">비밀번호 확인</label>
+              <input
+                id="signup-confirm-password"
+                name="confirmPassword"
+                type="password"
+                placeholder="비밀번호를 다시 입력하세요"
+                autocomplete="new-password"
+                required
+              />
+            </div>
+            <label class="form-terms" for="signup-terms">
+              <input id="signup-terms" name="terms" type="checkbox" required />
+              <span>
+                <button
+                  class="terms-inline-link"
+                  type="button"
+                  data-toggle-signup-privacy
+                  aria-expanded="false"
+                  aria-controls="signup-privacy-panel"
+                >
+                  개인정보 수집
+                </button>
+                및 서비스 안내 수신에 동의합니다.
+              </span>
+            </label>
+            <div class="terms-panel is-hidden" id="signup-privacy-panel" aria-hidden="true">
+              <table class="terms-table" aria-label="개인정보 수집 안내">
+                <tbody>
+                  <tr>
+                    <th scope="row">개인정보처리방침안내</th>
+                    <td>회원가입 및 서비스 운영을 위해 아래 항목을 수집합니다.</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">목적</th>
+                    <td>이용자 식별 및 본인여부 확인 / 고객서비스 이용에 관한 통지 및 CS대응을 위한 이용자 식별</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">항목</th>
+                    <td>아이디, 이름, 비밀번호 / 연락처(이메일)</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">보유기간</th>
+                    <td>회원 탈퇴 시까지 / 회원 탈퇴 시까지</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="form-terms form-terms-policy">
+              <input id="signup-policy-terms" name="policyTerms" type="checkbox" required aria-label="회원가입약관 동의" />
+              <span>
+                <button
+                  class="terms-inline-link"
+                  type="button"
+                  data-toggle-signup-policy
+                  aria-expanded="false"
+                  aria-controls="signup-policy-panel"
+                >
+                  회원가입약관
+                </button>
+                에 동의합니다.
+              </span>
+            </div>
+            <div class="terms-panel is-hidden" id="signup-policy-panel" aria-hidden="true">
+              <pre id="signup-policy-content">회원가입약관을 불러오는 중입니다.</pre>
+            </div>
+
+            <p class="form-message" id="signup-message" aria-live="polite"></p>
+
+            <button class="btn btn-primary" type="submit">회원가입 완료</button>
+          </form>
+        </article>
+      </div>
+
+      <footer class="footer">
+        © 2026 뎁스코퍼레이션. All rights reserved.<br />
+        사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804<br />
+        운영정보: 우측 하단 채널톡 상담 운영
+      </footer>
+    </div>
+
+    <script>
+      (function redirectSubdomains() {
+        var host = location.hostname;
+        if (host === 'admin.dliver.co.kr' && !location.pathname.startsWith('/01_서비스코드-ServiceCode/관리자페이지-AdminPage/')) {
+          location.replace('/01_서비스코드-ServiceCode/관리자페이지-AdminPage/');
+          return;
+        }
+        if (host === 'staging.dliver.co.kr' && location.pathname === '/') {
+          location.replace('/self-order');
+          return;
+        }
+      })();
+
+      var state = {
+        reviewId: '',
+        mode: 'first',
+      };
+      var SIGNUP_POLICY_PATH = '/01_서비스코드-ServiceCode/공통데이터-SharedData/signup-policy.txt?v=20260224r1';
+      var CHANNEL_TALK_PLUGIN_KEY = 'effcd765-65b5-49ca-b003-b18931fc6f38';
+      var signupPolicyLoaded = false;
+
+      var els = {
+        form: document.getElementById('reviewForm'),
+        file: document.getElementById('draftFile'),
+        fileName: document.getElementById('fileName'),
+        analyzeBtn: document.getElementById('analyzeBtn'),
+        rescoreBtn: document.getElementById('rescoreBtn'),
+        openSignupBtn: document.getElementById('openSignupBtn'),
+        closeSignupBtn: document.querySelector('[data-close-signup]'),
+        signupModal: document.getElementById('signup-modal'),
+        signupForm: document.getElementById('signup-form'),
+        signupMessage: document.getElementById('signup-message'),
+        signupPrivacyToggleButton: document.querySelector('[data-toggle-signup-privacy]'),
+        signupPrivacyPanel: document.getElementById('signup-privacy-panel'),
+        signupPolicyToggleButton: document.querySelector('[data-toggle-signup-policy]'),
+        signupPolicyPanel: document.getElementById('signup-policy-panel'),
+        signupPolicyContent: document.getElementById('signup-policy-content'),
+        memberEntryBox: document.getElementById('memberEntryBox'),
+        visual: document.getElementById('visual'),
+        status: document.getElementById('statusText'),
+        summary: document.getElementById('summaryText'),
+        feedbackList: document.getElementById('feedbackList'),
+        approval: document.getElementById('approvalScore'),
+        risk: document.getElementById('riskScore'),
+        readability: document.getElementById('readabilityScore'),
+        branding: document.getElementById('brandingScore'),
+        riskList: document.getElementById('riskList'),
+      };
+
+      function setStatus(message, type) {
+        els.status.textContent = message;
+        els.status.className = 'status' + (type ? ' ' + type : '');
+      }
+
+      function getCookieValue(name) {
+        var pattern = new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()\\[\\]\\\\/+^]/g, '\\$&') + '=([^;]*)');
+        var match = document.cookie.match(pattern);
+        return match ? decodeURIComponent(match[1]) : '';
+      }
+
+      async function apiFetch(path, init) {
+        var options = init || {};
+        var headers = Object.assign({}, options.headers || {});
+        var method = String(options.method || 'GET').toUpperCase();
+        if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+          var csrf = getCookieValue('deliver_csrf');
+          if (csrf) headers['x-csrf-token'] = csrf;
+        }
+        var response = await fetch(path, Object.assign({}, options, { headers: headers, credentials: 'same-origin' }));
+        var data = await response.json().catch(function () { return {}; });
+        if (!response.ok || data.ok === false) {
+          throw new Error(data.message || ('API ' + response.status));
+        }
+        return data;
+      }
+
+      function initChannelTalk() {
+        var pluginKey = String(window.DLIVER_CHANNEL_TALK_PLUGIN_KEY || CHANNEL_TALK_PLUGIN_KEY || '').trim();
+        if (!pluginKey) return;
+
+        var w = window;
+        if (w.ChannelIO) {
+          w.ChannelIO('boot', { pluginKey: pluginKey });
+          return;
+        }
+        var ch = function () {
+          ch.c(arguments);
+        };
+        ch.q = [];
+        ch.c = function (args) {
+          ch.q.push(args);
+        };
+        w.ChannelIO = ch;
+
+        function loadScript() {
+          if (w.ChannelIOInitialized) return;
+          w.ChannelIOInitialized = true;
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://cdn.channel.io/plugin/ch-plugin-web.js';
+          var x = document.getElementsByTagName('script')[0];
+          if (x && x.parentNode) x.parentNode.insertBefore(s, x);
+        }
+
+        if (document.readyState === 'complete') {
+          loadScript();
+        } else {
+          w.addEventListener('DOMContentLoaded', loadScript);
+          w.addEventListener('load', loadScript);
+        }
+
+        w.ChannelIO('boot', {
+          pluginKey: pluginKey,
+        });
+      }
+
+      function setFormMessage(type, text) {
+        if (!els.signupMessage) return;
+        els.signupMessage.className = 'form-message ' + type;
+        els.signupMessage.textContent = text;
+      }
+
+      function clearFormMessage() {
+        if (!els.signupMessage) return;
+        els.signupMessage.className = 'form-message';
+        els.signupMessage.textContent = '';
+      }
+
+      async function ensureSignupPolicyLoaded() {
+        if (signupPolicyLoaded || !(els.signupPolicyContent instanceof HTMLElement)) return;
+        try {
+          var response = await fetch(SIGNUP_POLICY_PATH, { credentials: 'same-origin', cache: 'no-store' });
+          var text = await response.text();
+          var normalized = String(text || '').trim();
+          els.signupPolicyContent.textContent = normalized || '회원가입약관 내용이 비어 있습니다.';
+        } catch (error) {
+          els.signupPolicyContent.textContent = '회원가입약관을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+        }
+        signupPolicyLoaded = true;
+      }
+
+      function setSignupPolicyPanelOpen(isOpen) {
+        if (!(els.signupPolicyPanel instanceof HTMLElement) || !(els.signupPolicyToggleButton instanceof HTMLElement)) return;
+        els.signupPolicyPanel.classList.toggle('is-hidden', !isOpen);
+        els.signupPolicyPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        els.signupPolicyToggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      }
+
+      function setSignupPrivacyPanelOpen(isOpen) {
+        if (!(els.signupPrivacyPanel instanceof HTMLElement) || !(els.signupPrivacyToggleButton instanceof HTMLElement)) return;
+        els.signupPrivacyPanel.classList.toggle('is-hidden', !isOpen);
+        els.signupPrivacyPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        els.signupPrivacyToggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      }
+
+      function syncModalBodyState() {
+        if (els.signupModal?.classList.contains('open')) {
+          document.body.classList.add('modal-open');
+          return;
+        }
+        document.body.classList.remove('modal-open');
+      }
+
+      function openSignupModal() {
+        if (!els.signupModal) return;
+        clearFormMessage();
+        setSignupPrivacyPanelOpen(false);
+        setSignupPolicyPanelOpen(false);
+        els.signupModal.classList.add('open');
+        els.signupModal.setAttribute('aria-hidden', 'false');
+        syncModalBodyState();
+        document.getElementById('signup-login-id')?.focus();
+      }
+
+      function closeSignupModal() {
+        if (!els.signupModal) return;
+        els.signupModal.classList.remove('open');
+        els.signupModal.setAttribute('aria-hidden', 'true');
+        setSignupPrivacyPanelOpen(false);
+        setSignupPolicyPanelOpen(false);
+        syncModalBodyState();
+      }
+
+      function showMemberEntryButton() {
+        if (!els.memberEntryBox) return;
+        els.memberEntryBox.hidden = false;
+      }
+
+      function setBusy(busy) {
+        els.analyzeBtn.disabled = busy;
+        els.rescoreBtn.disabled = busy;
+        if (busy) els.visual.classList.add('is-analyzing');
+        else els.visual.classList.remove('is-analyzing');
+      }
+
+      function toInt(value) {
+        var n = Number(value || 0);
+        if (!Number.isFinite(n)) return 0;
+        return Math.max(0, Math.min(100, Math.round(n)));
+      }
+
+      function renderScores(data) {
+        var scores = data && data.scores ? data.scores : {};
+        var risk = data && data.riskBreakdown ? data.riskBreakdown : {};
+
+        els.approval.textContent = toInt(scores.approval);
+        els.risk.textContent = toInt(scores.risk);
+        els.readability.textContent = toInt(scores.readability);
+        els.branding.textContent = toInt(scores.branding);
+        els.summary.textContent = data && data.summary ? data.summary : '요약 정보가 없습니다.';
+
+        els.riskList.innerHTML = [
+          '<li>법: ' + toInt(risk.law) + '</li>',
+          '<li>표시: ' + toInt(risk.disclosure) + '</li>',
+          '<li>과장: ' + toInt(risk.exaggeration) + '</li>',
+          '<li>비방: ' + toInt(risk.defamation) + '</li>',
+        ].join('');
+      }
+
+      function renderFeedback(data) {
+        var list = Array.isArray(data && data.highlights) ? data.highlights : [];
+        if (!list.length) {
+          els.feedbackList.innerHTML = '<li><b>안내</b>즉시 수정이 필요한 항목이 감지되지 않았습니다.</li>';
+          return;
+        }
+
+        els.feedbackList.innerHTML = list.slice(0, 6).map(function (item) {
+          var severity = item && item.severity ? item.severity : '권장수정';
+          var reason = item && item.reason ? item.reason : '개선 포인트가 탐지되었습니다.';
+          var suggestion = item && item.suggestion ? item.suggestion : '';
+          return '<li><b>' + severity + '</b>' + reason + (suggestion ? ' ' + suggestion : '') + '</li>';
+        }).join('');
+      }
+
+      async function runAnalyze(mode) {
+        var file = els.file.files && els.file.files[0];
+        if (!file) {
+          setStatus('검수할 파일을 먼저 첨부해 주세요.', 'error');
+          return;
+        }
+
+        if (mode === 'first') {
+          state.reviewId = '';
+        }
+
+        var fd = new FormData();
+        fd.append('draftFile', file);
+        fd.append('reviewMode', mode);
+        if (mode === 'rescore' && state.reviewId) {
+          fd.append('reviewId', state.reviewId);
+        }
+
+        setBusy(true);
+        setStatus(mode === 'rescore' ? '재점수 중입니다...' : '검수 중입니다...');
+
+        try {
+          var response = await fetch('/api/review/analyze', {
+            method: 'POST',
+            credentials: 'include',
+            body: fd,
+          });
+          var data = await response.json().catch(function () { return {}; });
+          if (!response.ok || !data.ok) {
+            throw new Error(data && data.message ? data.message : '검수 처리에 실패했습니다.');
+          }
+
+          state.reviewId = data.reviewId || state.reviewId;
+          state.mode = mode;
+          renderScores(data);
+          renderFeedback(data);
+
+          els.visual.classList.add('result-ready');
+          var canRescore = data && data.nextAction === 'can_rescore';
+          els.rescoreBtn.hidden = !canRescore;
+          setStatus(
+            canRescore
+              ? '검수 완료. 수정 후 재점수로 개선도를 확인하세요.'
+              : '검수 완료. 비회원 체험은 1회 제공되며, 회원가입 후 재점수를 이용할 수 있습니다.',
+            'ok'
+          );
+        } catch (error) {
+          setStatus(error && error.message ? error.message : '검수 처리 중 오류가 발생했습니다.', 'error');
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      els.file.addEventListener('change', function () {
+        var file = els.file.files && els.file.files[0];
+        els.fileName.textContent = file ? file.name : '선택된 파일 없음';
+      });
+
+      els.form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        runAnalyze('first');
+      });
+
+      els.rescoreBtn.addEventListener('click', function () {
+        runAnalyze('rescore');
+      });
+
+      els.openSignupBtn?.addEventListener('click', function () {
+        openSignupModal();
+      });
+
+      els.closeSignupBtn?.addEventListener('click', function () {
+        closeSignupModal();
+      });
+
+      els.signupPrivacyToggleButton?.addEventListener('click', function (event) {
+        event.preventDefault();
+        var opening = els.signupPrivacyPanel?.classList.contains('is-hidden');
+        setSignupPrivacyPanelOpen(Boolean(opening));
+      });
+
+      els.signupPolicyToggleButton?.addEventListener('click', async function (event) {
+        event.preventDefault();
+        var opening = els.signupPolicyPanel?.classList.contains('is-hidden');
+        if (opening) await ensureSignupPolicyLoaded();
+        setSignupPolicyPanelOpen(Boolean(opening));
+      });
+
+      els.signupModal?.addEventListener('click', function (event) {
+        if (event.target === els.signupModal) closeSignupModal();
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') closeSignupModal();
+      });
+
+      els.signupForm?.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        clearFormMessage();
+
+        var formData = new FormData(els.signupForm);
+        var loginId = String(formData.get('loginId') || '').trim().toLowerCase();
+        var name = String(formData.get('name') || '').trim();
+        var email = String(formData.get('email') || '').trim().toLowerCase();
+        var company = String(formData.get('company') || '').trim();
+        var password = String(formData.get('password') || '');
+        var confirmPassword = String(formData.get('confirmPassword') || '');
+        var termsChecked = formData.get('terms') === 'on';
+        var policyTermsChecked = formData.get('policyTerms') === 'on';
+
+        if (!loginId || !name || !email || !company || !password || !confirmPassword) {
+          setFormMessage('error', '필수 항목을 모두 입력해 주세요.');
+          return;
+        }
+        if (!/^[a-z0-9_]{3,20}$/.test(loginId)) {
+          setFormMessage('error', '아이디는 영문 소문자/숫자/밑줄 조합 3~20자여야 합니다.');
+          return;
+        }
+        if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+          setFormMessage('error', '이메일 형식을 확인해 주세요.');
+          return;
+        }
+        if (password.length < 8) {
+          setFormMessage('error', '비밀번호는 8자 이상이어야 합니다.');
+          return;
+        }
+        if (password !== confirmPassword) {
+          setFormMessage('error', '비밀번호 확인 값이 일치하지 않습니다.');
+          return;
+        }
+        if (!termsChecked) {
+          setFormMessage('error', '개인정보 수집 및 안내 수신 동의가 필요합니다.');
+          return;
+        }
+        if (!policyTermsChecked) {
+          setFormMessage('error', '회원가입약관 동의가 필요합니다.');
+          return;
+        }
+
+        try {
+          await apiFetch('/api/auth/signup', {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+              loginId: loginId,
+              name: name,
+              email: email,
+              company: company,
+              password: password,
+            }),
+          });
+
+          setFormMessage('success', '회원가입이 완료되었습니다.');
+          setStatus('회원가입 완료. 회원전용페이지 이동 버튼이 활성화되었습니다.', 'ok');
+          showMemberEntryButton();
+          els.signupForm.reset();
+          window.setTimeout(function () {
+            closeSignupModal();
+            clearFormMessage();
+          }, 700);
+        } catch (error) {
+          setFormMessage('error', error && error.message ? error.message : '회원가입 중 오류가 발생했습니다.');
+        }
+      });
+
+      initChannelTalk();
+    </script>
+  </body>
+</html>
