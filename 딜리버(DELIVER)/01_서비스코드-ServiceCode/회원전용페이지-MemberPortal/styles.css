@@ -310,23 +310,6 @@ body {
   overflow-y: auto;
 }
 
-.point-charge-inline {
-  margin-top: 0.72rem;
-  border: 1px dashed #c9d9f2;
-  border-radius: 12px;
-  padding: 0.74rem;
-  background: linear-gradient(180deg, #f8fbff 0%, #f3f8ff 100%);
-  display: grid;
-  gap: 0.5rem;
-  justify-items: start;
-}
-
-.charge-hint {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-
 .media-group {
   border-bottom: 1px solid #e4edf9;
 }
@@ -432,7 +415,7 @@ body {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 620px;
+  min-width: 760px;
 }
 
 th,
@@ -499,6 +482,45 @@ tbody tr.selected {
   margin-top: 0.92rem;
   display: grid;
   gap: 0.66rem;
+}
+
+.estimate-box {
+  border: 1px solid #d6e2f4;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f9fcff 0%, #f4f8ff 100%);
+  padding: 0.72rem;
+}
+
+.estimate-row {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.estimate-row + .estimate-row {
+  margin-top: 0.24rem;
+}
+
+.estimate-row strong {
+  color: #1c427d;
+  font-family: "Montserrat", "Noto Sans KR", sans-serif;
+  font-size: 0.9rem;
+}
+
+.estimate-row.total {
+  margin-top: 0.38rem;
+  padding-top: 0.34rem;
+  border-top: 1px dashed #c5d8f2;
+}
+
+.estimate-row.total strong {
+  color: var(--primary);
+  font-size: 1rem;
 }
 
 .input-row {
@@ -577,7 +599,7 @@ tbody tr.selected {
 }
 
 .modal-card {
-  width: min(460px, 100%);
+  width: min(540px, 100%);
   border-radius: 18px;
   border: 1px solid #d0deef;
   background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
@@ -599,11 +621,12 @@ tbody tr.selected {
   font-size: 1rem;
 }
 
-.charge-quick-grid {
-  margin-top: 0.74rem;
-  display: grid;
-  gap: 0.4rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.payment-summary-box {
+  margin-top: 0.68rem;
+  border: 1px solid #d8e5f6;
+  border-radius: 12px;
+  background: #f8fbff;
+  padding: 0.62rem;
 }
 
 .charge-form {
@@ -621,7 +644,17 @@ tbody tr.selected {
   font: inherit;
 }
 
-.charge-form input:focus {
+.charge-form select {
+  width: 100%;
+  border: 1px solid #d2e0f5;
+  border-radius: 11px;
+  background: #fcfdff;
+  padding: 0.64rem 0.7rem;
+  font: inherit;
+}
+
+.charge-form input:focus,
+.charge-form select:focus {
   outline: 2px solid rgba(19, 144, 238, 0.18);
   border-color: #86bdf3;
 }
@@ -932,10 +965,6 @@ tbody tr.selected {
     padding: 0.75rem;
   }
 
-  .point-charge-inline .btn {
-    width: 100%;
-  }
-
   .selected-media h3 {
     font-size: 0.96rem;
   }
@@ -951,10 +980,6 @@ tbody tr.selected {
   .modal-card {
     max-height: calc(100vh - 2rem);
     overflow-y: auto;
-  }
-
-  .charge-quick-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .file-row {

@@ -16,7 +16,7 @@ export async function onRequestGet(context) {
 
     const rows = await d1Query(
       context.env,
-      "select id, login_id, name, email, company, point_balance, role from members where id = ? limit 1",
+      "select id, login_id, name, email, company, role from members where id = ? limit 1",
       [session.memberId]
     );
     if (!rows.length) {
@@ -30,7 +30,6 @@ export async function onRequestGet(context) {
         name: member.name,
         email: member.email,
         company: member.company,
-        pointBalance: Number(member.point_balance || 0),
         role: member.role || "member",
       },
     });

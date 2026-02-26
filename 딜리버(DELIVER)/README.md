@@ -49,6 +49,7 @@
 ## Cloudflare 데이터 문서
 - `08_데이터베이스-Database/01_마이그레이션-Migrations/003_init_d1_schema.sql`
 - `08_데이터베이스-Database/01_마이그레이션-Migrations/004_review_engine_schema.sql`
+- `08_데이터베이스-Database/01_마이그레이션-Migrations/005_order_payment_system.sql`
 - `03_프로젝트문서-ProjectDocs/AdminMVP-운영구성-AdminMVPBlueprint.md`
 - `03_프로젝트문서-ProjectDocs/Cloudflare연동가이드-CloudflareSetupGuide.md`
 
@@ -60,6 +61,24 @@
 set -a
 source ~/.deliver-secrets/.env.cloudflare.local
 set +a
+```
+
+0-1. 주문결제 필수 환경변수 점검(권장)
+```bash
+cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
+./07_자동화스크립트-AutomationScripts/check_order_payment_env.sh
+```
+
+0-2. 주문결제 배포 게이트(권장)
+```bash
+cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
+./07_자동화스크립트-AutomationScripts/predeploy_order_payment_gate.sh --skip-remote
+```
+
+0-3. 토스 실연동 배포 직전 게이트(심사 완료 후)
+```bash
+cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
+./07_자동화스크립트-AutomationScripts/predeploy_order_payment_gate.sh --require-toss-live --skip-remote
 ```
 
 1. 개발 후 로컬 백업 생성
@@ -97,6 +116,7 @@ cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
 cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
 npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/003_init_d1_schema.sql
 npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/004_review_engine_schema.sql
+npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/005_order_payment_system.sql
 ```
 
 7. D1 데이터베이스 목록 확인

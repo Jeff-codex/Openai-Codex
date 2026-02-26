@@ -18,17 +18,16 @@ export async function onRequestPatch(context) {
 
     const body = await parseJson(context.request);
     const memberId = sanitizePlainText(body.memberId, 80);
-    const pointBalanceRaw = Number(body.pointBalance);
     const nextPassword = String(body.password || "");
     const passwordChanged = nextPassword.length > 0;
     const ip = getRequestClientIp(context.request);
 
     if (!memberId) return jsonError("회원 ID가 필요합니다.", 400);
-    if (!Number.isFinite(pointBalanceRaw) || pointBalanceRaw < 0) {
-      return jsonError("포인트는 0 이상의 숫자여야 합니다.", 400);
-    }
     if (passwordChanged && nextPassword.length < 8) {
       return jsonError("비밀번호는 8자 이상이어야 합니다.", 400);
+    }
+    if (!passwordChanged) {
+      return jsonError("새 비밀번호를 입력해 주세요.", 400);
     }
 
     const rows = await d1Query(
@@ -39,25 +38,15 @@ export async function onRequestPatch(context) {
     if (!rows.length) return jsonError("회원을 찾을 수 없습니다.", 404);
     const member = rows[0];
     const now = new Date().toISOString();
-    const nextPointBalance = Math.round(pointBalanceRaw);
-
-    if (passwordChanged) {
-      const passwordHash = await hashPassword(nextPassword, context.env);
-      await d1Execute(
-        context.env,
-        "update members set point_balance = ?, password = ?, updated_at = ? where id = ?",
-        [nextPointBalance, passwordHash, now, memberId]
-      );
-    } else {
-      await d1Execute(
-        context.env,
-        "update members set point_balance = ?, updated_at = ? where id = ?",
-        [nextPointBalance, now, memberId]
-      );
-    }
+    const passwordHash = await hashPassword(nextPassword, context.env);
+    await d1Execute(
+      context.env,
+      "update members set password = ?, updated_at = ? where id = ?",
+      [passwordHash, now, memberId]
+    );
 
     await d1Execute(context.env, "insert into admin_logs (message, created_at) values (?, ?)", [
-      `회원 정보 수정: ${member.login_id} (${member.role || "member"}) / 포인트=${nextPointBalance}${passwordChanged ? " / 비밀번호 변경" : ""}`,
+      `회원 정보 수정: ${member.login_id} (${member.role || "member"}) / 비밀번호 변경`,
       now,
     ]);
     await writeSecurityAudit(context.env, {
@@ -73,8 +62,7 @@ export async function onRequestPatch(context) {
       member: {
         id: memberId,
         loginId: member.login_id,
-        pointBalance: nextPointBalance,
-        passwordChanged,
+        passwordChanged: true,
       },
     });
   } catch (error) {

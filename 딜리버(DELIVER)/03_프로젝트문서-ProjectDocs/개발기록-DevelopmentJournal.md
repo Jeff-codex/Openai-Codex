@@ -592,3 +592,15 @@
 - 딜리버(DELIVER)/functions/api/review/analyze.js
 - 딜리버(DELIVER)/src/
 - 다음 작업: 이어서 개발 진행
+
+## 2026-02-26 12:30:59 KST
+- 단계: 푸터 사업자정보(사업장소재지/이메일) 추가 및 도메인 배포 반영
+- 요약: 단계 완료 체크포인트 저장
+- 변경 파일:
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/관리자페이지-AdminPage/index.html
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/랜딩페이지-FirstLandingPage/index.html
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/index.html
+- 딜리버(DELIVER)/index.html
+- 딜리버(DELIVER)/06_운영로그-OpsLogs/backup-schedule/backup-20260226-121504.log
+- 다음 작업: 이어서 개발 진행

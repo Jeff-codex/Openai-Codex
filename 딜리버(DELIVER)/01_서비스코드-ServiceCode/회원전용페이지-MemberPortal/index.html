@@ -28,7 +28,6 @@
         <span class="brand-sub">회원전용 딜리버 주문 포털</span>
       </div>
       <div class="top-actions">
-        <button class="btn btn-light" type="button" id="member-charge-button-top">포인트충전</button>
         <span class="mode-pill" id="member-state">회원 확인중...</span>
         <button class="btn btn-danger" type="button" id="member-logout-button">로그아웃</button>
       </div>
@@ -37,11 +36,11 @@
     <main class="layout">
       <section class="card panel">
         <h2>실시간 운영 대시보드</h2>
-        <p class="sub">포인트, 주문 상태, 매체 선택을 한 화면에서 처리합니다.</p>
+        <p class="sub">주문 상태와 결제 현황을 한 화면에서 확인합니다.</p>
         <div class="stats-grid">
           <article class="stat-box">
-            <strong id="stat-points">0원</strong>
-            <span>현재 포인트</span>
+            <strong id="stat-payments-total">0원</strong>
+            <span>누적 결제금액</span>
           </article>
           <article class="stat-box">
             <strong id="stat-orders-total">0</strong>
@@ -73,19 +72,17 @@
             </div>
           </div>
           <div class="media-group-list" id="media-group-list"></div>
-          <div class="point-charge-inline">
-            <p class="charge-hint">포인트가 부족하면 충전 후 즉시 주문이 가능합니다.</p>
-            <button class="btn btn-primary" type="button" id="member-charge-button-inline">포인트충전</button>
-          </div>
         </article>
 
         <article class="card panel">
           <h2>송출 주문 등록</h2>
-          <p class="sub">선택한 매체 기준으로 주문을 등록하면 관리자 페이지에서 즉시 확인됩니다.</p>
+          <p class="sub">주문등록 후 결제 최종확인 단계를 거쳐 결제창으로 이동합니다.</p>
 
           <div class="selected-media" id="selected-media-card">
             <h3 id="selected-media-name">매체를 선택해 주세요</h3>
-            <p id="selected-media-price">단가: -</p>
+            <p id="selected-media-price">공급가: -</p>
+            <p id="selected-media-vat">부가세(10%): -</p>
+            <p id="selected-media-total">결제예정금액: -</p>
             <p id="selected-media-channel">노출채널: -</p>
             <p id="selected-media-description">참고사항: -</p>
           </div>
@@ -95,18 +92,10 @@
               <label for="order-title">주문명</label>
               <input id="order-title" name="title" type="text" placeholder="예: 신제품 런칭 보도자료" required />
             </div>
-            <div class="input-row">
-              <label for="order-budget">사용 포인트(원)</label>
-              <input
-                id="order-budget"
-                name="budget"
-                type="number"
-                min="1"
-                placeholder="매체 선택 시 자동 입력"
-                readonly
-                required
-              />
-              <small class="field-hint">선택한 매체 단가가 자동 적용되며 수정할 수 없습니다.</small>
+            <div class="input-row estimate-box">
+              <p class="estimate-row"><span>공급가</span><strong id="order-estimate-supply">0원</strong></p>
+              <p class="estimate-row"><span>부가세(10%)</span><strong id="order-estimate-vat">0원</strong></p>
+              <p class="estimate-row total"><span>최종 결제예정금액</span><strong id="order-estimate-total">0원</strong></p>
             </div>
             <div class="input-row">
               <label for="order-note">요청사항</label>
@@ -130,6 +119,7 @@
                 <button class="btn btn-light" id="order-file-button" type="button">원고파일첨부</button>
                 <span id="order-file-name">선택된 파일 없음</span>
               </div>
+              <small class="field-hint">주문등록 후 최종 금액/환불규정을 확인하고 결제하시겠습니까 버튼을 눌러 결제를 진행합니다.</small>
             </div>
             <p class="form-message" id="order-message" aria-live="polite"></p>
             <button class="btn btn-primary" type="submit">주문 등록</button>
@@ -144,10 +134,11 @@
           <table>
             <thead>
               <tr>
-                <th>접수일</th>
+                <th>주문일시</th>
+                <th>주문번호</th>
                 <th>주문명</th>
                 <th>매체</th>
-                <th>사용 포인트</th>
+                <th>결제금액</th>
                 <th>첨부</th>
                 <th>상태</th>
               </tr>
@@ -162,77 +153,51 @@
       <div class="site-footer-inner">
         <p>© 2026 뎁스코퍼레이션. All rights reserved.</p>
         <p>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804</p>
+        <p>사업장소재지 : 경기도 양평군 양서면 목왕리 532</p>
+        <p>이메일 : jeff@dliver.co.kr</p>
         <p>운영정보: 우측 하단 채널톡 상담 운영</p>
       </div>
     </footer>
 
-    <div class="modal" id="point-charge-modal" aria-hidden="true">
-      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="point-charge-title">
+    <div class="modal" id="order-payment-modal" aria-hidden="true">
+      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="order-payment-title">
         <div class="modal-head">
-          <h3 id="point-charge-title">포인트 충전</h3>
-          <button class="btn btn-light small" type="button" id="point-charge-close">닫기</button>
+          <h3 id="order-payment-title">최종 결제 확인</h3>
+          <button class="btn btn-light small" type="button" id="order-payment-close">닫기</button>
         </div>
-        <p class="sub">충전 금액을 선택하거나 직접 입력해 포인트를 즉시 충전합니다.</p>
-        <div class="charge-quick-grid">
-          <button class="btn btn-light small" type="button" data-charge-quick="50000">+5만</button>
-          <button class="btn btn-light small" type="button" data-charge-quick="100000">+10만</button>
-          <button class="btn btn-light small" type="button" data-charge-quick="300000">+30만</button>
-          <button class="btn btn-light small" type="button" data-charge-quick="500000">+50만</button>
+        <p class="sub">아래 금액과 환불 규정을 확인한 후 결제하시겠습니까 버튼을 눌러 결제를 진행해 주세요.</p>
+        <div class="payment-summary-box">
+          <p class="estimate-row"><span>주문명</span><strong id="payment-summary-title">-</strong></p>
+          <p class="estimate-row"><span>매체</span><strong id="payment-summary-media">-</strong></p>
+          <p class="estimate-row"><span>공급가</span><strong id="payment-summary-supply">0원</strong></p>
+          <p class="estimate-row"><span>부가세(10%)</span><strong id="payment-summary-vat">0원</strong></p>
+          <p class="estimate-row total"><span>최종 결제금액</span><strong id="payment-summary-total">0원</strong></p>
+          <p class="estimate-row"><span>유효시간</span><strong id="payment-summary-expiry">-</strong></p>
         </div>
-        <form id="point-charge-form" class="charge-form" novalidate>
+        <form id="order-payment-form" class="charge-form" novalidate>
           <div class="input-row">
-            <label for="point-charge-amount">충전 금액(원)</label>
-            <input id="point-charge-amount" name="amount" type="number" min="1000" step="1000" placeholder="예: 100000" required />
+            <label for="order-payment-method">결제 수단</label>
+            <select id="order-payment-method" name="method"></select>
           </div>
-          <div class="input-row">
-            <label for="point-charge-note">충전 메모(선택)</label>
-            <input id="point-charge-note" name="note" type="text" maxlength="120" placeholder="예: 월간 예산 충전" />
-          </div>
-          <p class="form-message" id="point-charge-message" aria-live="polite"></p>
+          <p class="form-message" id="order-payment-message" aria-live="polite"></p>
           <div class="modal-actions">
-            <button class="btn btn-light" type="button" id="point-charge-cancel">취소</button>
-            <button class="btn btn-primary" type="submit">충전하기</button>
+            <button class="btn btn-light" type="button" id="order-payment-cancel">취소</button>
+            <button class="btn btn-primary" type="submit">결제하시겠습니까</button>
           </div>
         </form>
-        <details class="refund-policy" id="point-refund-policy">
-          <summary>포인트 환불 규정</summary>
+        <details class="refund-policy" id="order-refund-policy" open>
+          <summary>환불 규정</summary>
           <div class="refund-policy-body">
-            <h4>포인트의 환급</h4>
-            <p>1. 회원이 포인트의 환급을 청구하는 경우 본 약관 또는 세부이용지침 등에서 약정한 바에 따라 환급합니다.</p>
-            <p>
-              2. 회원이 포인트를 구매한 후에는 아래 기재된 경우가 아닐시 전자금융거래법에 근거하여 불법 금융행위 등을 방지하기
-              위하여 환급받을 수 없습니다.
-            </p>
-            <p class="refund-sub">(1) 천재지변 등의 사유로 회사 측이 일체의 마케팅 서비스를 제공하지 못하여 포인트를 사용하지 못하게 되는 경우</p>
-            <p>
-              3. 회사는 회원이 구매한 포인트의 환급을 청구하는 경우 포인트의 잔액에서 잔액의 10% 또는 1000원 가운데 큰 금액을
-              환급 수수료로 공제한 후 환급합니다.
-            </p>
-            <p>
-              4. 회사는 회원이 포인트를 마지막으로 구매한 후 사용 이력이 없는 경우에 대해 아래 각 호를 모두 충족한 경우 결제
-              취소를 통해 전액 환급합니다.
-            </p>
-            <p class="refund-sub">(1) 결제 당사자의 국내 명의를 명확하게 확인할 수 있는 결제 수단을 사용한 경우</p>
-            <p class="refund-sub">(2) 결제 수단의 기술적 특성상 결제 취소가 가능한 경우</p>
-            <p class="refund-sub">
-              (3) 세부이용지침에서 정한 내용을 정확하게 기입한 결제 취소 요청서를 회사가 정한 방법으로 결제 후 5영업일 이내에
-              접수한 경우
-            </p>
-            <p>
-              5. 천재지변 등의 불가피한 사유로 회사측이 재화 또는 용역을 제공하기 곤란하여 포인트를 사용하지 못하게 된 경우 또는
-              포인트의 결함으로 회사가 재화 또는 용역을 제공하지 못하는 경우에는 포인트에 기록된 잔액의 전부를 지급합니다.
-            </p>
-            <p>
-              6. 회사는 불법 금융행위 등을 방지하기 위하여 회원에게 환급에 필요한 증빙 서류를 요구할 수 있으며, 회원이 이를
-              거부할 경우에는 환급이 제한될 수 있습니다.
-            </p>
-            <p>7. 회원이 직접 구매하지 않은 포인트는 환급대상에서 제외됩니다.</p>
+            <div id="order-refund-policy-content">
+              <h4>주문 결제 환불 규정(임시 안내문)</h4>
+              <p>최종 환불 규정 문구는 운영 정책 확정본으로 교체됩니다.</p>
+            </div>
           </div>
         </details>
       </article>
     </div>
 
     <script src="/01_서비스코드-ServiceCode/공통데이터-SharedData/media_seed.js?v=20260224r4"></script>
-    <script src="app.js?v=20260224r5"></script>
+    <script src="app.js?v=20260227r1"></script>
   </body>
 </html>

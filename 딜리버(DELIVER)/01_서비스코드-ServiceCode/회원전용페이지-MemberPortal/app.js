@@ -1,9 +1,7 @@
 const MEMBER_TOKEN_KEY = "deliver_member_token_v1";
+const MEMBER_ORDER_DRAFT_KEY = "deliver_member_order_draft_v2";
 const LANDING_PAGE_PATH = "../랜딩페이지-LandingPage/index.html";
 const CHANNEL_TALK_PLUGIN_KEY = "effcd765-65b5-49ca-b003-b18931fc6f38";
-const MIN_POINT_CHARGE_AMOUNT = 1000;
-const MAX_POINT_CHARGE_AMOUNT = 5000000;
-const DEFAULT_POINT_CHARGE_AMOUNT = 100000;
 
 const ORDER_STATUS_LABELS = {
   received: "접수",
@@ -22,7 +20,10 @@ const state = {
   activeMediaGroup: "",
   mediaCollapsed: {},
   syncTimer: null,
-  pointChargePending: false,
+  paymentIntent: null,
+  paymentMethods: [],
+  paymentIntegration: { ready: false, message: "" },
+  paymentPending: false,
 };
 
 function clearLegacyTokenStorage() {
@@ -60,6 +61,19 @@ function formatBytes(value) {
   if (n < 1024) return `${n}B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)}KB`;
   return `${(n / (1024 * 1024)).toFixed(1)}MB`;
+}
+
+function normalizeAmount(value) {
+  const raw = Number(value || 0);
+  if (!Number.isFinite(raw)) return 0;
+  return Math.max(0, Math.round(raw));
+}
+
+function calculateAmounts(unitPrice) {
+  const supplyAmount = normalizeAmount(unitPrice);
+  const vatAmount = Math.round(supplyAmount * 0.1);
+  const totalAmount = supplyAmount + vatAmount;
+  return { supplyAmount, vatAmount, totalAmount };
 }
 
 function escapeHtml(value) {
@@ -134,9 +148,7 @@ function initChannelTalk() {
     w.addEventListener("load", loadScript);
   }
 
-  w.ChannelIO("boot", {
-    pluginKey,
-  });
+  w.ChannelIO("boot", { pluginKey });
 }
 
 function setOrderMessage(type, text) {
@@ -146,46 +158,71 @@ function setOrderMessage(type, text) {
   message.textContent = text || "";
 }
 
-function setPointChargeMessage(type, text) {
-  const message = document.getElementById("point-charge-message");
+function setPaymentMessage(type, text) {
+  const message = document.getElementById("order-payment-message");
   if (!message) return;
   message.className = type ? `form-message ${type}` : "form-message";
   message.textContent = text || "";
 }
 
-function openPointChargeModal(defaultAmount = 0) {
-  const modal = document.getElementById("point-charge-modal");
-  const amountInput = document.getElementById("point-charge-amount");
+function openPaymentModal() {
+  const modal = document.getElementById("order-payment-modal");
   if (!(modal instanceof HTMLElement)) return;
-  if (amountInput instanceof HTMLInputElement) {
-    const presetAmount = normalizeChargeAmount(defaultAmount);
-    if (presetAmount > 0) {
-      amountInput.value = String(Math.max(MIN_POINT_CHARGE_AMOUNT, presetAmount));
-    }
-  }
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
-  setPointChargeMessage("", "");
-  if (amountInput instanceof HTMLInputElement) {
-    amountInput.focus();
-    amountInput.select();
-  }
 }
 
-function closePointChargeModal() {
-  if (state.pointChargePending) return;
-  const modal = document.getElementById("point-charge-modal");
+function closePaymentModal() {
+  if (state.paymentPending) return;
+  const modal = document.getElementById("order-payment-modal");
   if (!(modal instanceof HTMLElement)) return;
   modal.classList.remove("open");
   modal.setAttribute("aria-hidden", "true");
-  setPointChargeMessage("", "");
+  setPaymentMessage("", "");
 }
 
-function normalizeChargeAmount(value) {
-  const raw = Number(value || 0);
-  if (!Number.isFinite(raw)) return 0;
-  const rounded = Math.round(raw);
-  return Math.max(0, rounded);
+function persistOrderDraft() {
+  const form = document.getElementById("member-order-form");
+  if (!(form instanceof HTMLFormElement)) return;
+  const formData = new FormData(form);
+  const payload = {
+    title: String(formData.get("title") || "").trim(),
+    requestNote: String(formData.get("requestNote") || "").trim(),
+    selectedMediaId: state.selectedMediaId || "",
+    paymentIntentId: state.paymentIntent?.intentId || "",
+  };
+  try {
+    sessionStorage.setItem(MEMBER_ORDER_DRAFT_KEY, JSON.stringify(payload));
+  } catch (error) {
+  }
+}
+
+function restoreOrderDraft() {
+  const form = document.getElementById("member-order-form");
+  if (!(form instanceof HTMLFormElement)) return;
+  let payload = null;
+  try {
+    payload = JSON.parse(sessionStorage.getItem(MEMBER_ORDER_DRAFT_KEY) || "{}");
+  } catch (error) {
+    payload = null;
+  }
+  if (!payload || typeof payload !== "object") return;
+  if (payload.title && form.elements.namedItem("title") instanceof HTMLInputElement) {
+    form.elements.namedItem("title").value = String(payload.title);
+  }
+  if (payload.requestNote && form.elements.namedItem("requestNote") instanceof HTMLTextAreaElement) {
+    form.elements.namedItem("requestNote").value = String(payload.requestNote);
+  }
+  if (payload.selectedMediaId && state.media.some((item) => item.id === payload.selectedMediaId)) {
+    state.selectedMediaId = payload.selectedMediaId;
+  }
+}
+
+function clearOrderDraft() {
+  try {
+    sessionStorage.removeItem(MEMBER_ORDER_DRAFT_KEY);
+  } catch (error) {
+  }
 }
 
 async function loadTossPaymentsSdk() {
@@ -218,60 +255,191 @@ function clearPaymentResultQuery() {
   window.history.replaceState({}, "", url.toString());
 }
 
-async function submitPointCharge(form) {
-  if (state.pointChargePending) return;
-  const amountInput = form.elements.namedItem("amount");
-  const noteInput = form.elements.namedItem("note");
-  const submitButton = form.querySelector('button[type="submit"]');
-  const amount = normalizeChargeAmount(amountInput?.value);
-  const note = String(noteInput?.value || "").trim();
-  if (amount < MIN_POINT_CHARGE_AMOUNT) {
-    setPointChargeMessage("error", `최소 충전 금액은 ${formatCurrency(MIN_POINT_CHARGE_AMOUNT)} 입니다.`);
-    return;
-  }
-  if (amount > MAX_POINT_CHARGE_AMOUNT) {
-    setPointChargeMessage("error", `1회 최대 충전 금액은 ${formatCurrency(MAX_POINT_CHARGE_AMOUNT)} 입니다.`);
-    return;
+function getSelectedMedia() {
+  return state.media.find((item) => item.id === state.selectedMediaId) || null;
+}
+
+function getSelectedMediaPrice() {
+  const media = getSelectedMedia();
+  return normalizeAmount(media?.unitPrice || 0);
+}
+
+function syncEstimateFields() {
+  const supplyEl = document.getElementById("order-estimate-supply");
+  const vatEl = document.getElementById("order-estimate-vat");
+  const totalEl = document.getElementById("order-estimate-total");
+  const amounts = calculateAmounts(getSelectedMediaPrice());
+  if (supplyEl) supplyEl.textContent = formatCurrency(amounts.supplyAmount);
+  if (vatEl) vatEl.textContent = formatCurrency(amounts.vatAmount);
+  if (totalEl) totalEl.textContent = formatCurrency(amounts.totalAmount);
+}
+
+function applyIntentToPaymentModal(intent, methods, refundPolicyHtml, paymentIntegration = null) {
+  state.paymentIntent = intent || null;
+  state.paymentMethods = Array.isArray(methods) ? methods : [];
+  state.paymentIntegration = {
+    ready: Boolean(paymentIntegration?.ready),
+    message: String(paymentIntegration?.message || ""),
+  };
+  const titleEl = document.getElementById("payment-summary-title");
+  const mediaEl = document.getElementById("payment-summary-media");
+  const supplyEl = document.getElementById("payment-summary-supply");
+  const vatEl = document.getElementById("payment-summary-vat");
+  const totalEl = document.getElementById("payment-summary-total");
+  const expiryEl = document.getElementById("payment-summary-expiry");
+  const methodSelect = document.getElementById("order-payment-method");
+  const paymentForm = document.getElementById("order-payment-form");
+  const submitButton = paymentForm?.querySelector('button[type="submit"]');
+  const refundEl = document.getElementById("order-refund-policy-content");
+
+  if (titleEl) titleEl.textContent = String(intent?.title || "-");
+  if (mediaEl) mediaEl.textContent = String(intent?.mediaName || "-");
+  if (supplyEl) supplyEl.textContent = formatCurrency(intent?.supplyAmount || 0);
+  if (vatEl) vatEl.textContent = formatCurrency(intent?.vatAmount || 0);
+  if (totalEl) totalEl.textContent = formatCurrency(intent?.totalAmount || 0);
+  if (expiryEl) expiryEl.textContent = formatDate(intent?.expiresAt);
+  if (refundEl) {
+    if (refundPolicyHtml) {
+      refundEl.innerHTML = refundPolicyHtml;
+    } else {
+      refundEl.innerHTML = `<p>환불 규정 정보를 불러오지 못했습니다. 관리자에게 문의해 주세요.</p>`;
+    }
   }
 
-  state.pointChargePending = true;
-  if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
-  setPointChargeMessage("", "결제창을 준비하고 있습니다...");
-  try {
-    const prepared = await apiFetch("/api/payments/toss/prepare", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ amount, note }),
-    });
-    const clientKey = String(prepared?.payment?.clientKey || "").trim();
-    if (!clientKey || !prepared?.payment?.orderId) {
-      throw new Error(prepared?.message || "토스 결제키가 아직 설정되지 않았습니다.");
-    }
-    const TossPayments = await loadTossPaymentsSdk();
-    const tossPayments = TossPayments(clientKey);
-    await tossPayments.requestPayment("카드", {
-      amount: Number(prepared.payment.amount || amount),
-      orderId: String(prepared.payment.orderId),
-      orderName: String(prepared.payment.orderName || "딜리버 포인트 충전"),
-      customerName: String(state.member?.name || ""),
-      customerEmail: String(state.member?.email || ""),
-      successUrl: String(prepared.payment.successUrl || window.location.href),
-      failUrl: String(prepared.payment.failUrl || window.location.href),
-    });
-  } catch (error) {
-    if (String(error?.code || "").toUpperCase() === "USER_CANCEL") {
-      setPointChargeMessage("", "결제가 취소되었습니다.");
-      return;
-    }
-    setPointChargeMessage("error", error.message || "결제 요청 중 오류가 발생했습니다.");
-  } finally {
-    if (submitButton instanceof HTMLButtonElement) submitButton.disabled = false;
-    state.pointChargePending = false;
+  if (methodSelect instanceof HTMLSelectElement) {
+    const list = state.paymentMethods.length
+      ? state.paymentMethods
+      : [{ id: "CARD", label: "카드", sdkMethod: "카드" }];
+    methodSelect.innerHTML = list
+      .map((item) => `<option value="${escapeHtml(item.id || item.sdkMethod || "CARD")}">${escapeHtml(item.label || item.sdkMethod || "카드")}</option>`)
+      .join("");
+    methodSelect.value = list[0]?.id || "CARD";
+    methodSelect.disabled = !state.paymentIntegration.ready;
+  }
+
+  if (submitButton instanceof HTMLButtonElement) {
+    submitButton.disabled = !state.paymentIntegration.ready;
+    submitButton.textContent = state.paymentIntegration.ready ? "결제하시겠습니까" : "결제연동 심사중";
+    submitButton.title = state.paymentIntegration.ready
+      ? ""
+      : "토스페이먼츠 심사 완료 후 결제가 오픈됩니다.";
+  }
+
+  if (!state.paymentIntegration.ready) {
+    setPaymentMessage("error", state.paymentIntegration.message || "토스페이먼츠 결제 연동 심사중입니다.");
+  } else {
+    setPaymentMessage("", "");
   }
 }
 
-async function handlePointChargeRedirectResult() {
+async function submitOrder(form) {
+  const media = getSelectedMedia();
+  if (!media) {
+    setOrderMessage("error", "매체를 먼저 선택해 주세요.");
+    return;
+  }
+  const formData = new FormData(form);
+  const title = String(formData.get("title") || "").trim();
+  const requestNote = String(formData.get("requestNote") || "").trim();
+  const draftFile = formData.get("draftFile");
+  if (!title) {
+    setOrderMessage("error", "주문명을 입력해 주세요.");
+    return;
+  }
+  if (!(draftFile && typeof draftFile === "object" && Number(draftFile.size || 0) > 0)) {
+    setOrderMessage("error", "원고 파일을 첨부해 주세요.");
+    return;
+  }
+
+  try {
+    setOrderMessage("", "결제 정보를 준비하고 있습니다...");
+    const payload = new FormData();
+    payload.set("mediaId", media.id);
+    payload.set("title", title);
+    payload.set("requestNote", requestNote);
+    payload.set("draftFile", draftFile);
+
+    const prepared = await apiFetch("/api/orders/payment-intents", {
+      method: "POST",
+      body: payload,
+    });
+    applyIntentToPaymentModal(prepared.intent, prepared.paymentMethods, prepared.refundPolicyHtml, prepared.paymentIntegration);
+    persistOrderDraft();
+    openPaymentModal();
+    if (prepared?.paymentIntegration?.ready) {
+      setOrderMessage("", "최종 결제 정보를 확인해 주세요.");
+    } else {
+      setOrderMessage("", "결제 연동 심사중입니다. 주문 결제창 오픈 전까지 준비된 정보만 확인 가능합니다.");
+    }
+  } catch (error) {
+    setOrderMessage("error", error.message || "결제 준비 중 오류가 발생했습니다.");
+  }
+}
+
+async function submitPaymentConfirm(form) {
+  if (state.paymentPending) return;
+  if (!state.paymentIntegration?.ready) {
+    setPaymentMessage("error", state.paymentIntegration?.message || "결제 연동 심사중입니다. 관리자에게 문의해 주세요.");
+    return;
+  }
+  const intentId = String(state.paymentIntent?.intentId || "");
+  if (!intentId) {
+    setPaymentMessage("error", "결제 준비 정보가 없습니다. 주문등록부터 다시 진행해 주세요.");
+    return;
+  }
+
+  const methodSelect = form.elements.namedItem("method");
+  const method = String(methodSelect?.value || "CARD").trim();
+  state.paymentPending = true;
+  const submitButton = form.querySelector('button[type="submit"]');
+  if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
+  setPaymentMessage("", "결제창을 준비하고 있습니다...");
+  try {
+    const prepared = await apiFetch(`/api/orders/payment-intents/${encodeURIComponent(intentId)}/confirm-start`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ method }),
+    });
+    if (prepared.alreadyConfirmed) {
+      setOrderMessage("success", "이미 결제가 완료된 주문입니다.");
+      clearOrderDraft();
+      closePaymentModal();
+      await refreshData();
+      return;
+    }
+    const payment = prepared.payment || {};
+    const clientKey = String(payment.clientKey || "").trim();
+    if (!clientKey || !payment.orderId) {
+      throw new Error("결제 설정이 아직 완료되지 않았습니다.");
+    }
+
+    persistOrderDraft();
+    const TossPayments = await loadTossPaymentsSdk();
+    const tossPayments = TossPayments(clientKey);
+    await tossPayments.requestPayment(String(payment.method || "카드"), {
+      amount: Number(payment.amount || 0),
+      orderId: String(payment.orderId),
+      orderName: String(payment.orderName || "딜리버 주문 결제"),
+      customerName: String(state.member?.name || ""),
+      customerEmail: String(state.member?.email || ""),
+      successUrl: String(payment.successUrl || window.location.href),
+      failUrl: String(payment.failUrl || window.location.href),
+    });
+  } catch (error) {
+    if (String(error?.code || "").toUpperCase() === "USER_CANCEL") {
+      setPaymentMessage("", "결제가 취소되었습니다. 다시 시도할 수 있습니다.");
+      return;
+    }
+    setPaymentMessage("error", error.message || "결제 요청 중 오류가 발생했습니다.");
+  } finally {
+    if (submitButton instanceof HTMLButtonElement) submitButton.disabled = false;
+    state.paymentPending = false;
+  }
+}
+
+async function handleOrderPaymentRedirectResult() {
   const params = new URLSearchParams(window.location.search);
+  const intentId = String(params.get("intentId") || "");
   const paymentKey = String(params.get("paymentKey") || "");
   const orderId = String(params.get("orderId") || "");
   const amountText = String(params.get("amount") || "");
@@ -281,11 +449,21 @@ async function handlePointChargeRedirectResult() {
   if (failCode) {
     clearPaymentResultQuery();
     setOrderMessage("error", `결제가 취소되었거나 실패했습니다. (${failCode}) ${failMessage}`.trim());
+    if (intentId) {
+      try {
+        const retried = await apiFetch(`/api/orders/payment-intents/${encodeURIComponent(intentId)}/retry`, {
+          method: "POST",
+        });
+        applyIntentToPaymentModal(retried.intent, retried.paymentMethods, retried.refundPolicyHtml, retried.paymentIntegration);
+        openPaymentModal();
+      } catch (error) {
+      }
+    }
     return;
   }
-  if (!paymentKey || !orderId || !amountText) return;
+  if (!intentId || !paymentKey || !orderId || !amountText) return;
 
-  const amount = normalizeChargeAmount(amountText);
+  const amount = normalizeAmount(amountText);
   if (amount <= 0) {
     clearPaymentResultQuery();
     setOrderMessage("error", "결제 응답 금액이 올바르지 않습니다.");
@@ -293,40 +471,32 @@ async function handlePointChargeRedirectResult() {
   }
 
   try {
-    const confirmed = await apiFetch("/api/payments/toss/confirm", {
+    const confirmed = await apiFetch(`/api/orders/payment-intents/${encodeURIComponent(intentId)}/finalize`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ paymentKey, orderId, amount }),
     });
-    if (state.member) {
-      state.member.pointBalance = Number(confirmed.pointBalance || state.member.pointBalance || 0);
-    }
-    renderStats();
-    setOrderMessage("success", `포인트가 충전되었습니다. (+${formatCurrency(amount)})`);
-    closePointChargeModal();
+    clearOrderDraft();
+    setOrderMessage("success", `주문 결제가 완료되었습니다. (${formatCurrency(confirmed?.payment?.totalAmount || amount)})`);
+    const form = document.getElementById("member-order-form");
+    if (form instanceof HTMLFormElement) form.reset();
+    const fileName = document.getElementById("order-file-name");
+    if (fileName) fileName.textContent = "선택된 파일 없음";
+    closePaymentModal();
+    await refreshData();
   } catch (error) {
     setOrderMessage("error", error.message || "결제 승인 처리 중 오류가 발생했습니다.");
+    try {
+      const retried = await apiFetch(`/api/orders/payment-intents/${encodeURIComponent(intentId)}/retry`, {
+        method: "POST",
+      });
+      applyIntentToPaymentModal(retried.intent, retried.paymentMethods, retried.refundPolicyHtml, retried.paymentIntegration);
+      openPaymentModal();
+    } catch (retryError) {
+    }
   } finally {
     clearPaymentResultQuery();
   }
-}
-
-function getSelectedMedia() {
-  return state.media.find((item) => item.id === state.selectedMediaId) || null;
-}
-
-function getSelectedMediaBudget() {
-  const media = getSelectedMedia();
-  const n = Number(media?.unitPrice || 0);
-  if (!Number.isFinite(n) || n <= 0) return 0;
-  return Math.round(n);
-}
-
-function syncBudgetInput() {
-  const budgetInput = document.getElementById("order-budget");
-  if (!budgetInput) return;
-  const budget = getSelectedMediaBudget();
-  budgetInput.value = budget > 0 ? String(budget) : "";
 }
 
 function getFilteredMedia() {
@@ -374,8 +544,9 @@ function renderMemberState() {
 function renderStats() {
   const pending = state.orders.filter((order) => !["published", "rejected"].includes(String(order.status || ""))).length;
   const published = state.orders.filter((order) => String(order.status || "") === "published").length;
+  const totalPayments = state.orders.reduce((sum, order) => sum + normalizeAmount(order?.payment?.totalAmount || 0), 0);
 
-  document.getElementById("stat-points").textContent = formatCurrency(state.member?.pointBalance || 0);
+  document.getElementById("stat-payments-total").textContent = formatCurrency(totalPayments);
   document.getElementById("stat-orders-total").textContent = String(state.orders.length);
   document.getElementById("stat-orders-pending").textContent = String(pending);
   document.getElementById("stat-orders-published").textContent = String(published);
@@ -421,7 +592,7 @@ function renderMediaGroups() {
           return `<div class="media-item ${selected ? "selected" : ""}" data-select-media="${escapeHtml(item.id)}">
             <div class="media-item-main">
               <div class="media-item-name">${escapeHtml(item.name)}</div>
-              <div class="media-item-meta">단가: ${escapeHtml(item.memberPrice || formatCurrency(item.unitPrice))} · 노출: ${escapeHtml(item.channel || "-")}</div>
+              <div class="media-item-meta">공급가: ${escapeHtml(formatCurrency(item.unitPrice || 0))} · 노출: ${escapeHtml(item.channel || "-")}</div>
             </div>
             <button class="btn btn-light small" type="button" data-select-media="${escapeHtml(item.id)}">선택</button>
           </div>`;
@@ -442,29 +613,36 @@ function renderSelectedMediaCard() {
   const media = getSelectedMedia();
   const name = document.getElementById("selected-media-name");
   const price = document.getElementById("selected-media-price");
+  const vat = document.getElementById("selected-media-vat");
+  const total = document.getElementById("selected-media-total");
   const channel = document.getElementById("selected-media-channel");
   const description = document.getElementById("selected-media-description");
 
   if (!media) {
     name.textContent = "매체를 선택해 주세요";
-    price.textContent = "단가: -";
+    price.textContent = "공급가: -";
+    vat.textContent = "부가세(10%): -";
+    total.textContent = "결제예정금액: -";
     channel.textContent = "노출채널: -";
     description.textContent = "참고사항: -";
-    syncBudgetInput();
+    syncEstimateFields();
     return;
   }
+  const amounts = calculateAmounts(media.unitPrice);
   name.textContent = `${media.name} (${media.category})`;
-  price.textContent = `단가: ${media.memberPrice || formatCurrency(media.unitPrice)}`;
+  price.textContent = `공급가: ${formatCurrency(amounts.supplyAmount)}`;
+  vat.textContent = `부가세(10%): ${formatCurrency(amounts.vatAmount)}`;
+  total.textContent = `결제예정금액: ${formatCurrency(amounts.totalAmount)}`;
   channel.textContent = `노출채널: ${media.channel || "-"}`;
   description.textContent = `참고사항: ${media.description || "별도 안내 없음"}`;
-  syncBudgetInput();
+  syncEstimateFields();
 }
 
 function renderOrders() {
   const tbody = document.getElementById("member-orders-body");
   if (!tbody) return;
   if (!state.orders.length) {
-    tbody.innerHTML = `<tr><td colspan="6">등록된 주문이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7">등록된 주문이 없습니다.</td></tr>`;
     return;
   }
   tbody.innerHTML = state.orders
@@ -476,11 +654,13 @@ function renderOrders() {
       const attachmentText = order.hasAttachment
         ? `<span class="file-ellipsis" title="${escapeHtml(attachmentLabel)}">${escapeHtml(attachmentLabel)}</span>`
         : "없음";
+      const paymentText = `총 ${formatCurrency(order?.payment?.totalAmount || 0)} (공급가 ${formatCurrency(order?.payment?.supplyAmount || 0)} + VAT ${formatCurrency(order?.payment?.vatAmount || 0)})`;
       return `<tr>
-        <td>${formatDate(order.createdAt)}</td>
+        <td>${formatDate(order.orderedAt || order.createdAt)}</td>
+        <td>${escapeHtml(order.orderNumber || "-")}</td>
         <td>${escapeHtml(order.title)}</td>
         <td>${escapeHtml(order.mediaName || "-")}</td>
-        <td>${formatCurrency(order.budget)}</td>
+        <td>${escapeHtml(paymentText)}</td>
         <td class="attachment-col">${attachmentText}</td>
         <td><span class="status-badge status-${escapeHtml(status)}">${escapeHtml(label)}</span></td>
       </tr>`;
@@ -504,14 +684,12 @@ async function refreshData() {
     const media = await apiFetch("/api/media");
     state.media = Array.isArray(media.media) ? media.media.filter((item) => item.isActive !== false) : [];
   } catch (error) {
-    // Keep current screen/session even if media API is temporarily unstable.
   }
 
   try {
     const orders = await apiFetch("/api/orders");
     state.orders = Array.isArray(orders.orders) ? orders.orders : [];
   } catch (error) {
-    // Keep current screen/session even if orders API is temporarily unstable.
   }
 
   if (!state.selectedMediaId) {
@@ -519,51 +697,8 @@ async function refreshData() {
   } else if (!state.media.some((item) => item.id === state.selectedMediaId)) {
     state.selectedMediaId = state.media[0]?.id || "";
   }
+  restoreOrderDraft();
   renderAll();
-}
-
-async function submitOrder(form) {
-  const media = getSelectedMedia();
-  if (!media) {
-    setOrderMessage("error", "매체를 먼저 선택해 주세요.");
-    return;
-  }
-  const formData = new FormData(form);
-  const title = String(formData.get("title") || "").trim();
-  const budget = getSelectedMediaBudget();
-  const requestNote = String(formData.get("requestNote") || "").trim();
-  const draftFile = formData.get("draftFile");
-  if (!title) {
-    setOrderMessage("error", "주문명을 입력해 주세요.");
-    return;
-  }
-  if (!Number.isFinite(budget) || budget <= 0) {
-    setOrderMessage("error", "선택한 매체 단가 정보가 없어 주문할 수 없습니다.");
-    return;
-  }
-
-  try {
-    const payload = new FormData();
-    payload.set("mediaId", media.id);
-    payload.set("title", title);
-    payload.set("budget", String(budget));
-    payload.set("requestNote", requestNote);
-    if (draftFile && typeof draftFile === "object" && Number(draftFile.size || 0) > 0) {
-      payload.set("draftFile", draftFile);
-    }
-    const response = await apiFetch("/api/orders", {
-      method: "POST",
-      body: payload,
-    });
-    state.member.pointBalance = Number(response.pointBalance || state.member.pointBalance || 0);
-    form.reset();
-    const fileName = document.getElementById("order-file-name");
-    if (fileName) fileName.textContent = "선택된 파일 없음";
-    setOrderMessage("success", "주문이 등록되었습니다.");
-    await refreshData();
-  } catch (error) {
-    setOrderMessage("error", error.message || "주문 등록 중 오류가 발생했습니다.");
-  }
 }
 
 function bindEvents() {
@@ -577,13 +712,10 @@ function bindEvents() {
   const fileInput = document.getElementById("order-file-input");
   const fileButton = document.getElementById("order-file-button");
   const fileName = document.getElementById("order-file-name");
-  const chargeTopButton = document.getElementById("member-charge-button-top");
-  const chargeInlineButton = document.getElementById("member-charge-button-inline");
-  const pointChargeModal = document.getElementById("point-charge-modal");
-  const pointChargeForm = document.getElementById("point-charge-form");
-  const pointChargeAmount = document.getElementById("point-charge-amount");
-  const pointChargeClose = document.getElementById("point-charge-close");
-  const pointChargeCancel = document.getElementById("point-charge-cancel");
+  const paymentModal = document.getElementById("order-payment-modal");
+  const paymentForm = document.getElementById("order-payment-form");
+  const paymentClose = document.getElementById("order-payment-close");
+  const paymentCancel = document.getElementById("order-payment-cancel");
 
   searchInput?.addEventListener("input", () => {
     state.mediaFilter = String(searchInput.value || "");
@@ -615,6 +747,7 @@ function bindEvents() {
       state.activeMediaGroup = selectedMedia.category;
       state.mediaCollapsed[selectedMedia.category] = false;
     }
+    persistOrderDraft();
     renderMediaGroups();
     renderSelectedMediaCard();
   });
@@ -653,6 +786,10 @@ function bindEvents() {
     submitOrder(orderForm);
   });
 
+  orderForm?.addEventListener("input", () => {
+    persistOrderDraft();
+  });
+
   fileButton?.addEventListener("click", () => {
     fileInput?.click();
   });
@@ -661,60 +798,35 @@ function bindEvents() {
     const name = fileInput.files?.[0]?.name || "";
     if (!fileName) return;
     fileName.textContent = name ? name : "선택된 파일 없음";
+    persistOrderDraft();
   });
 
-  chargeTopButton?.addEventListener("click", () => {
-    openPointChargeModal(DEFAULT_POINT_CHARGE_AMOUNT);
+  paymentClose?.addEventListener("click", () => {
+    closePaymentModal();
   });
 
-  chargeInlineButton?.addEventListener("click", () => {
-    openPointChargeModal(DEFAULT_POINT_CHARGE_AMOUNT);
+  paymentCancel?.addEventListener("click", () => {
+    closePaymentModal();
   });
 
-  pointChargeClose?.addEventListener("click", () => {
-    closePointChargeModal();
-  });
-
-  pointChargeCancel?.addEventListener("click", () => {
-    closePointChargeModal();
-  });
-
-  pointChargeModal?.addEventListener("click", (event) => {
-    if (event.target === pointChargeModal) {
-      closePointChargeModal();
+  paymentModal?.addEventListener("click", (event) => {
+    if (event.target === paymentModal) {
+      closePaymentModal();
     }
   });
 
-  if (pointChargeForm instanceof HTMLFormElement) {
-    pointChargeForm.addEventListener("submit", (event) => {
+  if (paymentForm instanceof HTMLFormElement) {
+    paymentForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      submitPointCharge(pointChargeForm);
+      submitPaymentConfirm(paymentForm);
     });
   }
-
-  if (pointChargeAmount instanceof HTMLInputElement) {
-    pointChargeAmount.addEventListener("blur", () => {
-      const normalized = normalizeChargeAmount(pointChargeAmount.value);
-      pointChargeAmount.value = normalized > 0 ? String(normalized) : "";
-    });
-  }
-
-  document.querySelectorAll("[data-charge-quick]").forEach((button) => {
-    button.addEventListener("click", () => {
-      if (!(button instanceof HTMLElement)) return;
-      const value = normalizeChargeAmount(button.getAttribute("data-charge-quick"));
-      if (!(pointChargeAmount instanceof HTMLInputElement) || value <= 0) return;
-      pointChargeAmount.value = String(value);
-      pointChargeAmount.focus();
-      pointChargeAmount.select();
-    });
-  });
 
   window.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
-    if (!(pointChargeModal instanceof HTMLElement)) return;
-    if (!pointChargeModal.classList.contains("open")) return;
-    closePointChargeModal();
+    if (!(paymentModal instanceof HTMLElement)) return;
+    if (!paymentModal.classList.contains("open")) return;
+    closePaymentModal();
   });
 
   logoutButton?.addEventListener("click", async () => {
@@ -722,6 +834,7 @@ function bindEvents() {
       await apiFetch("/api/auth/logout", { method: "POST" });
     } catch (error) {
     }
+    clearOrderDraft();
     redirectToLanding();
   });
 }
@@ -732,7 +845,7 @@ async function init() {
   bindEvents();
   try {
     await refreshData();
-    await handlePointChargeRedirectResult();
+    await handleOrderPaymentRedirectResult();
   } catch (error) {
     if (Number(error?.status) === 401) {
       redirectToLanding();

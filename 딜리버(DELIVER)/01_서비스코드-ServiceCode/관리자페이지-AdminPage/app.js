@@ -29,6 +29,7 @@ const state = {
   auditOutcomeFilter: "",
   auditSearch: "",
   logPage: 1,
+  refundPendingByOrderId: {},
 };
 
 function clearLegacyAdminTokens() {
@@ -122,6 +123,26 @@ function renderDateCell(value) {
 
 function getRoleLabel(role) {
   return String(role || "").toLowerCase() === "admin" ? "관리자" : "회원";
+}
+
+function getRefundStatus(order) {
+  const paymentStatus = String(order?.payment?.status || "").toLowerCase();
+  const refundStatus = String(order?.refund?.status || "").toLowerCase();
+  if (refundStatus === "succeeded" || paymentStatus === "refunded" || paymentStatus === "refunded_full") {
+    return { className: "refunded", label: "환불완료" };
+  }
+  if (paymentStatus === "paid") {
+    return { className: "none", label: "미환불" };
+  }
+  return { className: "", label: paymentStatus || "-" };
+}
+
+function formatOrderPaymentText(order) {
+  const supply = Number(order?.payment?.supplyAmount || 0);
+  const vat = Number(order?.payment?.vatAmount || 0);
+  const total = Number(order?.payment?.totalAmount || 0);
+  if (total <= 0 && supply <= 0 && vat <= 0) return "-";
+  return `총 ${formatCurrency(total)} (공급가 ${formatCurrency(supply)} + VAT ${formatCurrency(vat)})`;
 }
 
 async function apiFetch(path, init = {}) {
@@ -285,7 +306,7 @@ function renderMembers() {
   const mobileList = document.getElementById("members-mobile-list");
   const filtered = getFilteredMembers();
   if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="8">회원 데이터가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7">회원 데이터가 없습니다.</td></tr>`;
     if (mobileList instanceof HTMLElement) {
       mobileList.innerHTML = `<div class="mobile-empty">회원 데이터가 없습니다.</div>`;
     }
@@ -308,7 +329,6 @@ function renderMembers() {
         <td class="col-member-login" data-label="아이디">${renderEllipsisCell(member.loginId, "-")}</td>
         <td class="col-member-email" data-label="이메일">${renderEllipsisCell(member.email, "-")}</td>
         <td class="col-member-company" data-label="회사명">${renderEllipsisCell(member.company || "-", "-")}</td>
-        <td class="col-member-point" data-label="보유 포인트">${formatCurrency(member.pointBalance || 0)}</td>
         <td class="col-member-role" data-label="권한">${member.role === "admin" ? "관리자" : "회원"}</td>
         <td class="col-member-action" data-label="관리">
           <button class="btn btn-light small" type="button" data-edit-member="${member.id}">회원정보 수정</button>
@@ -343,10 +363,6 @@ function renderMembers() {
               <span class="mobile-kv-label">회사명</span>
               <div class="mobile-kv-value">${renderExpandableText(member.company || "-", 16, "mobile-ellipsis")}</div>
             </div>
-            <div class="mobile-kv">
-              <span class="mobile-kv-label">보유 포인트</span>
-              <span class="mobile-kv-value">${escapeHtml(formatCurrency(member.pointBalance || 0))}</span>
-            </div>
           </div>
           <footer class="mobile-card-actions">
             <button class="btn btn-light small" type="button" data-edit-member="${member.id}">회원정보 수정</button>
@@ -360,6 +376,7 @@ function renderMembers() {
 
 function renderOrderMediaSelect() {
   const select = document.getElementById("order-media-select");
+  if (!(select instanceof HTMLSelectElement)) return;
   const activeMedia = state.media.filter((media) => media.isActive);
 
   if (!activeMedia.length) {
@@ -383,7 +400,7 @@ function getFilteredOrders() {
     const status = String(order.status || "").toLowerCase();
     if (statusFilter && status !== statusFilter) return false;
     if (!query) return true;
-    const source = [order.title, order.memberLoginId, order.email, order.mediaName, order.status]
+    const source = [order.orderNumber, order.title, order.memberLoginId, order.email, order.mediaName, order.status]
       .map((item) => String(item || "").toLowerCase())
       .join(" ");
     return source.includes(query);
@@ -423,12 +440,12 @@ function renderOrders() {
   const filtered = getFilteredOrders();
   if (!filtered.length) {
     if (!state.orders.length) {
-      tbody.innerHTML = `<tr><td colspan="8">등록된 주문이 없습니다.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10">등록된 주문이 없습니다.</td></tr>`;
       if (mobileList instanceof HTMLElement) {
         mobileList.innerHTML = `<div class="mobile-empty">등록된 주문이 없습니다.</div>`;
       }
     } else {
-      tbody.innerHTML = `<tr><td colspan="8">필터 조건에 맞는 주문이 없습니다.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10">필터 조건에 맞는 주문이 없습니다.</td></tr>`;
       if (mobileList instanceof HTMLElement) {
         mobileList.innerHTML = `<div class="mobile-empty">필터 조건에 맞는 주문이 없습니다.</div>`;
       }
@@ -438,7 +455,7 @@ function renderOrders() {
   }
 
   if (!state.orders.length) {
-    tbody.innerHTML = `<tr><td colspan="8">등록된 주문이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10">등록된 주문이 없습니다.</td></tr>`;
     renderOrdersPagination(filtered);
     return;
   }
@@ -454,15 +471,19 @@ function renderOrders() {
         (status) =>
           `<option value="${status.value}" ${order.status === status.value ? "selected" : ""}>${status.label}</option>`
       ).join("");
+      const refundStatus = getRefundStatus(order);
+      const paymentText = formatOrderPaymentText(order);
+      const refundDisabled = !order.canRefund || Boolean(state.refundPendingByOrderId[order.id]);
 
       return `
       <tr>
-        <td class="col-date" data-label="접수일">${renderDateCell(order.createdAt)}</td>
+        <td class="col-order-number" data-label="주문번호">${renderEllipsisCell(order.orderNumber || "-", "-")}</td>
+        <td class="col-date" data-label="주문일시">${renderDateCell(order.orderedAt || order.createdAt)}</td>
         <td class="col-title" data-label="주문명">${renderEllipsisCell(order.title, "-")}</td>
         <td class="col-login-id" data-label="회원아이디">${renderEllipsisCell(order.memberLoginId, "-")}</td>
-        <td class="col-email" data-label="회원 이메일">${renderEllipsisCell(order.email, "비회원/미매핑")}</td>
         <td class="col-media" data-label="매체">${renderEllipsisCell(order.mediaName, "-")}</td>
-        <td class="col-budget" data-label="예산">${formatCurrency(order.budget)}</td>
+        <td class="col-payment" data-label="결제금액">${renderEllipsisCell(paymentText, "-")}</td>
+        <td class="col-refund" data-label="환불상태"><span class="refund-badge ${refundStatus.className}">${escapeHtml(refundStatus.label)}</span></td>
         <td class="col-attachment" data-label="첨부 파일">
           ${
             order.hasAttachment
@@ -483,6 +504,11 @@ function renderOrders() {
             ${statusOptions}
           </select>
         </td>
+        <td class="col-order-action" data-label="관리">
+          <button class="btn btn-light small" type="button" data-refund-order="${order.id}" ${refundDisabled ? "disabled" : ""}>
+            ${refundDisabled ? "환불완료" : "환불해주기"}
+          </button>
+        </td>
       </tr>`;
     })
     .join("");
@@ -494,6 +520,9 @@ function renderOrders() {
           (status) =>
             `<option value="${status.value}" ${order.status === status.value ? "selected" : ""}>${status.label}</option>`
         ).join("");
+        const refundStatus = getRefundStatus(order);
+        const paymentText = formatOrderPaymentText(order);
+        const refundDisabled = !order.canRefund || Boolean(state.refundPendingByOrderId[order.id]);
         const attachmentBlock = order.hasAttachment
           ? (() => {
               const attachmentName = String(order.attachmentName || "첨부파일");
@@ -515,7 +544,7 @@ function renderOrders() {
           <header class="mobile-card-head">
             <div class="mobile-card-title-wrap">
               <h3 class="mobile-card-title">${renderCompactInlineText(order.title || "-", 18, "mobile-ellipsis")}</h3>
-              <p class="mobile-card-sub">${escapeHtml(formatDateCompact(order.createdAt))}</p>
+              <p class="mobile-card-sub">${escapeHtml(formatDateCompact(order.orderedAt || order.createdAt))} · ${escapeHtml(order.orderNumber || "-")}</p>
             </div>
           </header>
           <div class="mobile-kv-grid">
@@ -524,16 +553,16 @@ function renderOrders() {
               <div class="mobile-kv-value">${renderExpandableText(order.memberLoginId || "-", 14, "mobile-ellipsis")}</div>
             </div>
             <div class="mobile-kv">
-              <span class="mobile-kv-label">회원 이메일</span>
-              <div class="mobile-kv-value">${renderExpandableText(order.email || "비회원/미매핑", 16, "mobile-ellipsis")}</div>
-            </div>
-            <div class="mobile-kv">
               <span class="mobile-kv-label">매체</span>
               <div class="mobile-kv-value">${renderExpandableText(order.mediaName || "-", 14, "mobile-ellipsis")}</div>
             </div>
             <div class="mobile-kv">
-              <span class="mobile-kv-label">예산</span>
-              <span class="mobile-kv-value">${escapeHtml(formatCurrency(order.budget))}</span>
+              <span class="mobile-kv-label">결제금액</span>
+              <div class="mobile-kv-value">${renderExpandableText(paymentText, 20, "mobile-ellipsis")}</div>
+            </div>
+            <div class="mobile-kv">
+              <span class="mobile-kv-label">환불상태</span>
+              <span class="mobile-kv-value"><span class="refund-badge ${refundStatus.className}">${escapeHtml(refundStatus.label)}</span></span>
             </div>
           </div>
           <div class="mobile-status-row">
@@ -541,6 +570,11 @@ function renderOrders() {
             <select data-order-status data-order-id="${order.id}">
               ${statusOptions}
             </select>
+          </div>
+          <div class="mobile-card-actions">
+            <button class="btn btn-light small" type="button" data-refund-order="${order.id}" ${refundDisabled ? "disabled" : ""}>
+              ${refundDisabled ? "환불완료" : "환불해주기"}
+            </button>
           </div>
           ${attachmentBlock}
         </article>`;
@@ -699,7 +733,6 @@ function renderSecurityLogs() {
 function renderAll() {
   renderDashboard();
   renderMembers();
-  renderOrderMediaSelect();
   renderOrders();
   renderMedia();
   renderLogs();
@@ -748,7 +781,6 @@ function openMemberEditModal(memberId) {
   form.elements.namedItem("memberName").value = String(member.name || "-");
   form.elements.namedItem("memberLoginId").value = String(member.loginId || "-");
   form.elements.namedItem("memberEmail").value = String(member.email || "-");
-  form.elements.namedItem("pointBalance").value = String(Math.max(0, Number(member.pointBalance || 0)));
   form.elements.namedItem("newPassword").value = "";
   setMemberEditMessage("", "");
   modal.classList.add("open");
@@ -769,14 +801,13 @@ async function updateMemberInfo(form) {
     return;
   }
   const formData = new FormData(form);
-  const pointBalance = Number(formData.get("pointBalance") || 0);
   const newPassword = String(formData.get("newPassword") || "");
-  if (!Number.isFinite(pointBalance) || pointBalance < 0) {
-    setMemberEditMessage("error", "포인트는 0 이상의 숫자여야 합니다.");
-    return;
-  }
   if (newPassword && newPassword.length < 8) {
     setMemberEditMessage("error", "비밀번호는 8자 이상이어야 합니다.");
+    return;
+  }
+  if (!newPassword) {
+    setMemberEditMessage("error", "새 비밀번호를 입력해 주세요.");
     return;
   }
 
@@ -785,7 +816,6 @@ async function updateMemberInfo(form) {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       memberId: state.editingMemberId,
-      pointBalance: Math.round(pointBalance),
       password: newPassword,
     }),
   });
@@ -884,6 +914,31 @@ async function updateOrderStatus(orderId, status) {
     body: JSON.stringify({ orderId, status }),
   });
   await refreshAdminData();
+}
+
+async function refundOrder(orderId) {
+  const target = state.orders.find((item) => item.id === orderId);
+  if (!target) throw new Error("환불 대상 주문을 찾을 수 없습니다.");
+  if (!target.canRefund) throw new Error("환불 가능한 상태의 주문이 아닙니다.");
+
+  const orderLabel = target.orderNumber || target.id;
+  const totalText = formatCurrency(target?.payment?.totalAmount || 0);
+  const proceed = window.confirm(`${orderLabel} 주문을 전액 환불하시겠습니까?\n결제금액: ${totalText}`);
+  if (!proceed) return;
+
+  state.refundPendingByOrderId[orderId] = true;
+  renderOrders();
+  try {
+    await apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}/refund`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ reason: "관리자 환불 처리" }),
+    });
+    await refreshAdminData();
+  } finally {
+    delete state.refundPendingByOrderId[orderId];
+    renderOrders();
+  }
 }
 
 async function toggleMedia(mediaId) {
@@ -1157,6 +1212,12 @@ function bindActions() {
     const downloadOrderId = target.getAttribute("data-download-attachment");
     if (downloadOrderId) {
       openOrderAttachment(downloadOrderId, true).catch((error) => window.alert(error.message || "첨부 저장 실패"));
+      return;
+    }
+
+    const refundOrderId = target.getAttribute("data-refund-order");
+    if (refundOrderId) {
+      refundOrder(refundOrderId).catch((error) => window.alert(error.message || "환불 처리 실패"));
       return;
     }
 

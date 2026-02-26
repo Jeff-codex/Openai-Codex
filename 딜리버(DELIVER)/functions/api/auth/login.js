@@ -57,7 +57,7 @@ export async function onRequestPost(context) {
 
     const rows = await d1Query(
       context.env,
-      "select id, login_id, name, email, company, point_balance, role, password from members where login_id = ? limit 1",
+      "select id, login_id, name, email, company, role, password from members where login_id = ? limit 1",
       [loginId]
     );
     if (!rows.length) {
@@ -124,7 +124,6 @@ export async function onRequestPost(context) {
         name: member.name,
         email: member.email,
         company: member.company,
-        pointBalance: Number(member.point_balance || 0),
         role: member.role || "member",
       },
     }, 200, headers);

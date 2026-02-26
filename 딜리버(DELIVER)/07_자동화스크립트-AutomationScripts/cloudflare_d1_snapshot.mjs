@@ -14,6 +14,11 @@ const TABLES = [
   "media_channels",
   "orders",
   "order_status_logs",
+  "order_attachments",
+  "order_payment_intents",
+  "order_payments",
+  "payment_refunds",
+  "point_charge_payments",
   "admin_logs",
   "security_audit_logs",
 ];

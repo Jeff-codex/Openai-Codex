@@ -1,0 +1,8 @@
+[INFO] scheduled backup start: 2026-02-26T12:15:04+09:00
+[INFO] project root: /mnt/c/Users/gusru/code/Openai-Codex/딜리버(DELIVER)
+[OK] Cloudflare D1 snapshot created
+[OK] Snapshot dir: /mnt/c/Users/gusru/code/Openai-Codex/딜리버(DELIVER)/08_데이터베이스-Database/04_백업-Backups/snapshot-20260226-121504
+[OK] Summary: ok=6, error=0, rows=582
+[OK] Database backup archive: /mnt/c/Users/gusru/code/Openai-Codex/딜리버(DELIVER)/08_데이터베이스-Database/04_백업-Backups/db-snapshot-20260226-121504.tar.gz
+[OK] Storage optimized (local=12, db=12, sync_log=40)
+[INFO] scheduled backup done: 2026-02-26T12:15:17+09:00

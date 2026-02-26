@@ -583,7 +583,7 @@ th {
 
 .members-table {
   table-layout: fixed;
-  min-width: 1120px;
+  min-width: 980px;
 }
 
 .members-table td {
@@ -611,22 +611,18 @@ th {
   width: 14%;
 }
 
-.members-table .col-member-point {
+.members-table .col-member-role {
   width: 11%;
 }
 
-.members-table .col-member-role {
-  width: 8%;
-}
-
 .members-table .col-member-action {
-  width: 14%;
+  width: 18%;
 }
 
 .orders-table {
   table-layout: fixed;
-  width: max(100%, 1360px);
-  min-width: 1360px;
+  width: max(100%, 1560px);
+  min-width: 1560px;
 }
 
 .orders-table th,
@@ -639,37 +635,45 @@ th {
   vertical-align: top;
 }
 
+.orders-table .col-order-number {
+  width: 10%;
+}
+
 .orders-table .col-date {
-  width: 12%;
+  width: 10%;
 }
 
 .orders-table .col-title {
-  width: 17%;
+  width: 15%;
 }
 
 .orders-table .col-login-id {
   width: 9%;
 }
 
-.orders-table .col-email {
+.orders-table .col-media {
+  width: 11%;
+}
+
+.orders-table .col-payment {
   width: 15%;
 }
 
-.orders-table .col-media {
-  width: 13%;
-}
-
-.orders-table .col-budget {
+.orders-table .col-refund {
   width: 9%;
 }
 
 .orders-table .col-attachment {
-  width: 17%;
+  width: 13%;
   vertical-align: top;
 }
 
 .orders-table .col-status {
   width: 8%;
+}
+
+.orders-table .col-order-action {
+  width: 10%;
 }
 
 .orders-table .col-status select {
@@ -811,6 +815,31 @@ select:focus {
 .attach-empty {
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+.refund-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.46rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid #d2e0f5;
+  background: #f4f8ff;
+  color: var(--primary);
+}
+
+.refund-badge.refunded {
+  border-color: #f0c5ce;
+  background: #fff2f5;
+  color: #a10f35;
+}
+
+.refund-badge.none {
+  border-color: #cbe6d4;
+  background: #edf9f1;
+  color: #167042;
 }
 
 .btn-primary {

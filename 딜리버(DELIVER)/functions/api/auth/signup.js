@@ -57,8 +57,8 @@ export async function onRequestPost(context) {
     const passwordHash = await hashPassword(password, context.env);
     await d1Execute(
       context.env,
-      "insert into members (id, login_id, name, email, company, password, point_balance, role) values (?, ?, ?, ?, ?, ?, ?, 'member')",
-      [id, loginId, name, email, company, passwordHash, 0]
+      "insert into members (id, login_id, name, email, company, password, role) values (?, ?, ?, ?, ?, ?, 'member')",
+      [id, loginId, name, email, company, passwordHash]
     );
 
     const token = await createSession(context.env, "member", {
@@ -88,7 +88,6 @@ export async function onRequestPost(context) {
         name,
         email,
         company,
-        pointBalance: 0,
         role: "member",
       },
     }, 200, headers);
