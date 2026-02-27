@@ -170,6 +170,20 @@ function setPaymentMessage(type, text) {
   message.textContent = text || "";
 }
 
+function getPaymentSubmitButton() {
+  const paymentForm = document.getElementById("order-payment-form");
+  const submitButton = paymentForm?.querySelector('button[type="submit"]');
+  return submitButton instanceof HTMLButtonElement ? submitButton : null;
+}
+
+function setPaymentSubmitButtonState({ enabled = false, label = "", title = "" } = {}) {
+  const submitButton = getPaymentSubmitButton();
+  if (!submitButton) return;
+  submitButton.disabled = !enabled;
+  if (label) submitButton.textContent = label;
+  submitButton.title = title;
+}
+
 function openPaymentModal() {
   const modal = document.getElementById("order-payment-modal");
   if (!(modal instanceof HTMLElement)) return;
@@ -411,8 +425,6 @@ function applyIntentToPaymentModal(intent, methods, refundPolicyHtml, paymentInt
   const vatEl = document.getElementById("payment-summary-vat");
   const totalEl = document.getElementById("payment-summary-total");
   const expiryEl = document.getElementById("payment-summary-expiry");
-  const paymentForm = document.getElementById("order-payment-form");
-  const submitButton = paymentForm?.querySelector('button[type="submit"]');
   const refundEl = document.getElementById("order-refund-policy-content");
 
   if (titleEl) titleEl.textContent = String(intent?.title || "-");
@@ -429,33 +441,50 @@ function applyIntentToPaymentModal(intent, methods, refundPolicyHtml, paymentInt
     }
   }
 
-  if (submitButton instanceof HTMLButtonElement) {
-    submitButton.disabled = !state.paymentIntegration.ready;
-    submitButton.textContent = state.paymentIntegration.ready ? "결제하기" : "결제연동 심사중";
-    submitButton.title = state.paymentIntegration.ready
-      ? ""
-      : "토스페이먼츠 심사 완료 후 결제가 오픈됩니다.";
-  }
-
   if (!state.paymentIntegration.ready) {
+    setPaymentSubmitButtonState({
+      enabled: false,
+      label: "결제연동 심사중",
+      title: "토스페이먼츠 심사 완료 후 결제가 오픈됩니다.",
+    });
     setPaymentWidgetVisible(false);
     setPaymentMessage("error", state.paymentIntegration.message || "토스페이먼츠 결제 연동 심사중입니다.");
   } else {
+    setPaymentSubmitButtonState({
+      enabled: false,
+      label: "결제위젯 준비중",
+      title: "결제수단 위젯 준비 완료 후 결제를 진행할 수 있습니다.",
+    });
     setPaymentMessage("", "결제 수단 위젯을 준비하고 있습니다...");
     const intentId = String(intent?.intentId || "").trim();
     if (intentId) {
       preparePaymentWidgetForIntent(intentId)
         .then((result) => {
           if (result?.alreadyConfirmed) {
+            setPaymentSubmitButtonState({
+              enabled: false,
+              label: "결제완료",
+              title: "이미 결제가 완료된 주문입니다.",
+            });
             setPaymentMessage("", "이미 결제가 완료된 주문입니다.");
             return;
           }
           if (state.paymentWidgetIntentId === intentId && state.paymentWidget) {
+            setPaymentSubmitButtonState({
+              enabled: true,
+              label: "결제하기",
+              title: "",
+            });
             setPaymentMessage("", "결제수단 확인 후 결제하기 버튼을 눌러 주세요.");
           }
         })
         .catch((error) => {
           if (state.paymentWidgetIntentId === intentId) {
+            setPaymentSubmitButtonState({
+              enabled: false,
+              label: "결제위젯 오류",
+              title: "결제 위젯 초기화에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+            });
             setPaymentWidgetVisible(false);
             setPaymentMessage("error", error.message || "결제 위젯 로딩에 실패했습니다.");
           }
@@ -520,23 +549,22 @@ async function submitPaymentConfirm(form) {
     return;
   }
 
+  const paymentData = state.paymentWidgetData;
+  if (!state.paymentWidget || !paymentData || state.paymentWidgetIntentId !== intentId) {
+    setPaymentSubmitButtonState({
+      enabled: false,
+      label: "결제위젯 준비중",
+      title: "결제수단 위젯이 준비되면 결제하기 버튼이 활성화됩니다.",
+    });
+    setPaymentMessage("error", "결제수단 위젯 준비가 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.");
+    return;
+  }
+
   state.paymentPending = true;
   const submitButton = form.querySelector('button[type="submit"]');
   if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
   setPaymentMessage("", "결제창을 준비하고 있습니다...");
   try {
-    const paymentData = await preparePaymentWidgetForIntent(intentId);
-    if (paymentData?.alreadyConfirmed) {
-      setOrderMessage("success", "이미 결제가 완료된 주문입니다.");
-      clearOrderDraft();
-      closePaymentModal();
-      await refreshData();
-      return;
-    }
-    if (!state.paymentWidget || !paymentData) {
-      throw new Error("결제 설정이 아직 완료되지 않았습니다.");
-    }
-
     persistOrderDraft();
     await state.paymentWidget.requestPayment({
       orderId: String(paymentData.orderId),

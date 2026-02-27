@@ -69,6 +69,12 @@ cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
 ./07_자동화스크립트-AutomationScripts/check_order_payment_env.sh
 ```
 
+0-1a. 원격 스모크체크 관리자 계정 주입(운영 계정 변경 시 권장)
+```bash
+export SECURITY_SMOKE_ADMIN_LOGIN_ID="운영관리자ID"
+export SECURITY_SMOKE_ADMIN_PASSWORD="운영관리자비밀번호"
+```
+
 0-2. 주문결제 배포 게이트(권장)
 ```bash
 cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)

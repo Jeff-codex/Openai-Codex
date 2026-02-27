@@ -13,6 +13,11 @@
 
 /01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
 
 /01_서비스코드-ServiceCode/관리자페이지-AdminPage/*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex

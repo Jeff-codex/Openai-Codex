@@ -1,9 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SERVICE_ENV_FILE="${SERVICE_ENV_FILE:-$PROJECT_ROOT/01_서비스코드-ServiceCode/.env.cloudflare}"
+SECRETS_FILE="${SECRETS_FILE:-$HOME/.deliver-secrets/.env.cloudflare.local}"
+
+load_env_file() {
+  local file="$1"
+  if [[ -f "$file" ]]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$file"
+    set +a
+    echo "[INFO] loaded: $file"
+  else
+    echo "[WARN] not found: $file"
+  fi
+}
+
+load_env_file "$SERVICE_ENV_FILE"
+load_env_file "$SECRETS_FILE"
+
 BASE_URL="${BASE_URL:-https://dliver.co.kr}"
-ADMIN_LOGIN_ID="${ADMIN_LOGIN_ID:-admin}"
-ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin1234}"
+SMOKE_ADMIN_LOGIN_ID="${SECURITY_SMOKE_ADMIN_LOGIN_ID:-${ADMIN_LOGIN_ID:-admin}}"
+SMOKE_ADMIN_PASSWORD="${SECURITY_SMOKE_ADMIN_PASSWORD:-${ADMIN_PASSWORD:-admin1234}}"
 ORIGIN="${ORIGIN:-$BASE_URL}"
 
 TMP_DIR="$(mktemp -d)"
@@ -64,8 +84,14 @@ LOGIN_STATUS="$(curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" -D "$TMP_DIR/login.h"
   -X POST "$BASE_URL/api/admin/login" \
   -H "Origin: $ORIGIN" \
   -H "content-type: application/json" \
-  --data "{\"loginId\":\"$ADMIN_LOGIN_ID\",\"password\":\"$ADMIN_PASSWORD\"}")"
-expect_status "$LOGIN_STATUS" "200" "관리자 로그인 성공"
+  --data "{\"loginId\":\"$SMOKE_ADMIN_LOGIN_ID\",\"password\":\"$SMOKE_ADMIN_PASSWORD\"}")"
+if [[ "$LOGIN_STATUS" != "200" ]]; then
+  if [[ "$LOGIN_STATUS" == "401" ]]; then
+    fail "관리자 로그인 실패(401): SECURITY_SMOKE_ADMIN_LOGIN_ID/SECURITY_SMOKE_ADMIN_PASSWORD 또는 ADMIN_LOGIN_ID/ADMIN_PASSWORD 값을 확인하세요"
+  fi
+  fail "관리자 로그인 성공 (expected=200 actual=$LOGIN_STATUS)"
+fi
+pass "관리자 로그인 성공"
 if ! rg -i 'set-cookie: deliver_admin_session=.*HttpOnly.*Secure.*SameSite=Lax' "$TMP_DIR/login.h" >/dev/null 2>&1; then
   ADMIN_COOKIE_LINE="$(rg -i 'set-cookie: deliver_admin_session=' "$TMP_DIR/login.h" | head -n 1 || true)"
   if [[ -z "$ADMIN_COOKIE_LINE" ]]; then
