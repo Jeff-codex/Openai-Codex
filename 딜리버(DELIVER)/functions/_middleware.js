@@ -89,14 +89,17 @@ function parseAllowedOrigins(env, request) {
 }
 
 function applySecurityHeaders(headers, requestId) {
+  const setIfMissing = (key, value) => {
+    if (!headers.has(key)) headers.set(key, value);
+  };
   headers.set("x-request-id", requestId);
-  headers.set("x-content-type-options", "nosniff");
-  headers.set("x-frame-options", "DENY");
-  headers.set("referrer-policy", "strict-origin-when-cross-origin");
-  headers.set("permissions-policy", "geolocation=(), microphone=(), camera=(), payment=(self)");
-  headers.set("cross-origin-opener-policy", "same-origin");
-  headers.set("cross-origin-resource-policy", "same-site");
-  headers.set("strict-transport-security", "max-age=31536000; includeSubDomains; preload");
+  setIfMissing("x-content-type-options", "nosniff");
+  setIfMissing("x-frame-options", "DENY");
+  setIfMissing("referrer-policy", "strict-origin-when-cross-origin");
+  setIfMissing("permissions-policy", "geolocation=(), microphone=(), camera=(), payment=(self)");
+  setIfMissing("cross-origin-opener-policy", "same-origin");
+  setIfMissing("cross-origin-resource-policy", "same-site");
+  setIfMissing("strict-transport-security", "max-age=31536000; includeSubDomains; preload");
 }
 
 function applyCorsHeaders(headers, origin, allowedOrigins) {
