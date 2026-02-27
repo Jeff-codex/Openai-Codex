@@ -319,7 +319,7 @@ function applyIntentToPaymentModal(intent, methods, refundPolicyHtml, paymentInt
 
   if (submitButton instanceof HTMLButtonElement) {
     submitButton.disabled = !state.paymentIntegration.ready;
-    submitButton.textContent = state.paymentIntegration.ready ? "결제하시겠습니까" : "결제연동 심사중";
+    submitButton.textContent = state.paymentIntegration.ready ? "결제하기" : "결제연동 심사중";
     submitButton.title = state.paymentIntegration.ready
       ? ""
       : "토스페이먼츠 심사 완료 후 결제가 오픈됩니다.";
