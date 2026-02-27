@@ -48,6 +48,15 @@ check_optional_keys() {
   done
 }
 
+is_enabled() {
+  local value
+  value="${1:-}"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  value="${value,,}"
+  [[ "$value" == "1" || "$value" == "true" || "$value" == "yes" || "$value" == "on" ]]
+}
+
 load_env_file "$SERVICE_ENV_FILE"
 load_env_file "$SECRETS_FILE"
 
@@ -72,6 +81,16 @@ CLOUDFLARE_KEYS=(
   CF_PAGES_PROJECT
   CF_D1_DATABASE_NAME
   CF_R2_BUCKET
+)
+
+OPS_ALERT_TELEGRAM_KEYS=(
+  OPS_ALERT_TELEGRAM_BOT_TOKEN
+  OPS_ALERT_TELEGRAM_CHAT_ID
+)
+
+OPS_ALERT_OPTIONAL_KEYS=(
+  OPS_ALERT_TELEGRAM_ENABLED
+  OPS_ALERT_TIMEOUT_MS
 )
 
 echo "[INFO] validating order-payment required keys"
@@ -99,5 +118,18 @@ if ! check_required_keys "cloudflare" "${CLOUDFLARE_KEYS[@]}"; then
   echo "[ERROR] cloudflare required keys check failed"
   exit 1
 fi
+
+echo "[INFO] validating ops telegram alert keys"
+if is_enabled "${OPS_ALERT_TELEGRAM_ENABLED:-0}"; then
+  echo "[INFO] telegram alert enabled: required keys"
+  if ! check_required_keys "ops-alert:telegram" "${OPS_ALERT_TELEGRAM_KEYS[@]}"; then
+    echo "[ERROR] ops telegram alert keys check failed"
+    exit 1
+  fi
+else
+  echo "[INFO] telegram alert disabled: optional keys"
+  check_optional_keys "ops-alert:telegram" "${OPS_ALERT_TELEGRAM_KEYS[@]}"
+fi
+check_optional_keys "ops-alert:telegram" "${OPS_ALERT_OPTIONAL_KEYS[@]}"
 
 echo "[DONE] required env keys are ready"

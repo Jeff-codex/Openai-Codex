@@ -1704,7 +1704,13 @@ body.modal-open {
             </table>
           </div>
           <div class="form-terms form-terms-policy">
-            <input id="signup-policy-terms" name="policyTerms" type="checkbox" required aria-label="회원가입약관 동의" />
+            <input
+              id="signup-policy-terms"
+              name="policyTerms"
+              type="checkbox"
+              required
+              aria-label="회원가입약관 및 서비스이용약관 동의"
+            />
             <span>
               <button
                 class="terms-inline-link"
@@ -1715,11 +1721,24 @@ body.modal-open {
               >
                 회원가입약관
               </button>
+              및
+              <button
+                class="terms-inline-link"
+                type="button"
+                data-toggle-signup-service-policy
+                aria-expanded="false"
+                aria-controls="signup-service-policy-panel"
+              >
+                서비스이용약관
+              </button>
               에 동의합니다.
             </span>
           </div>
           <div class="terms-panel is-hidden" id="signup-policy-panel" aria-hidden="true">
             <pre id="signup-policy-content">회원가입약관을 불러오는 중입니다.</pre>
+          </div>
+          <div class="terms-panel is-hidden" id="signup-service-policy-panel" aria-hidden="true">
+            <pre id="signup-service-policy-content">서비스이용약관을 불러오는 중입니다.</pre>
           </div>
 
           <p class="form-message" id="signup-message" aria-live="polite"></p>
@@ -1732,9 +1751,9 @@ body.modal-open {
     <footer>
       <div class="container footer-line">
         <span>© 2026 뎁스코퍼레이션. All rights reserved.</span>
-        <span>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804</span>
-        <span>사업장소재지 : 경기도 양평군 양서면 목왕리 532</span>
-        <span>이메일 : jeff@dliver.co.kr</span>
+        <span>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804 | 통신판매신고 제2026-경기양평-0841호</span>
+        <span>사업장소재지 : 경기도 양평군 양서면 목왕리길 138번길 11</span>
+        <span>전화번호:010-8468-2806</span>
         <span>운영정보: 우측 하단 채널톡 상담 운영</span>
       </div>
     </footer>
@@ -1744,6 +1763,7 @@ body.modal-open {
       const MEMBER_PORTAL_PATH = "/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/index.html?v=20260224r4";
       const CHANNEL_TALK_PLUGIN_KEY = "effcd765-65b5-49ca-b003-b18931fc6f38";
       const SIGNUP_POLICY_PATH = "/01_서비스코드-ServiceCode/공통데이터-SharedData/signup-policy.txt?v=20260224r1";
+      const SIGNUP_SERVICE_POLICY_PATH = "/01_서비스코드-ServiceCode/공통데이터-SharedData/service-policy.txt?v=20260227r1";
 
       const revealItems = document.querySelectorAll(".reveal");
       const observer = new IntersectionObserver(
@@ -1789,7 +1809,11 @@ body.modal-open {
       const signupPolicyToggleButton = document.querySelector("[data-toggle-signup-policy]");
       const signupPolicyPanel = document.getElementById("signup-policy-panel");
       const signupPolicyContent = document.getElementById("signup-policy-content");
+      const signupServicePolicyToggleButton = document.querySelector("[data-toggle-signup-service-policy]");
+      const signupServicePolicyPanel = document.getElementById("signup-service-policy-panel");
+      const signupServicePolicyContent = document.getElementById("signup-service-policy-content");
       let signupPolicyLoaded = false;
+      let signupServicePolicyLoaded = false;
 
       function clearLegacyMemberTokens() {
         try {
@@ -1891,11 +1915,31 @@ body.modal-open {
         signupPolicyLoaded = true;
       }
 
+      async function ensureSignupServicePolicyLoaded() {
+        if (signupServicePolicyLoaded || !(signupServicePolicyContent instanceof HTMLElement)) return;
+        try {
+          const response = await fetch(SIGNUP_SERVICE_POLICY_PATH, { credentials: "same-origin", cache: "no-store" });
+          const text = await response.text();
+          const normalized = String(text || "").trim();
+          signupServicePolicyContent.textContent = normalized || "서비스이용약관 내용이 비어 있습니다.";
+        } catch (error) {
+          signupServicePolicyContent.textContent = "서비스이용약관을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
+        }
+        signupServicePolicyLoaded = true;
+      }
+
       function setSignupPolicyPanelOpen(isOpen) {
         if (!(signupPolicyPanel instanceof HTMLElement) || !(signupPolicyToggleButton instanceof HTMLElement)) return;
         signupPolicyPanel.classList.toggle("is-hidden", !isOpen);
         signupPolicyPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
         signupPolicyToggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      }
+
+      function setSignupServicePolicyPanelOpen(isOpen) {
+        if (!(signupServicePolicyPanel instanceof HTMLElement) || !(signupServicePolicyToggleButton instanceof HTMLElement)) return;
+        signupServicePolicyPanel.classList.toggle("is-hidden", !isOpen);
+        signupServicePolicyPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        signupServicePolicyToggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
       }
 
       function setSignupPrivacyPanelOpen(isOpen) {
@@ -1987,6 +2031,7 @@ body.modal-open {
         clearFormMessage();
         setSignupPrivacyPanelOpen(false);
         setSignupPolicyPanelOpen(false);
+        setSignupServicePolicyPanelOpen(false);
         document.getElementById("signup-login-id")?.focus();
       }
 
@@ -1995,6 +2040,7 @@ body.modal-open {
         signupModal.setAttribute("aria-hidden", "true");
         setSignupPrivacyPanelOpen(false);
         setSignupPolicyPanelOpen(false);
+        setSignupServicePolicyPanelOpen(false);
         syncModalBodyState();
       }
 
@@ -2026,6 +2072,12 @@ body.modal-open {
         const opening = signupPolicyPanel?.classList.contains("is-hidden");
         if (opening) await ensureSignupPolicyLoaded();
         setSignupPolicyPanelOpen(Boolean(opening));
+      });
+      signupServicePolicyToggleButton?.addEventListener("click", async (event) => {
+        event.preventDefault();
+        const opening = signupServicePolicyPanel?.classList.contains("is-hidden");
+        if (opening) await ensureSignupServicePolicyLoaded();
+        setSignupServicePolicyPanelOpen(Boolean(opening));
       });
 
       loginModal?.addEventListener("click", (event) => {
@@ -2127,7 +2179,7 @@ body.modal-open {
           return;
         }
         if (!policyTermsChecked) {
-          setFormMessage("error", "회원가입약관 동의가 필요합니다.");
+          setFormMessage("error", "회원가입약관 및 서비스이용약관 동의가 필요합니다.");
           return;
         }
 

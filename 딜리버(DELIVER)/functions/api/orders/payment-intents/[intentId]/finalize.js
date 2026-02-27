@@ -8,6 +8,7 @@ import {
   sanitizePlainText,
   writeSecurityAudit,
 } from "../../../_lib/cloudflare_store.js";
+import { sendOrderPaidTelegramAlert } from "../../../_lib/ops_alerts.js";
 import { ensureOrderAttachmentTable, saveOrderAttachmentMeta } from "../../../_lib/order_attachment_store.js";
 import {
   buildOrderPaymentResponse,
@@ -230,6 +231,50 @@ export async function onRequestPost(context) {
       `주문 결제 완료: ${orderNumber} (${member.login_id})`,
       now,
     ]);
+
+    try {
+      const alertResult = await sendOrderPaidTelegramAlert(context.env, {
+        orderNumber,
+        memberLoginId: member.login_id,
+        mediaName: intent.media_name,
+        totalAmount,
+        paidAt: now,
+      });
+      if (alertResult.ok) {
+        await d1Execute(context.env, "insert into admin_logs (message, created_at) values (?, ?)", [
+          `주문 결제 알림 전송 완료: ${orderNumber} (telegram)`,
+          now,
+        ]);
+      } else if (!alertResult.skipped) {
+        const reason = sanitizePlainText(alertResult.reason || "unknown", 120) || "unknown";
+        await d1Execute(context.env, "insert into admin_logs (message, created_at) values (?, ?)", [
+          `주문 결제 알림 전송 실패: ${orderNumber} (${reason})`,
+          now,
+        ]);
+        await writeSecurityAudit(context.env, {
+          eventType: "ops_order_payment_alert_failed",
+          actorType: "system",
+          actorId: "telegram",
+          ip: getRequestClientIp(context.request),
+          outcome: "failed",
+          detail: `${orderNumber}:${reason}`,
+        });
+      }
+    } catch (alertError) {
+      const reason = sanitizePlainText(alertError?.message || "unknown", 120) || "unknown";
+      await d1Execute(context.env, "insert into admin_logs (message, created_at) values (?, ?)", [
+        `주문 결제 알림 전송 예외: ${orderNumber} (${reason})`,
+        now,
+      ]).catch(() => {});
+      await writeSecurityAudit(context.env, {
+        eventType: "ops_order_payment_alert_error",
+        actorType: "system",
+        actorId: "telegram",
+        ip: getRequestClientIp(context.request),
+        outcome: "failed",
+        detail: `${orderNumber}:${reason}`,
+      }).catch(() => {});
+    }
 
     await writeSecurityAudit(context.env, {
       eventType: "member_order_payment_confirmed",

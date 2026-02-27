@@ -24,6 +24,11 @@ const state = {
   paymentMethods: [],
   paymentIntegration: { ready: false, message: "" },
   paymentPending: false,
+  paymentWidgetIntentId: "",
+  paymentWidget: null,
+  paymentWidgetData: null,
+  paymentWidgetPromise: null,
+  paymentWidgetToken: 0,
 };
 
 function clearLegacyTokenStorage() {
@@ -172,12 +177,41 @@ function openPaymentModal() {
   modal.setAttribute("aria-hidden", "false");
 }
 
+function getPaymentWidgetShell() {
+  const shell = document.getElementById("payment-widget-shell");
+  return shell instanceof HTMLElement ? shell : null;
+}
+
+function setPaymentWidgetVisible(visible) {
+  const shell = getPaymentWidgetShell();
+  if (!shell) return;
+  shell.hidden = !visible;
+}
+
+function clearPaymentWidgetContainers() {
+  const methods = document.getElementById("payment-widget-methods");
+  const agreement = document.getElementById("payment-widget-agreement");
+  if (methods instanceof HTMLElement) methods.innerHTML = "";
+  if (agreement instanceof HTMLElement) agreement.innerHTML = "";
+}
+
+function resetPaymentWidgetState({ clearContainers = true } = {}) {
+  state.paymentWidgetIntentId = "";
+  state.paymentWidget = null;
+  state.paymentWidgetData = null;
+  state.paymentWidgetPromise = null;
+  state.paymentWidgetToken += 1;
+  if (clearContainers) clearPaymentWidgetContainers();
+  setPaymentWidgetVisible(false);
+}
+
 function closePaymentModal() {
   if (state.paymentPending) return;
   const modal = document.getElementById("order-payment-modal");
   if (!(modal instanceof HTMLElement)) return;
   modal.classList.remove("open");
   modal.setAttribute("aria-hidden", "true");
+  resetPaymentWidgetState();
   setPaymentMessage("", "");
 }
 
@@ -228,16 +262,16 @@ function clearOrderDraft() {
 async function loadTossPaymentsSdk() {
   if (window.TossPayments) return window.TossPayments;
   await new Promise((resolve, reject) => {
-    const existing = document.querySelector('script[data-toss-sdk="1"]');
+    const existing = document.querySelector('script[data-toss-sdk="v2-standard"]');
     if (existing) {
       existing.addEventListener("load", () => resolve(), { once: true });
       existing.addEventListener("error", () => reject(new Error("토스 SDK 로드 실패")), { once: true });
       return;
     }
     const script = document.createElement("script");
-    script.src = "https://js.tosspayments.com/v1/payment";
+    script.src = "https://js.tosspayments.com/v2/standard";
     script.async = true;
-    script.dataset.tossSdk = "1";
+    script.dataset.tossSdk = "v2-standard";
     script.onload = () => resolve();
     script.onerror = () => reject(new Error("토스 SDK 로드 실패"));
     document.head.appendChild(script);
@@ -274,9 +308,99 @@ function syncEstimateFields() {
   if (totalEl) totalEl.textContent = formatCurrency(amounts.totalAmount);
 }
 
+function buildTossCustomerKey(rawValue = "") {
+  const cleaned = String(rawValue || "")
+    .trim()
+    .replace(/[^A-Za-z0-9_-]/g, "")
+    .slice(0, 48);
+  if (cleaned) return `dlv_${cleaned}`;
+  return `dlv_${String(state.member?.id || crypto.randomUUID()).replace(/[^A-Za-z0-9_-]/g, "").slice(0, 48)}`;
+}
+
+async function preparePaymentWidgetForIntent(intentId, { force = false } = {}) {
+  const targetIntentId = String(intentId || "").trim();
+  if (!targetIntentId) throw new Error("결제 식별자가 올바르지 않습니다.");
+  if (!state.paymentIntegration?.ready) {
+    throw new Error(state.paymentIntegration?.message || "결제 연동 심사중입니다.");
+  }
+
+  if (!force && state.paymentWidget && state.paymentWidgetData && state.paymentWidgetIntentId === targetIntentId) {
+    return state.paymentWidgetData;
+  }
+  if (!force && state.paymentWidgetPromise && state.paymentWidgetIntentId === targetIntentId) {
+    return state.paymentWidgetPromise;
+  }
+
+  const methods = document.getElementById("payment-widget-methods");
+  const agreement = document.getElementById("payment-widget-agreement");
+  if (!(methods instanceof HTMLElement) || !(agreement instanceof HTMLElement)) {
+    throw new Error("결제 위젯 영역을 찾을 수 없습니다.");
+  }
+
+  const token = state.paymentWidgetToken + 1;
+  state.paymentWidgetToken = token;
+  state.paymentWidgetIntentId = targetIntentId;
+  state.paymentWidget = null;
+  state.paymentWidgetData = null;
+  clearPaymentWidgetContainers();
+  setPaymentWidgetVisible(true);
+
+  const task = (async () => {
+    const prepared = await apiFetch(`/api/orders/payment-intents/${encodeURIComponent(targetIntentId)}/confirm-start`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ method: "CARD" }),
+    });
+    if (prepared.alreadyConfirmed) {
+      return { alreadyConfirmed: true };
+    }
+
+    const payment = prepared.payment || {};
+    const clientKey = String(payment.clientKey || "").trim();
+    const orderId = String(payment.orderId || "").trim();
+    const amount = normalizeAmount(payment.amount);
+    if (!clientKey || !orderId || amount <= 0) {
+      throw new Error("결제 설정이 아직 완료되지 않았습니다.");
+    }
+
+    const TossPayments = await loadTossPaymentsSdk();
+    const tossPayments = TossPayments(clientKey);
+    const customerKey = buildTossCustomerKey(payment.customerKey || state.member?.loginId || state.member?.id || "");
+    const widgets = tossPayments.widgets({ customerKey });
+
+    await widgets.setAmount({ currency: "KRW", value: amount });
+    await widgets.renderPaymentMethods({ selector: "#payment-widget-methods", variantKey: "DEFAULT" });
+    await widgets.renderAgreement({ selector: "#payment-widget-agreement", variantKey: "AGREEMENT" });
+
+    if (token !== state.paymentWidgetToken) {
+      return null;
+    }
+
+    state.paymentWidget = widgets;
+    state.paymentWidgetData = {
+      amount,
+      orderId,
+      orderName: String(payment.orderName || "딜리버 주문 결제"),
+      successUrl: String(payment.successUrl || window.location.href),
+      failUrl: String(payment.failUrl || window.location.href),
+    };
+    return state.paymentWidgetData;
+  })();
+
+  state.paymentWidgetPromise = task;
+  try {
+    return await task;
+  } finally {
+    if (token === state.paymentWidgetToken) {
+      state.paymentWidgetPromise = null;
+    }
+  }
+}
+
 function applyIntentToPaymentModal(intent, methods, refundPolicyHtml, paymentIntegration = null) {
   state.paymentIntent = intent || null;
   state.paymentMethods = Array.isArray(methods) ? methods : [];
+  resetPaymentWidgetState();
   state.paymentIntegration = {
     ready: Boolean(paymentIntegration?.ready),
     message: String(paymentIntegration?.message || ""),
@@ -287,7 +411,6 @@ function applyIntentToPaymentModal(intent, methods, refundPolicyHtml, paymentInt
   const vatEl = document.getElementById("payment-summary-vat");
   const totalEl = document.getElementById("payment-summary-total");
   const expiryEl = document.getElementById("payment-summary-expiry");
-  const methodSelect = document.getElementById("order-payment-method");
   const paymentForm = document.getElementById("order-payment-form");
   const submitButton = paymentForm?.querySelector('button[type="submit"]');
   const refundEl = document.getElementById("order-refund-policy-content");
@@ -306,17 +429,6 @@ function applyIntentToPaymentModal(intent, methods, refundPolicyHtml, paymentInt
     }
   }
 
-  if (methodSelect instanceof HTMLSelectElement) {
-    const list = state.paymentMethods.length
-      ? state.paymentMethods
-      : [{ id: "CARD", label: "카드", sdkMethod: "카드" }];
-    methodSelect.innerHTML = list
-      .map((item) => `<option value="${escapeHtml(item.id || item.sdkMethod || "CARD")}">${escapeHtml(item.label || item.sdkMethod || "카드")}</option>`)
-      .join("");
-    methodSelect.value = list[0]?.id || "CARD";
-    methodSelect.disabled = !state.paymentIntegration.ready;
-  }
-
   if (submitButton instanceof HTMLButtonElement) {
     submitButton.disabled = !state.paymentIntegration.ready;
     submitButton.textContent = state.paymentIntegration.ready ? "결제하기" : "결제연동 심사중";
@@ -326,9 +438,29 @@ function applyIntentToPaymentModal(intent, methods, refundPolicyHtml, paymentInt
   }
 
   if (!state.paymentIntegration.ready) {
+    setPaymentWidgetVisible(false);
     setPaymentMessage("error", state.paymentIntegration.message || "토스페이먼츠 결제 연동 심사중입니다.");
   } else {
-    setPaymentMessage("", "");
+    setPaymentMessage("", "결제 수단 위젯을 준비하고 있습니다...");
+    const intentId = String(intent?.intentId || "").trim();
+    if (intentId) {
+      preparePaymentWidgetForIntent(intentId)
+        .then((result) => {
+          if (result?.alreadyConfirmed) {
+            setPaymentMessage("", "이미 결제가 완료된 주문입니다.");
+            return;
+          }
+          if (state.paymentWidgetIntentId === intentId && state.paymentWidget) {
+            setPaymentMessage("", "결제수단 확인 후 결제하기 버튼을 눌러 주세요.");
+          }
+        })
+        .catch((error) => {
+          if (state.paymentWidgetIntentId === intentId) {
+            setPaymentWidgetVisible(false);
+            setPaymentMessage("error", error.message || "결제 위젯 로딩에 실패했습니다.");
+          }
+        });
+    }
   }
 }
 
@@ -388,42 +520,31 @@ async function submitPaymentConfirm(form) {
     return;
   }
 
-  const methodSelect = form.elements.namedItem("method");
-  const method = String(methodSelect?.value || "CARD").trim();
   state.paymentPending = true;
   const submitButton = form.querySelector('button[type="submit"]');
   if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
   setPaymentMessage("", "결제창을 준비하고 있습니다...");
   try {
-    const prepared = await apiFetch(`/api/orders/payment-intents/${encodeURIComponent(intentId)}/confirm-start`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ method }),
-    });
-    if (prepared.alreadyConfirmed) {
+    const paymentData = await preparePaymentWidgetForIntent(intentId);
+    if (paymentData?.alreadyConfirmed) {
       setOrderMessage("success", "이미 결제가 완료된 주문입니다.");
       clearOrderDraft();
       closePaymentModal();
       await refreshData();
       return;
     }
-    const payment = prepared.payment || {};
-    const clientKey = String(payment.clientKey || "").trim();
-    if (!clientKey || !payment.orderId) {
+    if (!state.paymentWidget || !paymentData) {
       throw new Error("결제 설정이 아직 완료되지 않았습니다.");
     }
 
     persistOrderDraft();
-    const TossPayments = await loadTossPaymentsSdk();
-    const tossPayments = TossPayments(clientKey);
-    await tossPayments.requestPayment(String(payment.method || "카드"), {
-      amount: Number(payment.amount || 0),
-      orderId: String(payment.orderId),
-      orderName: String(payment.orderName || "딜리버 주문 결제"),
+    await state.paymentWidget.requestPayment({
+      orderId: String(paymentData.orderId),
+      orderName: String(paymentData.orderName || "딜리버 주문 결제"),
       customerName: String(state.member?.name || ""),
       customerEmail: String(state.member?.email || ""),
-      successUrl: String(payment.successUrl || window.location.href),
-      failUrl: String(payment.failUrl || window.location.href),
+      successUrl: String(paymentData.successUrl || window.location.href),
+      failUrl: String(paymentData.failUrl || window.location.href),
     });
   } catch (error) {
     if (String(error?.code || "").toUpperCase() === "USER_CANCEL") {

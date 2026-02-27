@@ -36,6 +36,12 @@
   - `PASSWORD_PEPPER`
   - `PASSWORD_HASH_ITERATIONS` (Cloudflare Workers 한도: `100000` 권장)
   - `SESSION_BIND_UA` (`1` 권장)
+- 운영 알림 변수(선택):
+  - `OPS_ALERT_TELEGRAM_ENABLED` (`1`일 때 활성)
+  - `OPS_ALERT_TELEGRAM_BOT_TOKEN` (텔레그램 봇 토큰)
+  - `OPS_ALERT_TELEGRAM_CHAT_ID` (알림 수신 chat id)
+  - `OPS_ALERT_TIMEOUT_MS` (기본 `2500`)
+  - `ADMIN_PORTAL_URL` (기본 `https://admin.dliver.co.kr/`)
 
 ## 4) D1 스키마 적용
 ```bash

@@ -818,7 +818,13 @@
               </table>
             </div>
             <div class="form-terms form-terms-policy">
-              <input id="signup-policy-terms" name="policyTerms" type="checkbox" required aria-label="회원가입약관 동의" />
+              <input
+                id="signup-policy-terms"
+                name="policyTerms"
+                type="checkbox"
+                required
+                aria-label="회원가입약관 및 서비스이용약관 동의"
+              />
               <span>
                 <button
                   class="terms-inline-link"
@@ -829,11 +835,24 @@
                 >
                   회원가입약관
                 </button>
+                및
+                <button
+                  class="terms-inline-link"
+                  type="button"
+                  data-toggle-signup-service-policy
+                  aria-expanded="false"
+                  aria-controls="signup-service-policy-panel"
+                >
+                  서비스이용약관
+                </button>
                 에 동의합니다.
               </span>
             </div>
             <div class="terms-panel is-hidden" id="signup-policy-panel" aria-hidden="true">
               <pre id="signup-policy-content">회원가입약관을 불러오는 중입니다.</pre>
+            </div>
+            <div class="terms-panel is-hidden" id="signup-service-policy-panel" aria-hidden="true">
+              <pre id="signup-service-policy-content">서비스이용약관을 불러오는 중입니다.</pre>
             </div>
 
             <p class="form-message" id="signup-message" aria-live="polite"></p>
@@ -872,9 +891,9 @@
 
       <footer class="footer">
         © 2026 뎁스코퍼레이션. All rights reserved.<br />
-        사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804<br />
-        사업장소재지 : 경기도 양평군 양서면 목왕리 532<br />
-        이메일 : jeff@dliver.co.kr<br />
+        사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804 | 통신판매신고 제2026-경기양평-0841호<br />
+        사업장소재지 : 경기도 양평군 양서면 목왕리길 138번길 11<br />
+        전화번호:010-8468-2806<br />
         운영정보: 우측 하단 채널톡 상담 운영
       </footer>
     </div>
@@ -897,8 +916,10 @@
         mode: 'first',
       };
       var SIGNUP_POLICY_PATH = '/01_서비스코드-ServiceCode/공통데이터-SharedData/signup-policy.txt?v=20260224r1';
+      var SIGNUP_SERVICE_POLICY_PATH = '/01_서비스코드-ServiceCode/공통데이터-SharedData/service-policy.txt?v=20260227r1';
       var CHANNEL_TALK_PLUGIN_KEY = 'effcd765-65b5-49ca-b003-b18931fc6f38';
       var signupPolicyLoaded = false;
+      var signupServicePolicyLoaded = false;
 
       var els = {
         form: document.getElementById('reviewForm'),
@@ -927,6 +948,9 @@
         signupPolicyToggleButton: document.querySelector('[data-toggle-signup-policy]'),
         signupPolicyPanel: document.getElementById('signup-policy-panel'),
         signupPolicyContent: document.getElementById('signup-policy-content'),
+        signupServicePolicyToggleButton: document.querySelector('[data-toggle-signup-service-policy]'),
+        signupServicePolicyPanel: document.getElementById('signup-service-policy-panel'),
+        signupServicePolicyContent: document.getElementById('signup-service-policy-content'),
         visual: document.getElementById('visual'),
         status: document.getElementById('statusText'),
         feedbackList: document.getElementById('feedbackList'),
@@ -1045,11 +1069,31 @@
         signupPolicyLoaded = true;
       }
 
+      async function ensureSignupServicePolicyLoaded() {
+        if (signupServicePolicyLoaded || !(els.signupServicePolicyContent instanceof HTMLElement)) return;
+        try {
+          var response = await fetch(SIGNUP_SERVICE_POLICY_PATH, { credentials: 'same-origin', cache: 'no-store' });
+          var text = await response.text();
+          var normalized = String(text || '').trim();
+          els.signupServicePolicyContent.textContent = normalized || '서비스이용약관 내용이 비어 있습니다.';
+        } catch (error) {
+          els.signupServicePolicyContent.textContent = '서비스이용약관을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+        }
+        signupServicePolicyLoaded = true;
+      }
+
       function setSignupPolicyPanelOpen(isOpen) {
         if (!(els.signupPolicyPanel instanceof HTMLElement) || !(els.signupPolicyToggleButton instanceof HTMLElement)) return;
         els.signupPolicyPanel.classList.toggle('is-hidden', !isOpen);
         els.signupPolicyPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
         els.signupPolicyToggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      }
+
+      function setSignupServicePolicyPanelOpen(isOpen) {
+        if (!(els.signupServicePolicyPanel instanceof HTMLElement) || !(els.signupServicePolicyToggleButton instanceof HTMLElement)) return;
+        els.signupServicePolicyPanel.classList.toggle('is-hidden', !isOpen);
+        els.signupServicePolicyPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        els.signupServicePolicyToggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       }
 
       function setSignupPrivacyPanelOpen(isOpen) {
@@ -1089,6 +1133,7 @@
         clearFormMessage();
         setSignupPrivacyPanelOpen(false);
         setSignupPolicyPanelOpen(false);
+        setSignupServicePolicyPanelOpen(false);
         els.signupModal.classList.add('open');
         els.signupModal.setAttribute('aria-hidden', 'false');
         syncModalBodyState();
@@ -1101,6 +1146,7 @@
         els.signupModal.setAttribute('aria-hidden', 'true');
         setSignupPrivacyPanelOpen(false);
         setSignupPolicyPanelOpen(false);
+        setSignupServicePolicyPanelOpen(false);
         syncModalBodyState();
       }
 
@@ -1335,6 +1381,13 @@
         setSignupPolicyPanelOpen(Boolean(opening));
       });
 
+      els.signupServicePolicyToggleButton?.addEventListener('click', async function (event) {
+        event.preventDefault();
+        var opening = els.signupServicePolicyPanel?.classList.contains('is-hidden');
+        if (opening) await ensureSignupServicePolicyLoaded();
+        setSignupServicePolicyPanelOpen(Boolean(opening));
+      });
+
       els.signupModal?.addEventListener('click', function (event) {
         if (event.target === els.signupModal) closeSignupModal();
       });
@@ -1417,7 +1470,7 @@
           return;
         }
         if (!policyTermsChecked) {
-          setFormMessage('error', '회원가입약관 동의가 필요합니다.');
+          setFormMessage('error', '회원가입약관 및 서비스이용약관 동의가 필요합니다.');
           return;
         }
 

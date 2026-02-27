@@ -14,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260224r5" />
+    <link rel="stylesheet" href="styles.css?v=20260227r5" />
   </head>
   <body>
     <div class="bg-shape bg-shape-a"></div>
@@ -92,11 +92,6 @@
               <label for="order-title">주문명</label>
               <input id="order-title" name="title" type="text" placeholder="예: 신제품 런칭 보도자료" required />
             </div>
-            <div class="input-row estimate-box">
-              <p class="estimate-row"><span>공급가</span><strong id="order-estimate-supply">0원</strong></p>
-              <p class="estimate-row"><span>부가세(10%)</span><strong id="order-estimate-vat">0원</strong></p>
-              <p class="estimate-row total"><span>최종 결제예정금액</span><strong id="order-estimate-total">0원</strong></p>
-            </div>
             <div class="input-row">
               <label for="order-note">요청사항</label>
               <textarea
@@ -152,9 +147,9 @@
     <footer class="site-footer">
       <div class="site-footer-inner">
         <p>© 2026 뎁스코퍼레이션. All rights reserved.</p>
-        <p>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804</p>
-        <p>사업장소재지 : 경기도 양평군 양서면 목왕리 532</p>
-        <p>이메일 : jeff@dliver.co.kr</p>
+        <p>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804 | 통신판매신고 제2026-경기양평-0841호</p>
+        <p>사업장소재지 : 경기도 양평군 양서면 목왕리길 138번길 11</p>
+        <p>전화번호:010-8468-2806</p>
         <p>운영정보: 우측 하단 채널톡 상담 운영</p>
       </div>
     </footer>
@@ -165,19 +160,39 @@
           <h3 id="order-payment-title">최종 결제 확인</h3>
           <button class="btn btn-light small" type="button" id="order-payment-close">닫기</button>
         </div>
-        <p class="sub">아래 금액과 환불 규정을 확인한 후 결제하시겠습니까 버튼을 눌러 결제를 진행해 주세요.</p>
+        <p class="sub">아래 주문 정보를 확인해 주세요. 결제 연동 오픈 전에는 결제가 진행되지 않습니다.</p>
         <div class="payment-summary-box">
-          <p class="estimate-row"><span>주문명</span><strong id="payment-summary-title">-</strong></p>
-          <p class="estimate-row"><span>매체</span><strong id="payment-summary-media">-</strong></p>
-          <p class="estimate-row"><span>공급가</span><strong id="payment-summary-supply">0원</strong></p>
-          <p class="estimate-row"><span>부가세(10%)</span><strong id="payment-summary-vat">0원</strong></p>
-          <p class="estimate-row total"><span>최종 결제금액</span><strong id="payment-summary-total">0원</strong></p>
-          <p class="estimate-row"><span>유효시간</span><strong id="payment-summary-expiry">-</strong></p>
+          <div class="payment-kv-grid">
+            <div class="payment-kv-item full">
+              <span class="payment-kv-label">주문명</span>
+              <strong class="payment-kv-value" id="payment-summary-title">-</strong>
+            </div>
+            <div class="payment-kv-item full">
+              <span class="payment-kv-label">매체</span>
+              <strong class="payment-kv-value" id="payment-summary-media">-</strong>
+            </div>
+            <div class="payment-kv-item">
+              <span class="payment-kv-label">공급가</span>
+              <strong class="payment-kv-value" id="payment-summary-supply">0원</strong>
+            </div>
+            <div class="payment-kv-item">
+              <span class="payment-kv-label">부가세(10%)</span>
+              <strong class="payment-kv-value" id="payment-summary-vat">0원</strong>
+            </div>
+            <div class="payment-kv-item total full">
+              <span class="payment-kv-label">최종 결제금액</span>
+              <strong class="payment-kv-value" id="payment-summary-total">0원</strong>
+            </div>
+            <div class="payment-kv-item full">
+              <span class="payment-kv-label">유효시간</span>
+              <strong class="payment-kv-value" id="payment-summary-expiry">-</strong>
+            </div>
+          </div>
         </div>
         <form id="order-payment-form" class="charge-form" novalidate>
-          <div class="input-row">
-            <label for="order-payment-method">결제 수단</label>
-            <select id="order-payment-method" name="method"></select>
+          <div class="payment-widget-shell" id="payment-widget-shell" hidden>
+            <div id="payment-widget-methods"></div>
+            <div id="payment-widget-agreement"></div>
           </div>
           <p class="form-message" id="order-payment-message" aria-live="polite"></p>
           <div class="modal-actions">
@@ -198,6 +213,6 @@
     </div>
 
     <script src="/01_서비스코드-ServiceCode/공통데이터-SharedData/media_seed.js?v=20260224r4"></script>
-    <script src="app.js?v=20260227r1"></script>
+    <script src="app.js?v=20260227r3"></script>
   </body>
 </html>

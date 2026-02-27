@@ -3,18 +3,27 @@ import {
   cleanupExpiredPaymentIntents,
   createIntentGoneResponse,
   ensureIntentNotExpired,
-    ensureMemberSession,
-    ensureOrderPaymentSchema,
-    fetchIntentForMember,
-    getPaymentIntegrationStatus,
-    listPaymentMethods,
-    normalizePaymentMethod,
-    resolveReturnUrls,
+  ensureMemberSession,
+  ensureOrderPaymentSchema,
+  fetchIntentForMember,
+  getPaymentIntegrationStatus,
+  listPaymentMethods,
+  normalizePaymentMethod,
+  resolveReturnUrls,
   toIntentSummary,
 } from "../../_payment_common.js";
 
 function buildOrderName(intent) {
   return `딜리버 주문 결제 ${String(intent.media_name || "").trim() || "주문"}`;
+}
+
+function buildCustomerKey(intent, fallbackActorId = "") {
+  const source = String(intent?.member_login_id || fallbackActorId || "")
+    .trim()
+    .replace(/[^A-Za-z0-9_-]/g, "")
+    .slice(0, 48);
+  if (source) return `dlv_${source}`;
+  return `dlv_${crypto.randomUUID().replace(/-/g, "").slice(0, 24)}`;
 }
 
 export async function onRequestPost(context) {
@@ -80,6 +89,7 @@ export async function onRequestPost(context) {
       payment: {
         clientKey,
         method: method.sdkMethod,
+        customerKey: buildCustomerKey(intent, session.memberId),
         orderId: intent.toss_order_id,
         amount: Number(intent.total_amount || 0),
         orderName: buildOrderName(intent),
