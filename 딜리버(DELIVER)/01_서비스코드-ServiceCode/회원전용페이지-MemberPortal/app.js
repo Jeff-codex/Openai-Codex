@@ -68,6 +68,12 @@ function syncTopbarOffset() {
   document.documentElement.style.setProperty("--topbar-offset", `${Math.max(62, height)}px`);
 }
 
+function syncDashboardDisclosure() {
+  const dashboardDisclosure = document.getElementById("dashboard-disclosure");
+  if (!(dashboardDisclosure instanceof HTMLDetailsElement)) return;
+  dashboardDisclosure.open = !window.matchMedia("(max-width: 760px)").matches;
+}
+
 function formatCurrency(value) {
   const n = Number(value || 0);
   if (!Number.isFinite(n)) return "0원";
@@ -738,7 +744,13 @@ function renderMediaGroups() {
   const activeGroup = activeGroupEntry[0];
   const activeItems = activeGroupEntry[1];
   if (summary) {
-    summary.textContent = `총 ${filtered.length}개 · 카테고리 ${groupNames.length}개 · 선택 ${activeGroup} ${activeItems.length}개`;
+    const summarySegments = [`총 ${filtered.length}개`, `카테고리 ${groupNames.length}개`, `선택 ${activeGroup} ${activeItems.length}개`];
+    summary.innerHTML = summarySegments
+      .map((segment, index) => {
+        const divider = index < summarySegments.length - 1 ? '<span class="media-summary-divider">·</span>' : "";
+        return `<span class="media-summary-segment">${escapeHtml(segment)}</span>${divider}`;
+      })
+      .join("");
   }
 
   nav.innerHTML = groups
@@ -972,15 +984,20 @@ function bindEvents() {
     clearOrderDraft();
     redirectToLanding();
   });
+
 }
 
 async function init() {
   clearLegacyTokenStorage();
   setAuthReady(false);
   syncTopbarOffset();
+  syncDashboardDisclosure();
   initChannelTalk();
   bindEvents();
-  window.addEventListener("resize", syncTopbarOffset);
+  window.addEventListener("resize", () => {
+    syncTopbarOffset();
+    syncDashboardDisclosure();
+  });
   const topbar = document.querySelector(".topbar");
   if (typeof ResizeObserver === "function" && topbar instanceof HTMLElement) {
     const topbarObserver = new ResizeObserver(() => syncTopbarOffset());
@@ -991,6 +1008,7 @@ async function init() {
     await handleOrderPaymentRedirectResult();
     setAuthReady(true);
     syncTopbarOffset();
+    syncDashboardDisclosure();
   } catch (error) {
     if (Number(error?.status) === 401) {
       redirectToLanding();
@@ -998,6 +1016,7 @@ async function init() {
     }
     setAuthReady(true);
     syncTopbarOffset();
+    syncDashboardDisclosure();
     setOrderMessage("error", "데이터 로딩이 지연되고 있습니다. 잠시 후 자동으로 다시 동기화됩니다.");
     renderAll();
     return;
