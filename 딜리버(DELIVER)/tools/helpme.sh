@@ -1,3 +1,8 @@
+# LEGACY NOTICE:
+# This shell script is retained for WSL/Linux reference only.
+# Primary operation is Windows PowerShell scripts under:
+# 07_자동화스크립트-AutomationScripts/*.ps1
+
 #!/usr/bin/env bash
 set -euo pipefail
 

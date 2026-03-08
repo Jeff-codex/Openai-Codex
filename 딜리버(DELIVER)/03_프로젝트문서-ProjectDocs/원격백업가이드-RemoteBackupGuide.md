@@ -26,3 +26,10 @@ cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
 ```bash
 (crontab -l 2>/dev/null; echo "15 */6 * * * /mnt/c/Users/gusru/code/Openai-Codex/딜리버\\(DELIVER\\)/07_자동화스크립트-AutomationScripts/scheduled_backup_runner.sh --soft") | crontab -
 ```
+
+## Windows 기본백업 절차
+- cd C:\Users\gusru\code\Openai-Codex\딜리버(DELIVER)
+- .\07_자동화스크립트-AutomationScripts\database-backup-all.ps1
+- .\07_자동화스크립트-AutomationScripts\scheduled-backup-runner.ps1 -Soft
+- 기존 crontab 예시는 레거시(WSL/Linux) 참고용으로만 유지한다.
+- Windows 스케줄은 작업 스케줄러 기준으로 관리한다.

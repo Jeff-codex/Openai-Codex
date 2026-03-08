@@ -38,3 +38,8 @@ Updated: 2026-02-24 23:33 KST
 cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
 ./07_자동화스크립트-AutomationScripts/resume_deliver.sh
 ```
+
+## 현재 인계 기준
+- Project root (Windows): C:\Users\gusru\code\Openai-Codex\딜리버(DELIVER)
+- 기본 셸: PowerShell
+- WSL 경로 표기는 과거 기록용이며, 실행 명령은Windows 경로 기준으로 해석한다.

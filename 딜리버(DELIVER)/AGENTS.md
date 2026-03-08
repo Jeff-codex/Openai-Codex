@@ -48,3 +48,12 @@ Git history is not available in this checkout, so use a consistent standard:
 
 ## Security & Configuration Tips
 Do not modify or delete existing signed system binaries unless explicitly required and approved. Never commit secrets, host-specific credentials, or machine identifiers in scripts or docs.
+
+## Session Shortcut
+- If the user message is exactly `딜리버`, immediately run the Windows restart checklist script:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File .\07_자동화스크립트-AutomationScripts\restart-checklist-win.ps1`
+- Return a concise readiness summary:
+  - project root checks
+  - `git status` snapshot
+  - `doctor:win` result
+  - `check:html:guard` result

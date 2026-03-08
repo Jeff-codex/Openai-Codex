@@ -604,3 +604,40 @@
 - 딜리버(DELIVER)/index.html
 - 딜리버(DELIVER)/06_운영로그-OpsLogs/backup-schedule/backup-20260226-121504.log
 - 다음 작업: 이어서 개발 진행
+
+## 2026-03-03 21:57:03 KST
+- 단계: 랜딩 UI-OG썸네일-캐릭터 최종조정 마감
+- 요약: 단계 완료 체크포인트 저장
+- 변경 파일:
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/공통데이터-SharedData/media_seed.js
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/관리자페이지-AdminPage/app.js
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/관리자페이지-AdminPage/index.html
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/관리자페이지-AdminPage/styles.css
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/app.js
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/index.html
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/styles.css
+- 딜리버(DELIVER)/08_데이터베이스-Database/01_마이그레이션-Migrations/003_init_d1_schema.sql
+- 딜리버(DELIVER)/08_데이터베이스-Database/02_시드데이터-SeedData/media_channels.json
+- 딜리버(DELIVER)/README.md
+- 딜리버(DELIVER)/functions/api/admin/bootstrap.js
+- 딜리버(DELIVER)/functions/api/admin/media.js
+- 딜리버(DELIVER)/functions/api/media/index.js
+- 딜리버(DELIVER)/functions/api/orders/payment-intents/index.js
+- 딜리버(DELIVER)/index.html
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-main.jpg
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.png
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.png.bak-precenter
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.png.bak-preclean
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.webp
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.webp.bak-precenter
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.webp.bak-preclean
+- 딜리버(DELIVER)/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/og-share-1200x630-20260303.png
+- 딜리버(DELIVER)/06_운영로그-OpsLogs/backup-schedule/backup-20260303-181501.log
+- 딜리버(DELIVER)/07_자동화스크립트-AutomationScripts/__pycache__/
+- 딜리버(DELIVER)/07_자동화스크립트-AutomationScripts/mediap_order3_scrape.py
+- 딜리버(DELIVER)/08_데이터베이스-Database/01_마이그레이션-Migrations/006_seed_media_channels_from_5categories.sql
+- 딜리버(DELIVER)/08_데이터베이스-Database/01_마이그레이션-Migrations/007_media_channels_pricing_v2.sql
+- 딜리버(DELIVER)/functions/api/_lib/media_pricing.js
+- 딜리버(DELIVER)/test-results/
+- 다음 작업: 이어서 개발 진행

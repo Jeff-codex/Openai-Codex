@@ -1,172 +1,67 @@
-# 딜리버 웹서비스 개발 저장 구조 (Local + Git Remote)
+# 딜리버(DELIVER) 운영/개발 가이드 (Windows Codex 앱 기준)
 
-## 저장 경로
-- 로컬 PC: `C:\Users\gusru\code\Openai-Codex\딜리버(DELIVER)`
-- WSL 경로: `/mnt/c/Users/gusru/code/Openai-Codex/딜리버(DELIVER)`
-- 원격 Git: `origin` (현재 연결됨)
+## 1. 프로젝트 위치
+- Windows 경로: `C:\Users\gusru\code\Openai-Codex\딜리버(DELIVER)`
+- 이 문서는 WSL 없이 Windows PowerShell 기준으로 작성되었다.
 
-## 폴더 구조 (한국어+영어)
-- `01_서비스코드-ServiceCode` : 실제 개발 소스
-- `02_디자인에셋-DesignAssets` : 로고/이미지/브랜드 리소스
-- `03_프로젝트문서-ProjectDocs` : 요구사항/운영 문서
-- `04_배포패키지-DeployPackage` : 배포 산출물
-- `05_로컬백업-LocalBackup` : 로컬 백업 압축본
-- `06_운영로그-OpsLogs` : 운영 로그 파일
-- `07_자동화스크립트-AutomationScripts` : 백업/동기화 스크립트
-- `08_데이터베이스-Database` : Cloudflare D1 마이그레이션/시드/동기화 로그
+## 2. 핵심 디렉터리
+- `01_서비스코드-ServiceCode`: 서비스 코드/환경 파일
+- `07_자동화스크립트-AutomationScripts`: 운영 자동화 스크립트(`.ps1` 우선)
+- `08_데이터베이스-Database`: D1 마이그레이션/백업
+- `functions/api`: Cloudflare Pages Functions API
 
-## 고정 개발 정책
-- 모든 회원/주문/운영 데이터 기능은 Cloudflare(D1/KV/R2) 연동을 기본값으로 설계
-- 환경 변수 기준 파일: `01_서비스코드-ServiceCode/.env.cloudflare.example`
-- 실토큰/시크릿은 저장소 바깥 비밀파일(예: `~/.deliver-secrets/.env.cloudflare.local`)에서만 관리
-- 세부 원칙 문서: `03_프로젝트문서-ProjectDocs/개발원칙-DevelopmentPrinciples.md`
-- 퍼스트 랜딩 검수엔진 고정 정책: `03_프로젝트문서-ProjectDocs/퍼스트랜딩-검수엔진-고정정책.md`
-- 퍼스트 랜딩 검수 기능은 초기 단계에서 LLM 호출 없이 규칙엔진 100%로 운영
-- 매 단계 완료 후 `완료/미완료` 요약 체크리스트 제공을 기본 원칙으로 적용
-- 단계별 Windows 접속 경로(절대경로 + `file:///`)는 요청 시에만 제공
-- 개발 순서는 `Admin MVP + 프론트 병행`을 기본값으로 적용
+## 3. Cloudflare 리소스(코드 기준)
+- Pages Project: `dliver`
+- D1 Binding: `DB` (`dliver-prod-db`)
+- KV Binding: `SESSION_KV` (`dliver-session-kv-prod`)
+- R2 Binding: `FILES_BUCKET` (`dliver-prod-files`, 선택)
 
-## 현재 퍼스트 랜딩 위치 (루트 메인)
-- `index.html`
-- `01_서비스코드-ServiceCode/랜딩페이지-FirstLandingPage/index.html`
+## 4. 설치 (Windows)
+1. Node.js 20+
+2. Git for Windows
+3. Python 3.x (선택: 일부 검증/보조 스크립트)
+4. Wrangler CLI (권장)
+   - `npm i -g wrangler`
 
-## 세컨드 랜딩 위치 (기존 셀프주문)
-- `01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html`
-- 접근 경로: `https://dliver.co.kr/self-order`
+## 5. 환경 변수 로드
+1. 예제 복사
+   - `Copy-Item .\01_서비스코드-ServiceCode\.env.cloudflare.example .\01_서비스코드-ServiceCode\.env.cloudflare`
+2. 실값은 저장소 외부 파일에 저장
+   - 예: `$HOME\.deliver-secrets\.env.cloudflare.local`
+3. 현재 세션 로드
+   - `.\07_자동화스크립트-AutomationScripts\check-order-payment-env.ps1`
 
-## 현재 관리자페이지 위치
-- `01_서비스코드-ServiceCode/관리자페이지-AdminPage/index.html`
+## 6. 검증 (Windows 우선)
+1. 필수 키 점검
+   - `.\07_자동화스크립트-AutomationScripts\check-order-payment-env.ps1`
+2. 배포 전 게이트(로컬)
+   - `.\07_자동화스크립트-AutomationScripts\predeploy-order-payment-gate.ps1 -SkipRemote`
+3. 경로/URL 점검
+   - `.\07_자동화스크립트-AutomationScripts\preview-paths.ps1`
 
-## 운영 도메인 (2026-02-23 기준)
-- 메인: `https://dliver.co.kr/`
-- 관리자: `https://admin.dliver.co.kr/`
-- API: `https://api.dliver.co.kr/`
-- 스테이징: `https://staging.dliver.co.kr/`
-- 스테이징 API: `https://staging-api.dliver.co.kr/`
-- 개발: `https://dev.dliver.co.kr/`
-- 개발 API: `https://dev-api.dliver.co.kr/`
+## 7. 백업
+1. 코드 백업 zip 생성
+   - `.\07_자동화스크립트-AutomationScripts\backup-and-push.ps1`
+2. D1 스냅샷 백업 zip 생성
+   - `.\07_자동화스크립트-AutomationScripts\database-backup-all.ps1`
+3. 스케줄 실행(수동 트리거)
+   - `.\07_자동화스크립트-AutomationScripts\scheduled-backup-runner.ps1 -Soft`
 
-## Cloudflare 데이터 문서
-- `08_데이터베이스-Database/01_마이그레이션-Migrations/003_init_d1_schema.sql`
-- `08_데이터베이스-Database/01_마이그레이션-Migrations/004_review_engine_schema.sql`
-- `08_데이터베이스-Database/01_마이그레이션-Migrations/005_order_payment_system.sql`
-- `03_프로젝트문서-ProjectDocs/AdminMVP-운영구성-AdminMVPBlueprint.md`
-- `03_프로젝트문서-ProjectDocs/Cloudflare연동가이드-CloudflareSetupGuide.md`
+## 8. 배포
+1. D1 마이그레이션(원격)
+   - `npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/003_init_d1_schema.sql`
+   - `npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/004_review_engine_schema.sql`
+   - `npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/005_order_payment_system.sql`
+   - `npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/007_media_channels_pricing_v2.sql`
+2. Pages 배포
+   - `npx wrangler pages deploy . --project-name dliver`
 
-루트 `index.html`은 퍼스트 랜딩(원고 검수 페이지) 본문을 직접 렌더링하도록 구성되어 있습니다.
+## 9. D1 복구(백업 기준)
+1. 백업 zip 압축 해제
+2. `manifest.json` 확인 후 테이블 JSON을 기준으로 복원 SQL/스크립트 수행
+3. 복구 전/후 `npx wrangler d1 execute dliver-prod-db --remote --command "select count(*) ..."`로 건수 검증
 
-## 운영 안정화 워크플로우
-0. 로컬 시크릿 로드(필수)
-```bash
-set -a
-source ~/.deliver-secrets/.env.cloudflare.local
-set +a
-```
-
-0-1. 주문결제 필수 환경변수 점검(권장)
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/check_order_payment_env.sh
-```
-
-0-1a. 원격 스모크체크 관리자 계정 주입(운영 계정 변경 시 권장)
-```bash
-export SECURITY_SMOKE_ADMIN_LOGIN_ID="운영관리자ID"
-export SECURITY_SMOKE_ADMIN_PASSWORD="운영관리자비밀번호"
-```
-
-0-2. 주문결제 배포 게이트(권장)
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/predeploy_order_payment_gate.sh --skip-remote
-```
-
-0-3. 토스 실연동 배포 직전 게이트(심사 완료 후)
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/predeploy_order_payment_gate.sh --require-toss-live --skip-remote
-```
-
-1. 개발 후 로컬 백업 생성
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/backup_and_push.sh
-```
-
-2. 백업 + Git 원격 푸시까지 한 번에 실행
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/backup_and_push.sh --push
-```
-
-3. 단계 완료 기록 + 백업(권장)
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/checkpoint.sh "회원가입 화면 개선"
-```
-
-4. 단계 완료 기록 + 백업 + 원격 푸시
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/checkpoint.sh "회원가입 화면 개선" --push
-```
-
-5. 미리보기 경로만 즉시 출력
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/preview_paths.sh
-```
-
-6. Cloudflare D1 시드 반영(원격 실행)
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/003_init_d1_schema.sql
-npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/004_review_engine_schema.sql
-npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/005_order_payment_system.sql
-```
-
-7. D1 데이터베이스 목록 확인
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-npx wrangler d1 list
-```
-
-8. 데이터베이스 전체 백업(즉시 실행)
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/database_backup_all.sh
-```
-
-9. 저장 최적화(보관 개수 유지)
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/optimize_storage.sh
-```
-
-10. 스케줄 실행용 백업 러너(로그/락 포함)
-```bash
-cd /mnt/c/Users/gusru/code/Openai-Codex/딜리버\(DELIVER\)
-./07_자동화스크립트-AutomationScripts/scheduled_backup_runner.sh
-```
-
-11. 리눅스/WSL 크론 등록 예시(6시간마다 실행)
-```bash
-(crontab -l 2>/dev/null; echo "15 */6 * * * /mnt/c/Users/gusru/code/Openai-Codex/딜리버\\(DELIVER\\)/07_자동화스크립트-AutomationScripts/scheduled_backup_runner.sh --soft") | crontab -
-```
-
-12. 작업 재개 명령
-```bash
-딜리버
-```
-
-## 보안 기본값
-- 인증 세션: `HttpOnly + Secure + SameSite=Lax` 쿠키 기반
-- 비밀번호: PBKDF2-SHA256 해시(`PASSWORD_HASH_ITERATIONS`, `PASSWORD_PEPPER`)
-- API 보호: CORS/Preflight + CSRF + RateLimit + Brute-force 잠금 + 보안헤더
-- 감사로그: `security_audit_logs` 테이블에 인증/권한 주요 이벤트 적재
-
-## 채널톡 설정
-- 랜딩 삽입 위치: `01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html`
-- 설정 키: `CHANNEL_TALK_PLUGIN_KEY`
-- 런타임 오버라이드(선택): `window.DLIVER_CHANNEL_TALK_PLUGIN_KEY = "..."` 설정 시 해당 값 우선 사용
-- 보안헤더(CSP) 허용 도메인: `_headers` 내 `cdn.channel.io`, `*.channel.io`, `api.channel.io` 반영
+## 10. 보안 규칙
+- `.env`, 토큰, 비밀번호, 쿠키는 출력/커밋 금지
+- 운영 시크릿은 Pages/Workers Secrets 또는 저장소 외부 파일로만 관리
+- 파괴적 명령(`reset --hard`, 강제 삭제) 금지

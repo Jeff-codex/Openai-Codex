@@ -116,3 +116,8 @@ npx wrangler r2 object put dliver-prod-files/healthchecks/smoke.txt --remote --f
 npx wrangler r2 object get dliver-prod-files/healthchecks/smoke.txt --remote --file /tmp/smoke-down.txt
 npx wrangler r2 object delete dliver-prod-files/healthchecks/smoke.txt --remote
 ```
+
+## 실행 환경 기준 (2026-03-05 업데이트)
+- 기본 실행 환경: Windows PowerShell
+- 프로젝트 루트: C:\Users\gusru\code\Openai-Codex\딜리버(DELIVER)
+- WSL 경로(/mnt/...)와 bash/source/crontab 절차는 레거시 참고용이며 운영 기본 절차에서 제외한다.
