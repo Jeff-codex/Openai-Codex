@@ -32,6 +32,10 @@ function Import-EnvFile {
 
         $key = $trimmed.Substring(0, $eq).Trim()
         $value = $trimmed.Substring($eq + 1).Trim()
+        $current = [System.Environment]::GetEnvironmentVariable($key)
+        if ([string]::IsNullOrWhiteSpace($value) -and -not [string]::IsNullOrWhiteSpace($current)) {
+            continue
+        }
         [System.Environment]::SetEnvironmentVariable($key, $value)
     }
 
