@@ -23,19 +23,19 @@
       content="보도자료 원고를 업로드하면 승인 가능성, 리스크, 가독성, 브랜딩 적합도를 빠르게 분석합니다."
     />
     <meta property="og:url" content="https://dliver.co.kr/" />
-    <meta property="og:image" content="https://dliver.co.kr/og-share-clean-20260224-v2.jpg" />
-    <meta property="og:image:secure_url" content="https://dliver.co.kr/og-share-clean-20260224-v2.jpg" />
-    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image" content="https://dliver.co.kr/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
+    <meta property="og:image:secure_url" content="https://dliver.co.kr/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="딜리버 서비스 대표 이미지" />
+    <meta property="og:image:alt" content="딜리버 최신 로고 이미지" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="딜리버 | 언론홍보 원고 검수" />
     <meta
       name="twitter:description"
       content="보도자료 원고를 업로드하면 승인 가능성, 리스크, 가독성, 브랜딩 적합도를 빠르게 분석합니다."
     />
-    <meta name="twitter:image" content="https://dliver.co.kr/og-share-clean-20260224-v2.jpg" />
+    <meta name="twitter:image" content="https://dliver.co.kr/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -70,7 +70,7 @@
         "inLanguage": "ko-KR"
       }
     </script>
-    <link rel="icon" type="image/svg+xml" href="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/favicon.svg" />
+    <link rel="icon" type="image/png" href="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.png" />
     <style>
       :root {
         --bg: #f5f7fb;
@@ -102,12 +102,34 @@
       }
 
       .top-nav {
-        width: min(1080px, calc(100% - 32px));
+        width: min(1120px, calc(100% - 40px));
         margin: 20px auto 0;
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+        align-items: center;
         gap: 16px;
         font-size: 14px;
+      }
+
+      .top-brand {
+        width: clamp(96px, 8.2vw, 122px);
+        flex-shrink: 0;
+        line-height: 0;
+      }
+
+      .top-brand img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .top-nav-links {
+        display: flex;
+        margin-left: auto;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: nowrap;
       }
 
       .top-nav a,
@@ -120,6 +142,13 @@
         margin: 0;
         font: inherit;
         cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .top-nav .top-link-btn {
+        display: inline-flex;
+        align-items: center;
+        line-height: 1;
       }
 
       .top-nav a:hover,
@@ -136,7 +165,7 @@
       .hero {
         width: min(960px, 100%);
         display: grid;
-        gap: 20px;
+        gap: 8px;
         justify-items: center;
       }
 
@@ -153,8 +182,8 @@
       }
 
       .visual {
-        width: min(720px, 100%);
-        min-height: 220px;
+        width: min(820px, 100%);
+        min-height: 226px;
         position: relative;
         display: grid;
         place-items: center;
@@ -169,17 +198,27 @@
       .logo-stage {
         opacity: 1;
         transform: translateY(0) scale(1);
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 4px;
       }
 
       .logo-image {
-        width: min(520px, 88vw);
-        max-height: 180px;
+        width: min(340px, 56vw);
+        max-height: min(196px, 27vh);
         object-fit: contain;
-        filter: drop-shadow(0 10px 30px rgba(26, 115, 232, 0.18));
+        object-position: center;
+        display: block;
+        margin: 0 auto;
+        transform: translateX(8px);
+        filter: none;
+        transform-origin: 50% 88%;
+        will-change: transform;
       }
 
       .visual.is-analyzing .logo-stage {
-        animation: logoPulse 900ms ease-in-out infinite;
+        animation: logoPulse 980ms ease-in-out infinite;
       }
 
       .visual.result-ready .logo-stage {
@@ -192,6 +231,12 @@
         0% { transform: scale(1); }
         50% { transform: scale(1.018); }
         100% { transform: scale(1); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .visual.is-analyzing .logo-stage {
+          animation: none;
+        }
       }
 
       .result-stage {
@@ -625,8 +670,19 @@
       }
 
       @media (max-width: 860px) {
+        .top-nav-links {
+          flex-wrap: wrap;
+          gap: 10px 12px;
+          max-width: 72%;
+        }
+
         .visual {
-          min-height: 180px;
+          min-height: 186px;
+        }
+
+        .logo-image {
+          width: min(236px, 62vw);
+          max-height: min(150px, 21vh);
         }
 
         .upload-bar {
@@ -669,16 +725,15 @@
   <body>
     <div class="page">
       <nav class="top-nav" aria-label="빠른 이동">
-        <a id="topPromoLink" href="/self-order">언론홍보</a>
-        <button id="openLoginBtn" class="top-link-btn" type="button" data-open-login>로그인</button>
-        <a id="openSignupBtn" class="top-link-btn" href="/?signup=1" data-open-signup>회원가입</a>
-        <a
-          id="topMemberPortalButton"
-          class="top-link-btn"
-          href="/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/"
-          hidden
-        >회원전용페이지로 이동</a>
-        <button id="topLogoutButton" class="top-link-btn is-hidden" type="button">로그아웃</button>
+        <a class="top-brand" href="/" aria-label="dliver 홈으로 이동">
+          <img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" alt="dliver 로고" />
+        </a>
+        <div class="top-nav-links">
+          <a id="topPromoLink" href="/self-order">언론홍보</a>
+          <button id="openLoginBtn" class="top-link-btn" type="button" data-open-login>로그인</button>
+          <a id="openSignupBtn" class="top-link-btn" href="/?signup=1" data-open-signup>회원가입</a>
+          <button id="topLogoutButton" class="top-link-btn is-hidden" type="button">로그아웃</button>
+        </div>
       </nav>
 
       <main class="main">
@@ -688,8 +743,9 @@
             <div class="logo-stage">
               <img
                 class="logo-image"
-                src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png"
-                alt="DLIVER"
+                src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.png"
+                alt="DLIVER 캐릭터 로고"
+                decoding="async"
               />
             </div>
             <div class="result-stage" id="resultStage">
@@ -893,7 +949,7 @@
         © 2026 뎁스코퍼레이션. All rights reserved.<br />
         사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804 | 통신판매신고 제2026-경기양평-0841호<br />
         사업장소재지 : 경기도 양평군 양서면 목왕리길 138번길 11<br />
-        전화번호:010-8468-2806<br />
+        전화번호:0505-007-3707<br />
         운영정보: 우측 하단 채널톡 상담 운영
       </footer>
     </div>
@@ -942,7 +998,6 @@
         signupModal: document.getElementById('signup-modal'),
         signupForm: document.getElementById('signup-form'),
         signupMessage: document.getElementById('signup-message'),
-        topMemberPortalButton: document.getElementById('topMemberPortalButton'),
         signupPrivacyToggleButton: document.querySelector('[data-toggle-signup-privacy]'),
         signupPrivacyPanel: document.getElementById('signup-privacy-panel'),
         signupPolicyToggleButton: document.querySelector('[data-toggle-signup-policy]'),
@@ -1164,15 +1219,16 @@
         window.history.replaceState(null, '', cleanUrl);
       }
 
-      function showTopMemberPortalButton() {
-        if (!els.topMemberPortalButton) return;
-        els.topMemberPortalButton.hidden = false;
-      }
-
       function setTopNavSignedInState(isSignedIn) {
         if (els.topPromoLink) {
-          if (isSignedIn) els.topPromoLink.classList.add('is-hidden');
-          else els.topPromoLink.classList.remove('is-hidden');
+          els.topPromoLink.classList.remove('is-hidden');
+          if (isSignedIn) {
+            els.topPromoLink.textContent = '회원전용페이지';
+            els.topPromoLink.setAttribute('href', '/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/');
+          } else {
+            els.topPromoLink.textContent = '언론홍보';
+            els.topPromoLink.setAttribute('href', '/self-order');
+          }
         }
         if (els.openLoginBtn) {
           if (isSignedIn) els.openLoginBtn.classList.add('is-hidden');
@@ -1181,9 +1237,6 @@
         if (els.openSignupBtn) {
           if (isSignedIn) els.openSignupBtn.classList.add('is-hidden');
           else els.openSignupBtn.classList.remove('is-hidden');
-        }
-        if (els.topMemberPortalButton) {
-          els.topMemberPortalButton.hidden = !isSignedIn;
         }
         if (els.topLogoutButton) {
           if (isSignedIn) els.topLogoutButton.classList.remove('is-hidden');
@@ -1490,7 +1543,6 @@
           });
 
           setFormMessage('success', '회원가입이 완료되었습니다.');
-          showTopMemberPortalButton();
           setTopNavSignedInState(true);
           els.signupForm.reset();
           window.setTimeout(function () {
