@@ -1189,6 +1189,17 @@ body.modal-open {
     width: min(1140px, calc(100% - 1.5rem));
   }
 
+  .brand {
+    order: 1;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .brand-logo {
+    width: clamp(104px, 30vw, 132px);
+  }
+
   .nav-links {
     order: 3;
     width: 100%;
@@ -1347,6 +1358,26 @@ body.modal-open {
 
   .terms-panel {
     max-height: 176px;
+  }
+}
+
+@media (max-width: 560px) {
+  .modal {
+    padding: 1rem 1.1rem 1.2rem;
+    align-items: flex-end;
+  }
+
+  .modal-card {
+    width: min(420px, calc(100% - 2.2rem));
+    max-height: 93vh;
+    border-radius: 16px 16px 10px 10px;
+    padding: 0.94rem 0.92rem;
+  }
+
+  .modal-card .input-row input,
+  .modal-card .input-row textarea {
+    font-size: 16px;
+    line-height: 1.45;
   }
 }
     </style>
@@ -2039,12 +2070,27 @@ body.modal-open {
         window.location.href = getMemberPortalUrl();
       }
 
+      function setChannelTalkLauncherVisible(isVisible) {
+        if (typeof window.ChannelIO !== "function") return;
+        try {
+          if (isVisible) {
+            window.ChannelIO("showChannelButton");
+            window.ChannelIO("hideMessenger");
+          } else {
+            window.ChannelIO("hideChannelButton");
+            window.ChannelIO("hideMessenger");
+          }
+        } catch (error) {}
+      }
+
       function syncModalBodyState() {
         if (loginModal.classList.contains("open") || signupModal.classList.contains("open")) {
           document.body.classList.add("modal-open");
+          setChannelTalkLauncherVisible(false);
           return;
         }
         document.body.classList.remove("modal-open");
+        setChannelTalkLauncherVisible(true);
       }
 
       function updateMemberStatus(member) {
