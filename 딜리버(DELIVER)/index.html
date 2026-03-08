@@ -128,32 +128,39 @@
         margin-left: auto;
         justify-content: flex-end;
         align-items: center;
-        gap: 14px;
+        gap: 12px;
         flex-wrap: nowrap;
       }
 
-      .top-nav a,
+      .top-nav-links a,
       .top-nav .top-link-btn {
         color: #3c4043;
         text-decoration: none;
-        background: transparent;
-        border: 0;
-        padding: 0;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid #d7e2f0;
+        border-radius: 999px;
+        padding: 10px 14px;
         margin: 0;
         font: inherit;
         cursor: pointer;
         white-space: nowrap;
-      }
-
-      .top-nav .top-link-btn {
+        min-height: 40px;
+        box-shadow: 0 6px 14px rgba(26, 52, 94, 0.06);
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         line-height: 1;
       }
 
-      .top-nav a:hover,
+      .top-nav .top-link-btn {
+        appearance: none;
+      }
+
+      .top-nav-links a:hover,
       .top-nav .top-link-btn:hover {
         color: var(--blue);
+        border-color: #bfd0ea;
+        background: #f6faff;
       }
 
       .main {
@@ -410,6 +417,17 @@
         color: #5f6368;
       }
 
+      .signup-cta-wrap {
+        margin-top: 10px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .signup-cta-btn {
+        min-width: 220px;
+        padding: 0 22px;
+      }
+
       .caution-note {
         margin: 10px 0 0;
         text-align: center;
@@ -497,7 +515,7 @@
         display: none;
         align-items: center;
         justify-content: center;
-        padding: 1.1rem;
+        padding: 1.25rem;
         background: rgba(16, 30, 62, 0.55);
         backdrop-filter: blur(2px);
       }
@@ -507,7 +525,7 @@
       }
 
       .modal-card {
-        width: min(520px, 100%);
+        width: min(500px, calc(100% - 2.5rem));
         max-height: min(92vh, 860px);
         overflow: auto;
         border-radius: 18px;
@@ -672,7 +690,8 @@
       @media (max-width: 860px) {
         .top-nav-links {
           flex-wrap: wrap;
-          gap: 10px 12px;
+          justify-content: flex-end;
+          gap: 8px;
           max-width: 72%;
         }
 
@@ -720,6 +739,64 @@
           width: auto;
         }
       }
+
+      @media (max-width: 560px) {
+        .top-nav {
+          width: calc(100% - 24px);
+          margin-top: 12px;
+          gap: 8px;
+          flex-wrap: nowrap;
+          align-items: center;
+        }
+
+        .top-brand {
+          width: 84px;
+        }
+
+        .top-nav-links {
+          width: auto;
+          margin-left: auto;
+          flex-wrap: nowrap;
+          justify-content: flex-end;
+          gap: 6px;
+        }
+
+        .top-nav-links a,
+        .top-nav .top-link-btn {
+          width: auto;
+          justify-content: center;
+          padding: 9px 12px;
+          font-size: 12px;
+          text-align: center;
+        }
+
+        .signup-cta-wrap {
+          width: 100%;
+        }
+
+        .signup-cta-btn {
+          width: 100%;
+          min-width: 0;
+        }
+
+        .modal {
+          padding: 1rem 1.1rem 1.2rem;
+          align-items: flex-end;
+        }
+
+        .modal-card {
+          width: min(420px, calc(100% - 2.2rem));
+          max-height: 93vh;
+          border-radius: 16px 16px 10px 10px;
+          padding: 0.94rem 0.92rem;
+        }
+
+        .modal-card .input-row input,
+        .modal-card .input-row textarea {
+          font-size: 16px;
+          line-height: 1.45;
+        }
+      }
     </style>
   </head>
   <body>
@@ -731,7 +808,6 @@
         <div class="top-nav-links">
           <a id="topPromoLink" href="/self-order">언론홍보</a>
           <button id="openLoginBtn" class="top-link-btn" type="button" data-open-login>로그인</button>
-          <a id="openSignupBtn" class="top-link-btn" href="/?signup=1" data-open-signup>회원가입</a>
           <button id="topLogoutButton" class="top-link-btn is-hidden" type="button">로그아웃</button>
         </div>
       </nav>
@@ -771,6 +847,9 @@
             </div>
             <p class="caution-note">언론송출용 원고파일만 첨부하시기 바랍니다</p>
             <button id="analyzeBtnMobile" class="btn btn-primary analyze-mobile" type="submit">원고 검수</button>
+            <div class="signup-cta-wrap">
+              <button id="heroSignupBtn" class="btn btn-ghost signup-cta-btn" type="button" data-open-signup>회원가입</button>
+            </div>
             <p class="support-note">지원포맷:DOC/DOCX/PDF , 비회원 체험1회 제공, 이후 회원 전환시 재점수 가능, 검수결과 30일 보관 후 자동 정리</p>
             <p id="statusText" class="status">파일을 첨부한 뒤 검수를 시작해 주세요.</p>
           </form>
@@ -1158,12 +1237,28 @@
         els.signupPrivacyToggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       }
 
+      function setChannelTalkLauncherVisible(isVisible) {
+        if (typeof window.ChannelIO !== 'function') return;
+        try {
+          if (isVisible) {
+            window.ChannelIO('showChannelButton');
+            window.ChannelIO('hideMessenger');
+          } else {
+            window.ChannelIO('hideChannelButton');
+            window.ChannelIO('hideMessenger');
+          }
+        } catch (error) {
+        }
+      }
+
       function syncModalBodyState() {
         if (els.signupModal?.classList.contains('open') || els.loginModal?.classList.contains('open')) {
           document.body.classList.add('modal-open');
+          setChannelTalkLauncherVisible(false);
           return;
         }
         document.body.classList.remove('modal-open');
+        setChannelTalkLauncherVisible(true);
       }
 
       function openLoginModal() {

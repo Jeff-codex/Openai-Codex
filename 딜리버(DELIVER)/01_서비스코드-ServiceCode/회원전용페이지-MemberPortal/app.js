@@ -1,7 +1,8 @@
 const MEMBER_TOKEN_KEY = "deliver_member_token_v1";
 const MEMBER_ORDER_DRAFT_KEY = "deliver_member_order_draft_v2";
-const LANDING_PAGE_PATH = "../랜딩페이지-LandingPage/index.html";
+const LANDING_PAGE_PATH = "https://dliver.co.kr/self-order";
 const CHANNEL_TALK_PLUGIN_KEY = "effcd765-65b5-49ca-b003-b18931fc6f38";
+const AUTH_LOADING_CLASS = "auth-loading";
 
 const ORDER_STATUS_LABELS = {
   received: "접수",
@@ -51,6 +52,20 @@ function clearLegacyTokenStorage() {
 
 function redirectToLanding() {
   window.location.replace(LANDING_PAGE_PATH);
+}
+
+function setAuthReady(isReady) {
+  document.body.classList.toggle(AUTH_LOADING_CLASS, !isReady);
+  const authGate = document.getElementById("auth-gate");
+  if (authGate instanceof HTMLElement) {
+    authGate.hidden = isReady;
+  }
+}
+
+function syncTopbarOffset() {
+  const topbar = document.querySelector(".topbar");
+  const height = topbar instanceof HTMLElement ? Math.ceil(topbar.getBoundingClientRect().height) : 68;
+  document.documentElement.style.setProperty("--topbar-offset", `${Math.max(62, height)}px`);
 }
 
 function formatCurrency(value) {
@@ -681,8 +696,12 @@ function getMediaGroups(mediaItems) {
 
 function renderMemberState() {
   const element = document.getElementById("member-state");
+  const logoutButton = document.getElementById("member-logout-button");
   if (!element) return;
   element.textContent = state.member ? `${state.member.name} (${state.member.loginId})` : "로그인 필요";
+  if (logoutButton instanceof HTMLElement) {
+    logoutButton.classList.toggle("is-hidden", !state.member);
+  }
 }
 
 function renderStats() {
@@ -957,16 +976,28 @@ function bindEvents() {
 
 async function init() {
   clearLegacyTokenStorage();
+  setAuthReady(false);
+  syncTopbarOffset();
   initChannelTalk();
   bindEvents();
+  window.addEventListener("resize", syncTopbarOffset);
+  const topbar = document.querySelector(".topbar");
+  if (typeof ResizeObserver === "function" && topbar instanceof HTMLElement) {
+    const topbarObserver = new ResizeObserver(() => syncTopbarOffset());
+    topbarObserver.observe(topbar);
+  }
   try {
     await refreshData();
     await handleOrderPaymentRedirectResult();
+    setAuthReady(true);
+    syncTopbarOffset();
   } catch (error) {
     if (Number(error?.status) === 401) {
       redirectToLanding();
       return;
     }
+    setAuthReady(true);
+    syncTopbarOffset();
     setOrderMessage("error", "데이터 로딩이 지연되고 있습니다. 잠시 후 자동으로 다시 동기화됩니다.");
     renderAll();
     return;

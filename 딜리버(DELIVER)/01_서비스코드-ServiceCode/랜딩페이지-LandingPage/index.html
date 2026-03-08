@@ -230,6 +230,7 @@ a {
   justify-content: space-between;
   gap: 1rem;
   min-height: 68px;
+  flex-wrap: nowrap;
 }
 
 .brand {
@@ -1189,11 +1190,39 @@ body.modal-open {
   }
 
   .nav-links {
+    order: 3;
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    gap: 0.55rem;
+    padding-bottom: 0.1rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .nav-links::-webkit-scrollbar {
     display: none;
+  }
+
+  .nav-links a {
+    flex: 0 0 auto;
+    padding: 0.46rem 0.78rem;
+    border-radius: 999px;
+    border: 1px solid #d2dff4;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 6px 14px rgba(16, 44, 96, 0.06);
   }
 
   .nav-inner {
     min-height: 62px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 0.72rem 0 0.58rem;
+  }
+
+  .nav-actions {
+    order: 2;
+    margin-left: auto;
   }
 
   section {
@@ -1220,8 +1249,37 @@ body.modal-open {
     font-size: 0.83rem;
   }
 
+  .nav-inner {
+    gap: 0.58rem;
+  }
+
   .nav-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.34rem;
+  }
+
+  .nav-actions .btn,
+  .nav-actions .chip {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .nav-actions .btn {
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+  }
+
+  .login-chip {
+    max-width: none;
+    justify-content: center;
+  }
+
+  #top-signup-button,
+  #nav-login-state,
+  #logout-button {
+    grid-column: 1 / -1;
   }
 
   .proof-grid,

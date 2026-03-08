@@ -16,7 +16,7 @@
     />
     <link rel="stylesheet" href="styles.css?v=20260303r7" />
   </head>
-  <body>
+  <body class="auth-loading">
     <div class="bg-shape bg-shape-a"></div>
     <div class="bg-shape bg-shape-b"></div>
 
@@ -29,9 +29,17 @@
       </div>
       <div class="top-actions">
         <span class="mode-pill" id="member-state">회원 확인중...</span>
-        <button class="btn btn-danger" type="button" id="member-logout-button">로그아웃</button>
+        <button class="btn btn-danger is-hidden" type="button" id="member-logout-button">로그아웃</button>
       </div>
     </header>
+
+    <div class="auth-gate" id="auth-gate" aria-live="polite">
+      <div class="auth-gate-card">
+        <span class="auth-gate-spinner" aria-hidden="true"></span>
+        <strong>회원 정보를 확인하고 있습니다</strong>
+        <p>로그인 상태를 확인한 뒤 주문 대시보드를 안전하게 불러옵니다.</p>
+      </div>
+    </div>
 
     <main class="layout">
       <section class="card panel">
