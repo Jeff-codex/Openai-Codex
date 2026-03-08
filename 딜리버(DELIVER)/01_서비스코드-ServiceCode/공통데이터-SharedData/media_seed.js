@@ -4,7 +4,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_001",
     "name": "시민일보",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 50000,
     "memberPrice": "50,000원",
@@ -15,7 +15,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_002",
     "name": "컨슈머타임스",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 50000,
     "memberPrice": "50,000원",
@@ -26,7 +26,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_003",
     "name": "한국목재신문",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 50000,
     "memberPrice": "50,000원",
@@ -37,7 +37,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_004",
     "name": "데일리시큐",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 50000,
     "memberPrice": "50,000원",
@@ -48,7 +48,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_005",
     "name": "공감신문",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 50000,
     "memberPrice": "50,000원",
@@ -59,7 +59,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_006",
     "name": "핸드메이커",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 50000,
     "memberPrice": "50,000원",
@@ -70,7 +70,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_007",
     "name": "내외경제TV",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 50000,
     "memberPrice": "50,000원",
@@ -81,7 +81,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_008",
     "name": "피앤피뉴스",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 60000,
     "memberPrice": "60,000원",
@@ -92,7 +92,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_009",
     "name": "데일리경제",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 60000,
     "memberPrice": "60,000원",
@@ -103,7 +103,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_010",
     "name": "울산제일일보",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 60000,
     "memberPrice": "60,000원",
@@ -114,7 +114,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_011",
     "name": "뉴스로드",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 60000,
     "memberPrice": "60,000원",
@@ -125,7 +125,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_012",
     "name": "라***뉴스",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 60000,
     "memberPrice": "60,000원",
@@ -136,7 +136,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_013",
     "name": "**일보",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 60000,
     "memberPrice": "60,000원",
@@ -147,7 +147,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_014",
     "name": "시선뉴스",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 70000,
     "memberPrice": "70,000원",
@@ -158,7 +158,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_015",
     "name": "글로벌에픽",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -169,7 +169,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_016",
     "name": "데일리팝",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -180,7 +180,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_017",
     "name": "더파워",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -191,7 +191,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_018",
     "name": "비**포스트",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -202,7 +202,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_019",
     "name": "빅데이터뉴스",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -213,7 +213,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_020",
     "name": "아이티비즈",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -224,7 +224,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_021",
     "name": "에너지경제",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -235,7 +235,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_022",
     "name": "트래블바이크뉴스",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -246,7 +246,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_023",
     "name": "경북신문",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -257,7 +257,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_024",
     "name": "한국**뉴스",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -268,7 +268,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_025",
     "name": "더퍼스트",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -279,7 +279,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_026",
     "name": "한국영농신문",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -290,7 +290,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_027",
     "name": "직썰",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -301,7 +301,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_028",
     "name": "매일안전신문",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -312,7 +312,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_029",
     "name": "문학뉴스",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -323,7 +323,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_030",
     "name": "대학저널",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -334,7 +334,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_031",
     "name": "여성소비자신문",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -345,7 +345,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_032",
     "name": "테크월드",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -356,7 +356,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_033",
     "name": "대한금융신문",
-    "category": "C급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 72000,
     "memberPrice": "72,000원",
@@ -367,7 +367,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_034",
     "name": "데이터넷",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -378,7 +378,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_035",
     "name": "에듀동아",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -389,7 +389,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_036",
     "name": "증권경제신문",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -400,7 +400,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_037",
     "name": "스포츠W",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -411,7 +411,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_038",
     "name": "하비엔",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -422,7 +422,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_039",
     "name": "인터뷰365",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -433,7 +433,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_040",
     "name": "시사매거진",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -444,7 +444,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_041",
     "name": "필드뉴스",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -455,7 +455,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_042",
     "name": "한국금융경제신문",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -466,7 +466,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_043",
     "name": "메가경제",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -477,7 +477,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_044",
     "name": "소셜밸류",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -488,7 +488,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_045",
     "name": "뉴스컬처",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 90000,
     "memberPrice": "90,000원",
@@ -499,7 +499,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_046",
     "name": "어린이동아",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -510,7 +510,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_047",
     "name": "잡포스트",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -521,7 +521,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_048",
     "name": "패션비즈",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -532,7 +532,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_049",
     "name": "파이낸스투데이",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -543,7 +543,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_050",
     "name": "굿모닝경제",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -554,7 +554,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_051",
     "name": "제민일보",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -565,7 +565,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_052",
     "name": "이투뉴스",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -576,7 +576,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_053",
     "name": "문화뉴스",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -587,7 +587,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_054",
     "name": "IT비즈뉴스",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -598,7 +598,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_055",
     "name": "국제뉴스",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -609,7 +609,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_056",
     "name": "한국정경신문",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -620,7 +620,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_057",
     "name": "아웃도어뉴스",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -631,7 +631,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_058",
     "name": "스마트투데이",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -642,7 +642,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_059",
     "name": "딜라이트닷넷",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 120000,
     "memberPrice": "120,000원",
@@ -653,7 +653,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_060",
     "name": "AP신문",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -664,7 +664,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_061",
     "name": "헬로티",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -675,7 +675,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_062",
     "name": "데이터뉴스",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -686,7 +686,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_063",
     "name": "스****",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -697,7 +697,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_064",
     "name": "이넷뉴스",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -708,7 +708,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_065",
     "name": "비지니스코리아",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -719,7 +719,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_066",
     "name": "글로벌경제",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -730,7 +730,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_067",
     "name": "나무신문",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -741,7 +741,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_068",
     "name": "뉴스핌",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -752,7 +752,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_069",
     "name": "마켓뉴스",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -763,7 +763,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_070",
     "name": "서울***비",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 140000,
     "memberPrice": "140,000원",
@@ -774,7 +774,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_071",
     "name": "아시아투데이",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 160000,
     "memberPrice": "160,000원",
@@ -785,7 +785,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_072",
     "name": "전민일보",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 160000,
     "memberPrice": "160,000원",
@@ -796,7 +796,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_073",
     "name": "뉴스퀘스트",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 160000,
     "memberPrice": "160,000원",
@@ -807,7 +807,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_074",
     "name": "새전북신문",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 160000,
     "memberPrice": "160,000원",
@@ -818,7 +818,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_075",
     "name": "이투데이",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 160000,
     "memberPrice": "160,000원",
@@ -829,7 +829,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_076",
     "name": "이로운넷",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 160000,
     "memberPrice": "160,000원",
@@ -840,7 +840,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_077",
     "name": "아시아타임즈",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 160000,
     "memberPrice": "160,000원",
@@ -851,7 +851,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_078",
     "name": "키즈맘",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 160000,
     "memberPrice": "160,000원",
@@ -862,7 +862,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_079",
     "name": "스포츠월드 뉴스콘텐츠",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 160000,
     "memberPrice": "160,000원",
@@ -873,7 +873,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_080",
     "name": "세계비즈",
-    "category": "B급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 160000,
     "memberPrice": "160,000원",
@@ -884,7 +884,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_081",
     "name": "파이낸셜포스트",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 180000,
     "memberPrice": "180,000원",
@@ -895,7 +895,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_082",
     "name": "아주경제",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 180000,
     "memberPrice": "180,000원",
@@ -906,7 +906,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_083",
     "name": "월간암",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 180000,
     "memberPrice": "180,000원",
@@ -917,7 +917,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_084",
     "name": "뉴스워커",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 180000,
     "memberPrice": "180,000원",
@@ -928,7 +928,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_085",
     "name": "마니아타임즈 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 180000,
     "memberPrice": "180,000원",
@@ -939,7 +939,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_086",
     "name": "데일리한국",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 200000,
     "memberPrice": "200,000원",
@@ -950,7 +950,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_087",
     "name": "스포츠한국",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 200000,
     "memberPrice": "200,000원",
@@ -961,7 +961,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_088",
     "name": "넥스트데일리",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 200000,
     "memberPrice": "200,000원",
@@ -972,7 +972,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_089",
     "name": "국토일보",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 200000,
     "memberPrice": "200,000원",
@@ -983,7 +983,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_090",
     "name": "MK스포츠 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 200000,
     "memberPrice": "200,000원",
@@ -994,7 +994,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_091",
     "name": "텐아시아 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 210000,
     "memberPrice": "210,000원",
@@ -1005,7 +1005,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_092",
     "name": "MBN(매일방송) 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 210000,
     "memberPrice": "210,000원",
@@ -1016,7 +1016,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_093",
     "name": "매**문 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 250000,
     "memberPrice": "250,000원",
@@ -1027,7 +1027,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_094",
     "name": "스***향 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 250000,
     "memberPrice": "250,000원",
@@ -1038,7 +1038,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_095",
     "name": "마이데일리 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 280000,
     "memberPrice": "280,000원",
@@ -1049,7 +1049,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_096",
     "name": "뉴스1 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 280000,
     "memberPrice": "280,000원",
@@ -1060,7 +1060,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_097",
     "name": "디지털타임스 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 280000,
     "memberPrice": "280,000원",
@@ -1071,7 +1071,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_098",
     "name": "한***** 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 330000,
     "memberPrice": "330,000원",
@@ -1082,7 +1082,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_099",
     "name": "조세일보 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 330000,
     "memberPrice": "330,000원",
@@ -1093,7 +1093,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_100",
     "name": "데일리안 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 330000,
     "memberPrice": "330,000원",
@@ -1104,7 +1104,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_101",
     "name": "이**리 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 330000,
     "memberPrice": "330,000원",
@@ -1115,7 +1115,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_102",
     "name": "중앙SUNDAY 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 340000,
     "memberPrice": "340,000원",
@@ -1126,7 +1126,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_103",
     "name": "헤럴드경제 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 340000,
     "memberPrice": "340,000원",
@@ -1137,7 +1137,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_104",
     "name": "건강다이제스트",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 340000,
     "memberPrice": "340,000원",
@@ -1148,7 +1148,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_105",
     "name": "IT조선",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 340000,
     "memberPrice": "340,000원",
@@ -1159,7 +1159,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_106",
     "name": "**신문 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 350000,
     "memberPrice": "350,000원",
@@ -1170,7 +1170,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_107",
     "name": "파이낸셜뉴스 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 350000,
     "memberPrice": "350,000원",
@@ -1181,7 +1181,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_108",
     "name": "세계일보 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 350000,
     "memberPrice": "350,000원",
@@ -1192,7 +1192,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_109",
     "name": "스포츠서울 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 380000,
     "memberPrice": "380,000원",
@@ -1203,7 +1203,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_110",
     "name": "서울경제 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 380000,
     "memberPrice": "380,000원",
@@ -1214,7 +1214,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_111",
     "name": "조선에듀",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 380000,
     "memberPrice": "380,000원",
@@ -1225,7 +1225,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_112",
     "name": "서울신문 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 380000,
     "memberPrice": "380,000원",
@@ -1236,7 +1236,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_113",
     "name": "아시아경제 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 500000,
     "memberPrice": "500,000원",
@@ -1247,7 +1247,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_114",
     "name": "국민일보 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 500000,
     "memberPrice": "500,000원",
@@ -1258,7 +1258,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_115",
     "name": "땅집고",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 520000,
     "memberPrice": "520,000원",
@@ -1269,7 +1269,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_116",
     "name": "H경제 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 550000,
     "memberPrice": "550,000원",
@@ -1280,7 +1280,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_117",
     "name": "YTN 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 550000,
     "memberPrice": "550,000원",
@@ -1291,7 +1291,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_118",
     "name": "**경제 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 700000,
     "memberPrice": "700,000원",
@@ -1302,7 +1302,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_119",
     "name": "C비즈 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 700000,
     "memberPrice": "700,000원",
@@ -1313,7 +1313,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_120",
     "name": "동아일보 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 700000,
     "memberPrice": "700,000원",
@@ -1324,7 +1324,7 @@ window.DELIVER_MEDIA_SEED = [
   {
     "id": "media_seed_121",
     "name": "중앙일보 뉴스콘텐츠",
-    "category": "A급",
+    "category": "일반",
     "bylineType": "기명",
     "unitPrice": 800000,
     "memberPrice": "800,000원",

@@ -7,14 +7,14 @@
     <meta name="description" content="딜리버 언론송출 운영 관리자 페이지" />
     <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex" />
     <link rel="canonical" href="https://admin.dliver.co.kr/" />
-    <link rel="icon" type="image/svg+xml" href="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/favicon.svg" />
+    <link rel="icon" type="image/png" href="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260225r2" />
+    <link rel="stylesheet" href="styles.css?v=20260303r4" />
   </head>
   <body>
     <div class="bg-shape bg-shape-a"></div>
@@ -168,15 +168,16 @@
         <article class="panel card hidden" id="panel-media">
           <div class="panel-head">
             <h2>매체/단가 관리</h2>
-            <p class="sub">회원전용 노출 단가 정책 기준으로 관리합니다.</p>
+            <p class="sub">카테고리별 공급가/판매가/마진 기준으로 관리합니다.</p>
           </div>
 
-          <form id="media-form" class="form-grid">
-            <input name="name" type="text" placeholder="매체명" required />
-            <input name="category" type="text" placeholder="카테고리" required />
-            <input name="memberPrice" type="text" placeholder="회원전용 문구 (기본: 회원전용)" />
-            <button class="btn btn-primary" type="submit">매체 추가</button>
-          </form>
+          <div class="media-manager-toolbar">
+            <div class="media-manager-left">
+              <div class="media-category-tabs" id="media-category-tabs" aria-label="매체 카테고리 탭"></div>
+              <p class="media-category-summary" id="media-category-summary"></p>
+            </div>
+            <button class="btn btn-primary" id="media-add-toggle" type="button">매체 추가</button>
+          </div>
 
           <div class="table-wrap">
             <table>
@@ -184,7 +185,10 @@
                 <tr>
                   <th>매체명</th>
                   <th>카테고리</th>
-                  <th>회원전용 단가</th>
+                  <th>기명/채널</th>
+                  <th>공급가</th>
+                  <th>판매가</th>
+                  <th>마진</th>
                   <th>활성</th>
                   <th>관리</th>
                 </tr>
@@ -297,19 +301,94 @@
               <input name="category" type="text" required />
             </label>
             <label>
-              회원전용 단가 문구
+              카테고리 세부설명
+              <input name="categoryDetail" type="text" placeholder="예: 병원,한의원,성형,피부과,건강기기" />
+            </label>
+            <label>
+              기명/무기명
+              <input name="bylineType" type="text" placeholder="예: 기명" />
+            </label>
+            <label>
+              공급가(원)
+              <input name="supplyPrice" type="number" min="0" step="1" required />
+            </label>
+            <label>
+              판매가(원)
+              <input name="salePrice" type="number" min="1" step="1" required />
+            </label>
+            <label class="field-full">
+              회원 노출문구(선택)
               <input name="memberPrice" type="text" placeholder="예: 72,000원" />
             </label>
             <label class="field-full">
-              기준 단가(원)
-              <input name="unitPrice" type="number" min="0" step="1" placeholder="비워두면 기존 단가 유지" />
+              노출채널
+              <input name="channel" type="text" placeholder="예: 네이버 다음/네이트" />
+            </label>
+            <label class="field-full">
+              참고사항
+              <textarea name="description" rows="3" placeholder="송출 제한/주의사항 등"></textarea>
             </label>
           </div>
-          <p class="field-hint">회원전용 단가 문구는 회원 페이지 노출값이며, 기준 단가는 정렬/계산에 사용됩니다.</p>
+          <p class="field-hint">판매가는 공급가보다 낮을 수 없으며, 마진은 자동 계산됩니다.</p>
           <p class="form-message" id="media-edit-message" aria-live="polite"></p>
           <div class="modal-actions">
             <button class="btn btn-light" id="media-edit-cancel" type="button">취소</button>
             <button class="btn btn-primary" type="submit">저장</button>
+          </div>
+        </form>
+      </article>
+    </div>
+
+    <div class="modal" id="media-create-modal" aria-hidden="true">
+      <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="media-create-title">
+        <div class="modal-head">
+          <h3 id="media-create-title">매체 추가</h3>
+          <button class="btn btn-light small" id="media-create-close" type="button">닫기</button>
+        </div>
+        <form id="media-create-form" class="member-edit-form" novalidate>
+          <div class="field-grid">
+            <label class="field-full">
+              매체명
+              <input name="name" type="text" required />
+            </label>
+            <label>
+              카테고리
+              <input name="category" type="text" required />
+            </label>
+            <label>
+              카테고리 세부설명
+              <input name="categoryDetail" type="text" placeholder="예: 병원,한의원,성형,피부과,건강기기" />
+            </label>
+            <label>
+              기명/무기명
+              <input name="bylineType" type="text" placeholder="예: 기명" />
+            </label>
+            <label>
+              공급가(원)
+              <input name="supplyPrice" type="number" min="0" step="1" required />
+            </label>
+            <label>
+              판매가(원)
+              <input name="salePrice" type="number" min="1" step="1" required />
+            </label>
+            <label class="field-full">
+              회원 노출문구(선택)
+              <input name="memberPrice" type="text" placeholder="예: 72,000원" />
+            </label>
+            <label class="field-full">
+              노출채널
+              <input name="channel" type="text" placeholder="예: 네이버 다음/네이트" />
+            </label>
+            <label class="field-full">
+              참고사항
+              <textarea name="description" rows="3" placeholder="송출 제한/주의사항 등"></textarea>
+            </label>
+          </div>
+          <p class="field-hint">판매가는 공급가보다 낮을 수 없으며, 마진은 자동 계산됩니다.</p>
+          <p class="form-message" id="media-create-message" aria-live="polite"></p>
+          <div class="modal-actions">
+            <button class="btn btn-light" id="media-create-cancel" type="button">취소</button>
+            <button class="btn btn-primary" type="submit">추가</button>
           </div>
         </form>
       </article>
@@ -320,12 +399,12 @@
         <p>© 2026 뎁스코퍼레이션. All rights reserved.</p>
         <p>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804 | 통신판매신고 제2026-경기양평-0841호</p>
         <p>사업장소재지 : 경기도 양평군 양서면 목왕리길 138번길 11</p>
-        <p>전화번호:010-8468-2806</p>
+        <p>전화번호:0505-007-3707</p>
         <p>운영정보: 우측 하단 채널톡 상담 운영</p>
       </div>
     </footer>
 
     <script src="/01_서비스코드-ServiceCode/공통데이터-SharedData/media_seed.js?v=20260223r11"></script>
-    <script src="app.js?v=20260227r1"></script>
+    <script src="app.js?v=20260303r5"></script>
   </body>
 </html>

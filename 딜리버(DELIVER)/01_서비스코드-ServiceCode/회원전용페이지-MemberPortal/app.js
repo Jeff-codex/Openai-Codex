@@ -11,6 +11,14 @@ const ORDER_STATUS_LABELS = {
   rejected: "반려",
 };
 
+const MEDIA_CATEGORY_ORDER = {
+  일반: 1,
+  의료: 2,
+  비즈니스: 3,
+  뷰티: 4,
+  금융: 5,
+};
+
 const state = {
   member: null,
   media: [],
@@ -18,7 +26,6 @@ const state = {
   mediaFilter: "",
   selectedMediaId: "",
   activeMediaGroup: "",
-  mediaCollapsed: {},
   syncTimer: null,
   paymentIntent: null,
   paymentMethods: [],
@@ -309,7 +316,7 @@ function getSelectedMedia() {
 
 function getSelectedMediaPrice() {
   const media = getSelectedMedia();
-  return normalizeAmount(media?.unitPrice || 0);
+  return normalizeAmount(media?.salePrice || media?.unitPrice || 0);
 }
 
 function syncEstimateFields() {
@@ -664,23 +671,11 @@ function getMediaGroups(mediaItems) {
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(item);
   });
-  return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0], "ko-KR"));
-}
-
-function scrollToMediaGroup(groupName) {
-  const container = document.getElementById("media-group-list");
-  if (!container) return;
-  const groups = container.querySelectorAll(".media-group");
-  let target = null;
-  groups.forEach((group) => {
-    if (group instanceof HTMLElement && group.dataset.groupName === groupName) {
-      target = group;
-    }
-  });
-  if (!container || !target) return;
-  container.scrollTo({
-    top: Math.max(0, target.offsetTop - 6),
-    behavior: "smooth",
+  return Array.from(map.entries()).sort((a, b) => {
+    const aRank = MEDIA_CATEGORY_ORDER[a[0]] || 99;
+    const bRank = MEDIA_CATEGORY_ORDER[b[0]] || 99;
+    if (aRank !== bRank) return aRank - bRank;
+    return a[0].localeCompare(b[0], "ko-KR");
   });
 }
 
@@ -720,8 +715,11 @@ function renderMediaGroups() {
   if (!groupNames.includes(state.activeMediaGroup)) {
     state.activeMediaGroup = groupNames[0];
   }
+  const activeGroupEntry = groups.find(([group]) => group === state.activeMediaGroup) || groups[0];
+  const activeGroup = activeGroupEntry[0];
+  const activeItems = activeGroupEntry[1];
   if (summary) {
-    summary.textContent = `총 ${filtered.length}개 · 카테고리 ${groupNames.length}개`;
+    summary.textContent = `총 ${filtered.length}개 · 카테고리 ${groupNames.length}개 · 선택 ${activeGroup} ${activeItems.length}개`;
   }
 
   nav.innerHTML = groups
@@ -731,31 +729,31 @@ function renderMediaGroups() {
     })
     .join("");
 
-  list.innerHTML = groups
-    .map(([group, items]) => {
-      const isActive = group === state.activeMediaGroup;
-      const collapsed = state.mediaFilter ? false : isActive ? false : Boolean(state.mediaCollapsed[group]);
-      const rows = items
-        .map((item) => {
-          const selected = item.id === state.selectedMediaId;
-          return `<div class="media-item ${selected ? "selected" : ""}" data-select-media="${escapeHtml(item.id)}">
-            <div class="media-item-main">
-              <div class="media-item-name">${escapeHtml(item.name)}</div>
-              <div class="media-item-meta">공급가: ${escapeHtml(formatCurrency(item.unitPrice || 0))} · 노출: ${escapeHtml(item.channel || "-")}</div>
+  const rows = activeItems
+    .map((item) => {
+      const selected = item.id === state.selectedMediaId;
+      const categoryLabel = String(item?.category || "").trim() || activeGroup || "미분류";
+      return `<div class="media-item ${selected ? "selected" : ""}" data-select-media="${escapeHtml(item.id)}">
+        <div class="media-item-main">
+          <div class="media-item-name-row">
+            <div class="media-item-name">
+              ${escapeHtml(item.name)}
+              <span class="media-item-name-category-inline">(${escapeHtml(categoryLabel)})</span>
             </div>
-            <button class="btn btn-light small" type="button" data-select-media="${escapeHtml(item.id)}">선택</button>
-          </div>`;
-        })
-        .join("");
-      return `<section class="media-group ${collapsed ? "collapsed" : ""} ${isActive ? "active" : ""}" data-group-name="${escapeHtml(group)}">
-        <button class="media-group-head" type="button" data-toggle-group="${escapeHtml(group)}">
-          <strong>${escapeHtml(group)}</strong>
-          <span>${items.length}개 ${collapsed ? "펼치기" : "접기"}</span>
-        </button>
-        <div class="media-items">${rows}</div>
-      </section>`;
+          </div>
+          <div class="media-item-meta">판매가: ${escapeHtml(formatCurrency(item.salePrice || item.unitPrice || 0))} · 노출: ${escapeHtml(item.channel || "-")}</div>
+        </div>
+        <button class="btn btn-light small" type="button" data-select-media="${escapeHtml(item.id)}">선택</button>
+      </div>`;
     })
     .join("");
+  list.innerHTML = `<section class="media-group active" data-group-name="${escapeHtml(activeGroup)}">
+    <div class="media-group-head">
+      <strong>${escapeHtml(activeGroup)}</strong>
+      <span>${activeItems.length}개</span>
+    </div>
+    <div class="media-items">${rows}</div>
+  </section>`;
 }
 
 function renderSelectedMediaCard() {
@@ -769,7 +767,7 @@ function renderSelectedMediaCard() {
 
   if (!media) {
     name.textContent = "매체를 선택해 주세요";
-    price.textContent = "공급가: -";
+    price.textContent = "판매가: -";
     vat.textContent = "부가세(10%): -";
     total.textContent = "결제예정금액: -";
     channel.textContent = "노출채널: -";
@@ -777,9 +775,9 @@ function renderSelectedMediaCard() {
     syncEstimateFields();
     return;
   }
-  const amounts = calculateAmounts(media.unitPrice);
-  name.textContent = `${media.name} (${media.category})`;
-  price.textContent = `공급가: ${formatCurrency(amounts.supplyAmount)}`;
+  const amounts = calculateAmounts(media.salePrice || media.unitPrice);
+  name.textContent = `${media.name}`;
+  price.textContent = `판매가: ${formatCurrency(amounts.supplyAmount)}`;
   vat.textContent = `부가세(10%): ${formatCurrency(amounts.vatAmount)}`;
   total.textContent = `결제예정금액: ${formatCurrency(amounts.totalAmount)}`;
   channel.textContent = `노출채널: ${media.channel || "-"}`;
@@ -803,7 +801,7 @@ function renderOrders() {
       const attachmentText = order.hasAttachment
         ? `<span class="file-ellipsis" title="${escapeHtml(attachmentLabel)}">${escapeHtml(attachmentLabel)}</span>`
         : "없음";
-      const paymentText = `총 ${formatCurrency(order?.payment?.totalAmount || 0)} (공급가 ${formatCurrency(order?.payment?.supplyAmount || 0)} + VAT ${formatCurrency(order?.payment?.vatAmount || 0)})`;
+      const paymentText = `총 ${formatCurrency(order?.payment?.totalAmount || 0)} (판매가 ${formatCurrency(order?.payment?.supplyAmount || 0)} + VAT ${formatCurrency(order?.payment?.vatAmount || 0)})`;
       return `<tr>
         <td>${formatDate(order.orderedAt || order.createdAt)}</td>
         <td>${escapeHtml(order.orderNumber || "-")}</td>
@@ -854,8 +852,6 @@ function bindEvents() {
   const searchInput = document.getElementById("media-search");
   const mediaGroupList = document.getElementById("media-group-list");
   const mediaGroupNav = document.getElementById("media-group-nav");
-  const expandAll = document.getElementById("media-expand-all");
-  const collapseAll = document.getElementById("media-collapse-all");
   const orderForm = document.getElementById("member-order-form");
   const logoutButton = document.getElementById("member-logout-button");
   const fileInput = document.getElementById("order-file-input");
@@ -876,16 +872,6 @@ function bindEvents() {
   mediaGroupList?.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
-    const toggleButton = target.closest("[data-toggle-group]");
-    if (toggleButton instanceof HTMLElement) {
-      const toggleGroup = toggleButton.getAttribute("data-toggle-group");
-      if (!toggleGroup) return;
-      state.mediaCollapsed[toggleGroup] = !Boolean(state.mediaCollapsed[toggleGroup]);
-      state.activeMediaGroup = toggleGroup;
-      renderMediaGroups();
-      return;
-    }
-
     const mediaTarget = target.closest("[data-select-media]");
     if (!(mediaTarget instanceof HTMLElement)) return;
     const mediaId = mediaTarget.getAttribute("data-select-media");
@@ -894,7 +880,6 @@ function bindEvents() {
     const selectedMedia = state.media.find((item) => item.id === mediaId);
     if (selectedMedia?.category) {
       state.activeMediaGroup = selectedMedia.category;
-      state.mediaCollapsed[selectedMedia.category] = false;
     }
     persistOrderDraft();
     renderMediaGroups();
@@ -909,24 +894,6 @@ function bindEvents() {
     const groupName = navButton.getAttribute("data-group-nav");
     if (!groupName) return;
     state.activeMediaGroup = groupName;
-    state.mediaCollapsed[groupName] = false;
-    renderMediaGroups();
-    scrollToMediaGroup(groupName);
-  });
-
-  expandAll?.addEventListener("click", () => {
-    state.mediaCollapsed = {};
-    renderMediaGroups();
-  });
-
-  collapseAll?.addEventListener("click", () => {
-    const groups = getMediaGroups(getFilteredMedia());
-    const next = {};
-    groups.forEach(([group]) => {
-      next[group] = true;
-    });
-    state.mediaCollapsed = next;
-    if (state.activeMediaGroup) state.mediaCollapsed[state.activeMediaGroup] = false;
     renderMediaGroups();
   });
 

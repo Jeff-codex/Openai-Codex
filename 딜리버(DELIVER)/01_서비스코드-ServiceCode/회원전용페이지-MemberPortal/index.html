@@ -7,14 +7,14 @@
     <meta name="description" content="회원전용 언론 송출 주문 대시보드" />
     <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex" />
     <link rel="canonical" href="https://member.dliver.co.kr/" />
-    <link rel="icon" type="image/svg+xml" href="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/favicon.svg" />
+    <link rel="icon" type="image/png" href="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260227r5" />
+    <link rel="stylesheet" href="styles.css?v=20260303r7" />
   </head>
   <body>
     <div class="bg-shape bg-shape-a"></div>
@@ -66,10 +66,6 @@
           <div class="media-group-nav" id="media-group-nav"></div>
           <div class="media-tools">
             <div class="media-summary" id="media-summary"></div>
-            <div class="media-tool-buttons">
-              <button class="btn btn-light small" id="media-expand-all" type="button">전체 펼치기</button>
-              <button class="btn btn-light small" id="media-collapse-all" type="button">전체 접기</button>
-            </div>
           </div>
           <div class="media-group-list" id="media-group-list"></div>
         </article>
@@ -80,7 +76,7 @@
 
           <div class="selected-media" id="selected-media-card">
             <h3 id="selected-media-name">매체를 선택해 주세요</h3>
-            <p id="selected-media-price">공급가: -</p>
+            <p id="selected-media-price">판매가: -</p>
             <p id="selected-media-vat">부가세(10%): -</p>
             <p id="selected-media-total">결제예정금액: -</p>
             <p id="selected-media-channel">노출채널: -</p>
@@ -149,7 +145,7 @@
         <p>© 2026 뎁스코퍼레이션. All rights reserved.</p>
         <p>사업자명: 뎁스코퍼레이션 | 대표: 강경현 | 사업자등록번호: 877-53-00804 | 통신판매신고 제2026-경기양평-0841호</p>
         <p>사업장소재지 : 경기도 양평군 양서면 목왕리길 138번길 11</p>
-        <p>전화번호:010-8468-2806</p>
+        <p>전화번호:0505-007-3707</p>
         <p>운영정보: 우측 하단 채널톡 상담 운영</p>
       </div>
     </footer>
@@ -172,7 +168,7 @@
               <strong class="payment-kv-value" id="payment-summary-media">-</strong>
             </div>
             <div class="payment-kv-item">
-              <span class="payment-kv-label">공급가</span>
+              <span class="payment-kv-label">판매가</span>
               <strong class="payment-kv-value" id="payment-summary-supply">0원</strong>
             </div>
             <div class="payment-kv-item">
@@ -213,6 +209,6 @@
     </div>
 
     <script src="/01_서비스코드-ServiceCode/공통데이터-SharedData/media_seed.js?v=20260224r4"></script>
-    <script src="app.js?v=20260227r3"></script>
+    <script src="app.js?v=20260303r4"></script>
   </body>
 </html>

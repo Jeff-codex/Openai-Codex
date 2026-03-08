@@ -7,6 +7,13 @@ const ORDER_STATUS = [
   { value: "published", label: "송출완료" },
   { value: "rejected", label: "반려" },
 ];
+const MEDIA_CATEGORY_ORDER = {
+  일반: 1,
+  의료: 2,
+  비즈니스: 3,
+  뷰티: 4,
+  금융: 5,
+};
 const MEMBERS_PAGE_SIZE = 11;
 const ORDERS_PAGE_SIZE = 10;
 const LOGS_PAGE_SIZE = 20;
@@ -30,6 +37,7 @@ const state = {
   auditSearch: "",
   logPage: 1,
   refundPendingByOrderId: {},
+  activeMediaCategory: "",
 };
 
 function clearLegacyAdminTokens() {
@@ -66,6 +74,18 @@ function formatCurrency(value) {
   const n = Number(value || 0);
   if (!Number.isFinite(n)) return "0원";
   return `${Math.round(n).toLocaleString("ko-KR")}원`;
+}
+
+function normalizeAmount(value) {
+  const raw = Number(value || 0);
+  if (!Number.isFinite(raw)) return 0;
+  return Math.max(0, Math.round(raw));
+}
+
+function formatPercent(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "0.0%";
+  return `${(n * 100).toFixed(1)}%`;
 }
 
 function formatBytes(value) {
@@ -142,7 +162,7 @@ function formatOrderPaymentText(order) {
   const vat = Number(order?.payment?.vatAmount || 0);
   const total = Number(order?.payment?.totalAmount || 0);
   if (total <= 0 && supply <= 0 && vat <= 0) return "-";
-  return `총 ${formatCurrency(total)} (공급가 ${formatCurrency(supply)} + VAT ${formatCurrency(vat)})`;
+  return `총 ${formatCurrency(total)} (판매가 ${formatCurrency(supply)} + VAT ${formatCurrency(vat)})`;
 }
 
 async function apiFetch(path, init = {}) {
@@ -585,19 +605,99 @@ function renderOrders() {
 }
 
 function renderMedia() {
+  const tabs = document.getElementById("media-category-tabs");
+  const summary = document.getElementById("media-category-summary");
   const tbody = document.getElementById("media-body");
+  if (!(tbody instanceof HTMLElement)) return;
+
+  const sortedMedia = [...state.media].sort((a, b) => {
+    const aRank = MEDIA_CATEGORY_ORDER[String(a?.category || "").trim()] || 99;
+    const bRank = MEDIA_CATEGORY_ORDER[String(b?.category || "").trim()] || 99;
+    if (aRank !== bRank) return aRank - bRank;
+    const priceDiff = normalizeAmount(a?.salePrice || a?.unitPrice) - normalizeAmount(b?.salePrice || b?.unitPrice);
+    if (priceDiff !== 0) return priceDiff;
+    return String(a?.name || "").localeCompare(String(b?.name || ""), "ko-KR");
+  });
+
+  const categories = Array.from(
+    new Set(sortedMedia.map((item) => String(item?.category || "").trim()).filter((value) => Boolean(value)))
+  ).sort((a, b) => {
+    const aRank = MEDIA_CATEGORY_ORDER[a] || 99;
+    const bRank = MEDIA_CATEGORY_ORDER[b] || 99;
+    if (aRank !== bRank) return aRank - bRank;
+    return a.localeCompare(b, "ko-KR");
+  });
+
+  if (categories.length && !categories.includes(state.activeMediaCategory)) {
+    state.activeMediaCategory = categories[0];
+  } else if (!categories.length) {
+    state.activeMediaCategory = "";
+  }
+
+  if (tabs instanceof HTMLElement) {
+    if (!categories.length) {
+      tabs.innerHTML = "";
+    } else {
+      tabs.innerHTML = categories
+        .map((category) => {
+          const active = category === state.activeMediaCategory;
+          const count = sortedMedia.filter((item) => String(item?.category || "").trim() === category).length;
+          return `<button class="media-category-tab ${active ? "active" : ""}" type="button" data-media-category="${escapeHtml(category)}">${escapeHtml(category)} (${count})</button>`;
+        })
+        .join("");
+    }
+  }
+
+  if (summary instanceof HTMLElement) {
+    if (!categories.length) {
+      summary.textContent = "카테고리 데이터가 없습니다.";
+    } else {
+      const visibleCount = sortedMedia.filter((item) => String(item?.category || "").trim() === state.activeMediaCategory).length;
+      summary.textContent = `선택 카테고리: ${state.activeMediaCategory} · ${visibleCount}개`;
+    }
+  }
+
   if (!state.media.length) {
-    tbody.innerHTML = `<tr><td colspan="5">매체 데이터가 없습니다.</td></tr>`;
+    if (tabs instanceof HTMLElement) tabs.innerHTML = "";
+    if (summary instanceof HTMLElement) summary.textContent = "카테고리 데이터가 없습니다.";
+    tbody.innerHTML = `<tr><td colspan="8">매체 데이터가 없습니다.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = state.media
-    .map(
-      (media) => `
+  const visibleMedia = state.activeMediaCategory
+    ? sortedMedia.filter((item) => String(item?.category || "").trim() === state.activeMediaCategory)
+    : sortedMedia;
+  if (!visibleMedia.length) {
+    tbody.innerHTML = `<tr><td colspan="8">해당 카테고리에 매체 데이터가 없습니다.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = visibleMedia
+    .map((media) => {
+      const categoryLabel = String(media?.category || "").trim() || state.activeMediaCategory || "미분류";
+      return `
       <tr>
-        <td>${media.name}</td>
-        <td>${media.category}</td>
-        <td>${media.memberPrice || "회원전용"}</td>
+        <td>
+          <div class="media-name-row">
+            <span class="media-name-text">
+              ${escapeHtml(media.name || "-")}
+              <span class="media-name-category-inline">(${escapeHtml(categoryLabel)})</span>
+            </span>
+            <span class="media-category-chip">${escapeHtml(categoryLabel)}</span>
+          </div>
+          <div class="media-subline">${escapeHtml(media.categoryDetail || "-")}</div>
+        </td>
+        <td>${escapeHtml(categoryLabel)}</td>
+        <td>
+          <div>${escapeHtml(media.bylineType || "-")}</div>
+          <div class="media-subline">${escapeHtml(media.channel || "-")}</div>
+        </td>
+        <td>${formatCurrency(media.supplyPrice || media.unitPrice || 0)}</td>
+        <td>${formatCurrency(media.salePrice || media.unitPrice || 0)}</td>
+        <td>
+          <div>${formatCurrency(media.marginAmount || Math.max(0, normalizeAmount(media.salePrice || media.unitPrice) - normalizeAmount(media.supplyPrice || media.unitPrice)))}</div>
+          <div class="media-subline">${formatPercent(media.marginRate || 0)}</div>
+        </td>
         <td>${media.isActive ? "활성" : "비활성"}</td>
         <td>
           <div class="media-action-buttons">
@@ -607,8 +707,8 @@ function renderMedia() {
             <button class="btn btn-light small" type="button" data-edit-media="${media.id}">정보 수정</button>
           </div>
         </td>
-      </tr>`
-    )
+      </tr>`;
+    })
     .join("");
 }
 
@@ -843,10 +943,17 @@ function openMediaEditModal(mediaId) {
   state.editingMediaId = media.id;
   form.elements.namedItem("name").value = String(media.name || "");
   form.elements.namedItem("category").value = String(media.category || "");
+  form.elements.namedItem("categoryDetail").value = String(media.categoryDetail || "");
+  form.elements.namedItem("bylineType").value = String(media.bylineType || "");
+  form.elements.namedItem("channel").value = String(media.channel || "");
+  form.elements.namedItem("description").value = String(media.description || "");
   form.elements.namedItem("memberPrice").value = String(media.memberPrice || "");
-  const unitPrice = Number(media.unitPrice || 0);
-  form.elements.namedItem("unitPrice").value =
-    Number.isFinite(unitPrice) && unitPrice > 0 ? String(Math.round(unitPrice)) : "";
+  const supplyPrice = Number(media.supplyPrice || media.unitPrice || 0);
+  const salePrice = Number(media.salePrice || media.unitPrice || 0);
+  form.elements.namedItem("supplyPrice").value =
+    Number.isFinite(supplyPrice) ? String(Math.max(0, Math.round(supplyPrice))) : "0";
+  form.elements.namedItem("salePrice").value =
+    Number.isFinite(salePrice) && salePrice > 0 ? String(Math.round(salePrice)) : "";
   setMediaEditMessage("", "");
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
@@ -860,6 +967,34 @@ function closeMediaEditModal() {
   state.editingMediaId = "";
 }
 
+function setMediaCreateMessage(type, text) {
+  const message = document.getElementById("media-create-message");
+  if (!message) return;
+  message.className = type ? `form-message ${type}` : "form-message";
+  message.textContent = text || "";
+}
+
+function openMediaCreateModal() {
+  const modal = document.getElementById("media-create-modal");
+  const form = document.getElementById("media-create-form");
+  if (!(modal instanceof HTMLElement) || !(form instanceof HTMLFormElement)) return;
+  form.reset();
+  const categoryInput = form.elements.namedItem("category");
+  if (categoryInput instanceof HTMLInputElement && state.activeMediaCategory) {
+    categoryInput.value = state.activeMediaCategory;
+  }
+  setMediaCreateMessage("", "");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeMediaCreateModal() {
+  const modal = document.getElementById("media-create-modal");
+  if (!(modal instanceof HTMLElement)) return;
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
 async function updateMediaInfo(form) {
   if (!state.editingMediaId) {
     setMediaEditMessage("error", "수정할 매체를 찾을 수 없습니다.");
@@ -868,22 +1003,32 @@ async function updateMediaInfo(form) {
   const formData = new FormData(form);
   const name = String(formData.get("name") || "").trim();
   const category = String(formData.get("category") || "").trim();
-  const memberPrice = String(formData.get("memberPrice") || "회원전용").trim() || "회원전용";
-  const unitPriceRaw = String(formData.get("unitPrice") || "").trim();
+  const categoryDetail = String(formData.get("categoryDetail") || "").trim();
+  const bylineType = String(formData.get("bylineType") || "").trim();
+  const channel = String(formData.get("channel") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const memberPrice = String(formData.get("memberPrice") || "").trim();
+  const supplyPriceRaw = String(formData.get("supplyPrice") || "").trim();
+  const salePriceRaw = String(formData.get("salePrice") || "").trim();
 
   if (!name || !category) {
     setMediaEditMessage("error", "매체명과 카테고리를 입력해 주세요.");
     return;
   }
 
-  let unitPrice = null;
-  if (unitPriceRaw) {
-    const parsed = Number(unitPriceRaw);
-    if (!Number.isFinite(parsed) || parsed < 0) {
-      setMediaEditMessage("error", "기준 단가는 0 이상의 숫자로 입력해 주세요.");
-      return;
-    }
-    unitPrice = Math.round(parsed);
+  const supplyPrice = Number(supplyPriceRaw);
+  const salePrice = Number(salePriceRaw);
+  if (!Number.isFinite(supplyPrice) || supplyPrice < 0) {
+    setMediaEditMessage("error", "공급가는 0 이상의 숫자로 입력해 주세요.");
+    return;
+  }
+  if (!Number.isFinite(salePrice) || salePrice <= 0) {
+    setMediaEditMessage("error", "판매가는 0보다 큰 숫자로 입력해 주세요.");
+    return;
+  }
+  if (salePrice < supplyPrice) {
+    setMediaEditMessage("error", "판매가는 공급가보다 낮을 수 없습니다.");
+    return;
   }
 
   const payload = {
@@ -891,9 +1036,14 @@ async function updateMediaInfo(form) {
     mediaId: state.editingMediaId,
     name,
     category,
-    memberPrice,
+    categoryDetail,
+    bylineType,
+    channel,
+    description,
+    supplyPrice: Math.round(supplyPrice),
+    salePrice: Math.round(salePrice),
   };
-  if (unitPrice !== null) payload.unitPrice = unitPrice;
+  if (memberPrice) payload.memberPrice = memberPrice;
 
   await apiFetch("/api/admin/media", {
     method: "PATCH",
@@ -975,20 +1125,55 @@ async function createMedia(form) {
   const formData = new FormData(form);
   const name = String(formData.get("name") || "").trim();
   const category = String(formData.get("category") || "").trim();
-  const memberPrice = String(formData.get("memberPrice") || "회원전용").trim();
+  const categoryDetail = String(formData.get("categoryDetail") || "").trim();
+  const bylineType = String(formData.get("bylineType") || "").trim();
+  const channel = String(formData.get("channel") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const memberPrice = String(formData.get("memberPrice") || "").trim();
+  const supplyPriceRaw = String(formData.get("supplyPrice") || "").trim();
+  const salePriceRaw = String(formData.get("salePrice") || "").trim();
 
   if (!name || !category) {
-    window.alert("매체명과 카테고리를 입력해 주세요.");
+    setMediaCreateMessage("error", "매체명과 카테고리를 입력해 주세요.");
+    return;
+  }
+  const supplyPrice = Number(supplyPriceRaw);
+  const salePrice = Number(salePriceRaw);
+  if (!Number.isFinite(supplyPrice) || supplyPrice < 0) {
+    setMediaCreateMessage("error", "공급가는 0 이상의 숫자로 입력해 주세요.");
+    return;
+  }
+  if (!Number.isFinite(salePrice) || salePrice <= 0) {
+    setMediaCreateMessage("error", "판매가는 0보다 큰 숫자로 입력해 주세요.");
+    return;
+  }
+  if (salePrice < supplyPrice) {
+    setMediaCreateMessage("error", "판매가는 공급가보다 낮을 수 없습니다.");
     return;
   }
 
+  const payload = {
+    name,
+    category,
+    categoryDetail,
+    bylineType,
+    channel,
+    description,
+    supplyPrice: Math.round(supplyPrice),
+    salePrice: Math.round(salePrice),
+  };
+  if (memberPrice) payload.memberPrice = memberPrice;
   await apiFetch("/api/admin/media", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ name, category, memberPrice }),
+    body: JSON.stringify(payload),
   });
-  form.reset();
+  state.activeMediaCategory = category;
+  setMediaCreateMessage("success", "매체가 추가되었습니다.");
   await refreshAdminData();
+  window.setTimeout(() => {
+    closeMediaCreateModal();
+  }, 400);
 }
 
 function bindAdminAuth() {
@@ -1141,10 +1326,28 @@ function bindActions() {
     });
   });
 
-  document.getElementById("media-form")?.addEventListener("submit", (event) => {
+  document.getElementById("media-add-toggle")?.addEventListener("click", () => {
+    openMediaCreateModal();
+  });
+
+  document.getElementById("media-create-close")?.addEventListener("click", () => {
+    closeMediaCreateModal();
+  });
+
+  document.getElementById("media-create-cancel")?.addEventListener("click", () => {
+    closeMediaCreateModal();
+  });
+
+  document.getElementById("media-create-modal")?.addEventListener("click", (event) => {
+    if (event.target?.id === "media-create-modal") {
+      closeMediaCreateModal();
+    }
+  });
+
+  document.getElementById("media-create-form")?.addEventListener("submit", (event) => {
     event.preventDefault();
     createMedia(event.currentTarget).catch((error) => {
-      window.alert(error.message || "매체 추가 실패");
+      setMediaCreateMessage("error", error.message || "매체 추가 실패");
     });
   });
 
@@ -1180,6 +1383,13 @@ function bindActions() {
     const editMediaId = target.getAttribute("data-edit-media");
     if (editMediaId) {
       openMediaEditModal(editMediaId);
+      return;
+    }
+
+    const mediaCategory = target.getAttribute("data-media-category");
+    if (mediaCategory) {
+      state.activeMediaCategory = mediaCategory;
+      renderMedia();
       return;
     }
 
@@ -1247,6 +1457,7 @@ async function init() {
     if (event.key === "Escape") {
       closeMemberEditModal();
       closeMediaEditModal();
+      closeMediaCreateModal();
     }
   });
 
