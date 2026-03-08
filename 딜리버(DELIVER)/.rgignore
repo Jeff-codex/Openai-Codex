@@ -1,0 +1,6 @@
+﻿node_modules/
+.npm-cache/
+.wrangler/
+05_로컬백업-LocalBackup/
+06_운영로그-OpsLogs/
+test-results/

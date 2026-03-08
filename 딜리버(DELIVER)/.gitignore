@@ -1,0 +1,29 @@
+# Dependencies and tool caches
+node_modules/
+.npm-cache/
+.wrangler/
+test-results/
+
+# Python residues
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Local runtime logs
+*/OpsLogs/backup-schedule/*.log
+
+# Local backup artifacts
+*/LocalBackup/deliver-site-*.tar.gz
+*/LocalBackup/LATEST_ARCHIVE.txt
+
+# Temporary media artifacts
+*/ServiceCode/*SharedData/brand/*.bak-precenter
+*/ServiceCode/*SharedData/brand/*.bak-preclean
+*/ServiceCode/*Page/index.html.bak-pre-restore-*
+*.orig
+*.tmp
+*~
+
+# Local secrets
+*/ServiceCode/.env.cloudflare
+!*/ServiceCode/.env.cloudflare.example

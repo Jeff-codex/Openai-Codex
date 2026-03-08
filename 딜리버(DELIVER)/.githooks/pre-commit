@@ -1,0 +1,25 @@
+#!/bin/sh
+set -eu
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "$REPO_ROOT" ]; then
+  echo "[FAIL] unable to resolve git repository root"
+  exit 1
+fi
+
+SCRIPT_PATH="$REPO_ROOT/딜리버(DELIVER)/07_자동화스크립트-AutomationScripts/precommit-html-guard.ps1"
+if [ ! -f "$SCRIPT_PATH" ]; then
+  echo "[FAIL] missing guard script: $SCRIPT_PATH"
+  exit 1
+fi
+
+if command -v powershell >/dev/null 2>&1; then
+  PS_CMD="powershell"
+elif [ -x "/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe" ]; then
+  PS_CMD="/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+else
+  echo "[FAIL] powershell executable not found"
+  exit 1
+fi
+
+"$PS_CMD" -NoProfile -ExecutionPolicy Bypass -File "$SCRIPT_PATH"

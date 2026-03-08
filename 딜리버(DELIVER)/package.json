@@ -1,0 +1,14 @@
+﻿{
+    "name":  "dliver",
+    "private":  true,
+    "scripts":  {
+                    "check:html:guard":  "powershell -NoProfile -ExecutionPolicy Bypass -File .\\07_자동화스크립트-AutomationScripts\\precommit-html-guard.ps1",
+                    "hooks:install":  "powershell -NoProfile -ExecutionPolicy Bypass -File .\\07_자동화스크립트-AutomationScripts\\install-git-hooks.ps1",
+                    "deploy:pages:win":  "powershell -NoProfile -ExecutionPolicy Bypass -File .\\07_자동화스크립트-AutomationScripts\\deploy-pages-windows.ps1",
+                    "doctor:win":  "powershell -NoProfile -ExecutionPolicy Bypass -File .\\\\07_자동화스크립트-AutomationScripts\\\\doctor-win.ps1",
+                    "restart:win":  "powershell -NoProfile -ExecutionPolicy Bypass -File .\\07_자동화스크립트-AutomationScripts\\restart-checklist-win.ps1"
+                },
+    "devDependencies":  {
+                            "wrangler":  "4.70.0"
+                        }
+}
