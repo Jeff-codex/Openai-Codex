@@ -25,6 +25,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "https://dev.dliver.co.kr",
 ];
 
+const BLOCKED_STATIC_PATH_PATTERN = /(^|\/)\.(env|git|npmrc)(?:$|[._-])/i;
+
 function randomToken(size = 18) {
   const bytes = new Uint8Array(size);
   crypto.getRandomValues(bytes);
@@ -66,6 +68,11 @@ function getClientIp(request) {
 function getPathname(request) {
   const url = new URL(request.url);
   return url.pathname;
+}
+
+function isBlockedStaticPath(pathname) {
+  const value = String(pathname || "");
+  return BLOCKED_STATIC_PATH_PATTERN.test(value);
 }
 
 function parseAllowedOrigins(env, request) {
@@ -163,6 +170,15 @@ export async function onRequest(context) {
   const allowedOrigins = parseAllowedOrigins(context.env, request);
   const cookies = parseCookies(request);
 
+  if (isBlockedStaticPath(pathname)) {
+    const headers = new Headers({
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "no-store",
+    });
+    applySecurityHeaders(headers, requestId);
+    return new Response("Not Found", { status: 404, headers });
+  }
+
   if (hostname === "www.dliver.co.kr") {
     requestUrl.hostname = "dliver.co.kr";
     return Response.redirect(requestUrl.toString(), 301);
@@ -170,7 +186,7 @@ export async function onRequest(context) {
 
   if (isApiRequest && method === "OPTIONS") {
     if (origin && !allowedOrigins.has(origin)) {
-      const denied = jsonErrorResponse(403, "허용되지 않은 Origin입니다.", requestId);
+      const denied = jsonErrorResponse(403, "?덉슜?섏? ?딆? Origin?낅땲??", requestId);
       return denied;
     }
     const headers = new Headers({ "cache-control": "no-store" });
@@ -186,7 +202,7 @@ export async function onRequest(context) {
   }
 
   if (isApiRequest && origin && ORIGIN_GUARD_METHODS.has(method) && !allowedOrigins.has(origin)) {
-    const denied = jsonErrorResponse(403, "허용되지 않은 Origin입니다.", requestId);
+    const denied = jsonErrorResponse(403, "?덉슜?섏? ?딆? Origin?낅땲??", requestId);
     applyCorsHeaders(denied.headers, origin, allowedOrigins);
     return denied;
   }
@@ -197,7 +213,7 @@ export async function onRequest(context) {
     if (rule) {
       const rate = await enforceRateLimit(context.env, `${rule.key}:${pathname}`, rule.limit, rule.windowSec, ip);
       if (!rate.ok) {
-        const blocked = jsonErrorResponse(429, "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.", requestId);
+        const blocked = jsonErrorResponse(429, "?붿껌???덈Т 留롮뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄??二쇱꽭??", requestId);
         blocked.headers.set("retry-after", String(rule.windowSec));
         applyCorsHeaders(blocked.headers, origin, allowedOrigins);
         return blocked;
@@ -209,7 +225,7 @@ export async function onRequest(context) {
       const csrfCookie = String(cookies[CSRF_COOKIE_NAME] || "").trim();
       const csrfHeader = String(request.headers.get("x-csrf-token") || "").trim();
       if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
-        const blocked = jsonErrorResponse(403, "CSRF 검증에 실패했습니다.", requestId);
+        const blocked = jsonErrorResponse(403, "CSRF 寃利앹뿉 ?ㅽ뙣?덉뒿?덈떎.", requestId);
         applyCorsHeaders(blocked.headers, origin, allowedOrigins);
         return blocked;
       }
@@ -218,7 +234,7 @@ export async function onRequest(context) {
 
   let response = await context.next();
   if (isApiRequest && response.status >= 500) {
-    response = jsonErrorResponse(500, "서버 처리 중 오류가 발생했습니다.", requestId);
+    response = jsonErrorResponse(500, "?쒕쾭 泥섎━ 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.", requestId);
   }
 
   const nextHeaders = new Headers(response.headers);

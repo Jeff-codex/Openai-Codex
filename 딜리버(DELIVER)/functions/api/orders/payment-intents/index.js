@@ -11,6 +11,7 @@ import {
   writeSecurityAudit,
 } from "../../_lib/cloudflare_store.js";
 import { normalizeAttachmentName, validateAttachmentFile } from "../../_lib/order_attachment_store.js";
+import { ensureMediaPricingSchema } from "../../_lib/media_pricing.js";
 import {
   PAYMENT_INTENT_TTL_SEC,
   buildRefundPolicyHtml,
@@ -61,6 +62,7 @@ export async function onRequestPost(context) {
     if (!session) return jsonError("로그인이 필요합니다.", 401);
 
     await ensureOrderPaymentSchema(context.env);
+    await ensureMediaPricingSchema(context.env);
     await cleanupExpiredPaymentIntents(context.env);
 
     const input = await parseIntentInput(context.request);
@@ -76,14 +78,14 @@ export async function onRequestPost(context) {
 
     const mediaRows = await d1Query(
       context.env,
-      "select id, name, unit_price from media_channels where id = ? and is_active = 1 limit 1",
+      "select id, name, coalesce(nullif(sale_price, 0), unit_price) as sale_price from media_channels where id = ? and is_active = 1 limit 1",
       [mediaId]
     );
     if (!mediaRows.length) {
       return jsonError("선택한 매체를 찾을 수 없습니다.", 404);
     }
     const media = mediaRows[0];
-    const unitPrice = normalizeAmount(media.unit_price);
+    const unitPrice = normalizeAmount(media.sale_price);
     if (unitPrice <= 0) {
       return jsonError("선택한 매체의 단가 정보가 없어 결제를 진행할 수 없습니다.", 400);
     }

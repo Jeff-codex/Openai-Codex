@@ -1,4 +1,5 @@
 import { d1Query, ensureSecurityAuditTable, jsonError, jsonOk } from "../_lib/cloudflare_store.js";
+import { computeMargin, ensureMediaPricingSchema } from "../_lib/media_pricing.js";
 import { ensureOrderAttachmentTable } from "../_lib/order_attachment_store.js";
 import { ensureOrderPaymentSchema } from "../orders/_payment_common.js";
 import { requireAdminSession } from "./_auth.js";
@@ -10,6 +11,7 @@ export async function onRequestGet(context) {
     await ensureOrderAttachmentTable(context.env);
     await ensureOrderPaymentSchema(context.env);
     await ensureSecurityAuditTable(context.env);
+    await ensureMediaPricingSchema(context.env);
 
     const [members, orders, media, logs, securityLogs] = await Promise.all([
       d1Query(
@@ -22,7 +24,7 @@ export async function onRequestGet(context) {
       ),
       d1Query(
         context.env,
-        "select id, name, category, byline_type, unit_price, member_price_label, channel, description, is_active, created_at from media_channels order by unit_price asc, name asc"
+        "select id, name, category, category_detail, byline_type, supply_price, sale_price, unit_price, member_price_label, channel, description, is_active, created_at from media_channels order by coalesce(sale_price, unit_price) asc, name asc"
       ),
       d1Query(
         context.env,
@@ -86,16 +88,28 @@ export async function onRequestGet(context) {
           String(row.refund_status || "").toLowerCase() !== "succeeded",
       })),
       media: media.map((row) => ({
-        id: row.id,
-        name: row.name,
-        category: row.category,
-        bylineType: row.byline_type || "",
-        unitPrice: Number(row.unit_price || 0),
-        memberPrice: row.member_price_label || "",
-        channel: row.channel || "",
-        description: row.description || "",
-        isActive: Number(row.is_active || 0) === 1,
-        createdAt: row.created_at,
+        ...(() => {
+          const supplyPrice = Number(row.supply_price || row.unit_price || 0);
+          const salePrice = Number(row.sale_price || row.unit_price || 0);
+          const margin = computeMargin(supplyPrice, salePrice);
+          return {
+            id: row.id,
+            name: row.name,
+            category: row.category,
+            categoryDetail: row.category_detail || "",
+            bylineType: row.byline_type || "",
+            supplyPrice,
+            salePrice,
+            unitPrice: salePrice,
+            marginAmount: margin.marginAmount,
+            marginRate: margin.marginRate,
+            memberPrice: row.member_price_label || "",
+            channel: row.channel || "",
+            description: row.description || "",
+            isActive: Number(row.is_active || 0) === 1,
+            createdAt: row.created_at,
+          };
+        })(),
       })),
       logs: logs.map((row) => ({
         id: row.id,
