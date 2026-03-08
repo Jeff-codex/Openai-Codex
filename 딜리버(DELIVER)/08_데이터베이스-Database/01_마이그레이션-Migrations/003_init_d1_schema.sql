@@ -18,16 +18,20 @@ create table if not exists members (
 
 create table if not exists media_channels (
   id text primary key,
-  name text not null unique,
+  name text not null,
   category text not null,
+  category_detail text not null default '',
   byline_type text,
+  supply_price integer not null default 0,
+  sale_price integer not null default 0,
   unit_price integer not null default 0,
   member_price_label text not null default '회원전용',
   channel text,
   description text,
   is_active integer not null default 1,
   created_at text not null default (datetime('now')),
-  updated_at text not null default (datetime('now'))
+  updated_at text not null default (datetime('now')),
+  unique(name, category)
 );
 
 create table if not exists orders (
@@ -99,6 +103,8 @@ create table if not exists point_charge_payments (
 create index if not exists idx_members_login_id on members(login_id);
 create index if not exists idx_members_email on members(email);
 create index if not exists idx_media_channels_active on media_channels(is_active);
+create index if not exists idx_media_channels_category on media_channels(category);
+create index if not exists idx_media_channels_sale_price on media_channels(sale_price);
 create index if not exists idx_orders_member_id on orders(member_id);
 create index if not exists idx_orders_status on orders(status);
 create index if not exists idx_orders_created_at on orders(created_at);
