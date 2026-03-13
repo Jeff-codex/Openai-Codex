@@ -49,10 +49,10 @@ function Test-StagedHtmlFiles {
         return @()
     }
 
-    $projectFull = [System.IO.Path]::GetFullPath($Root).TrimEnd('\\')
-    $repoFull = [System.IO.Path]::GetFullPath($repoRoot).TrimEnd('\\')
+    $projectFull = [System.IO.Path]::GetFullPath($Root).TrimEnd('\')
+    $repoFull = [System.IO.Path]::GetFullPath($repoRoot).TrimEnd('\')
     $projectLeaf = Split-Path -Leaf $Root
-    $prefix = "$projectLeaf\\"
+    $prefix = "$projectLeaf\"
 
     $staged = @(& git -C $Root diff --cached --name-only --diff-filter=ACMR 2>$null)
     if ($LASTEXITCODE -ne 0 -or $staged.Count -eq 0) {
@@ -64,7 +64,7 @@ function Test-StagedHtmlFiles {
         $path = $item.Trim()
         if (-not $path) { continue }
 
-        $normalized = $path -replace '/', '\\'
+        $normalized = $path -replace '/', '\'
         if ($projectFull -ne $repoFull) {
             if (-not $normalized.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
                 continue
@@ -72,7 +72,7 @@ function Test-StagedHtmlFiles {
             $normalized = $normalized.Substring($prefix.Length)
         }
 
-        if ($normalized -notmatch '\\.html$') { continue }
+        if ($normalized -notmatch '\.html$') { continue }
 
         $fullPath = Join-Path $Root $normalized
         if (Test-Path -LiteralPath $fullPath) {

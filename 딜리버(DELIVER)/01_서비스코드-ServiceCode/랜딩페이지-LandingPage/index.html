@@ -948,6 +948,70 @@ footer {
   font-size: 1.1rem;
 }
 
+.notice-modal-card {
+  width: min(640px, 100%);
+}
+
+.notice-body {
+  display: grid;
+  gap: 0.82rem;
+  color: var(--text-sub);
+}
+
+.notice-body p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.72;
+}
+
+.notice-section {
+  display: grid;
+  gap: 0.52rem;
+  margin-top: 0.2rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid #d8e3f6;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f8fbff 0%, #f3f7fe 100%);
+}
+
+.notice-section h4 {
+  margin: 0;
+  color: #0b2f87;
+  font-size: 0.95rem;
+}
+
+.notice-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.58rem;
+}
+
+.notice-list li {
+  color: #415272;
+  line-height: 1.65;
+  font-size: 0.9rem;
+}
+
+.notice-highlight {
+  display: grid;
+  gap: 0.44rem;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 56, 184, 0.14);
+  background: rgba(0, 56, 184, 0.05);
+}
+
+.notice-highlight p {
+  color: #2f4266;
+}
+
+.notice-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.22rem;
+}
+
 .signup-form {
   display: grid;
   gap: 0.68rem;
@@ -1379,6 +1443,16 @@ body.modal-open {
     font-size: 16px;
     line-height: 1.45;
   }
+
+  .notice-body p,
+  .notice-list li {
+    font-size: 0.88rem;
+  }
+
+  .notice-section,
+  .notice-highlight {
+    padding: 0.84rem 0.88rem;
+  }
 }
     </style>
   </head>
@@ -1675,6 +1749,57 @@ body.modal-open {
       </section>
     </main>
 
+    <div class="modal" id="self-order-notice-modal" aria-hidden="true">
+      <article class="modal-card notice-modal-card" role="dialog" aria-modal="true" aria-labelledby="self-order-notice-title">
+        <div class="modal-head">
+          <div>
+            <span class="eyebrow">NOTICE</span>
+            <h3 id="self-order-notice-title">보도자료 송출 관련 필독 공지사항 안내</h3>
+          </div>
+        </div>
+
+        <div class="notice-body">
+          <p>안녕하세요, 딜리버입니다. 원고 접수 및 기사 송출과 관련하여 아래와 같이 안내드립니다.</p>
+          <p>최근 네이버 제휴평가위원회 재개에 따라 네이버 정책이 변경·강화되었으며, 이에 따라 모든 보도자료는 당사 내부 체크리스트 기준에 맞춰 사전 검수를 진행하고 있습니다.</p>
+          <p>검수 과정에서 과도한 홍보성 표현이나 정책상 우려 소지가 있는 내용이 확인될 경우, 일부 문구 수정 및 보완 후 송출 요청이 진행될 수 있습니다.</p>
+          <p>또한, 송출 요청 이후에는 각 언론사 편집국(데스크)의 최종 검수를 거치게 되며, 매체 고유의 편집 권한에 따라 일부 내용이 임의 편집될 수 있습니다.</p>
+          <p>모든 보도자료는 언론사별 가이드라인에 맞춰 편집·발행되므로, 발행 이후 수정 요청 또는 환불 처리가 어려운 점 사전 안내드립니다.</p>
+          <p>아울러, 언론사 측 기사 송출 이후에도 네이버 포털 내 모니터링 과정에서 경고 또는 위반 대상 기사로 분류될 경우, 매체 패널티로 인해 벌점이 부과되며 기사 삭제 처리가 이루어질 수 있습니다. 이 경우 역시 환불 처리가 어려운 점 반드시 참고 부탁드립니다.</p>
+          <p>최근 기사 발행 이후 수정 요청이 다수 접수되고 있으나, 수정 반영 여부는 각 매체의 최종 검수 및 편집 권한에 따라 결정됩니다.</p>
+          <p>매체 측에서 문제가 없다고 판단할 경우 별도의 수정이 어려울 수 있으니, 최초 보도자료 전달 시 충분한 사전 검토 후 접수해 주시기 바랍니다. 클라이언트 측에도 해당 내용을 반드시 사전 안내 부탁드립니다.</p>
+          <p>기존 접수 기사 역시 네이버 정책 및 각 매체 가이드라인에 따라 동일 절차로 진행되며, 이는 안정적인 기사 송출과 매체 리스크 최소화를 위한 조치이오니 협조 부탁드립니다.</p>
+
+          <section class="notice-section" aria-label="현재 중점 검수 항목">
+            <h4>현재 중점 검수 항목</h4>
+            <ul class="notice-list">
+              <li>타 언론사 콘텐츠와 동일하거나 유사한 자료 (단순 복사·붙여넣기 수준의 기사 내용은 반드시 수정 필요)</li>
+              <li>객관적 근거가 명확하지 않은 주관적·과장 표현 (예: 관심, 주목, 화제, 대박 등)</li>
+            </ul>
+          </section>
+
+          <p>언론사 선정 후 접수 시 주의사항에 대한 동의 체크가 필수로 진행됩니다.</p>
+          <p>메모란을 통한 ‘편집 없이 발행 요청’은 일체 반영이 어려운 점 안내드립니다.</p>
+          <p>접수된 원고는 진행 요청으로 간주되어 접수 이후 별도 수정 또는 요청 반영이 어려울 수 있으므로, 접수 전 공지사항을 반드시 필독하신 후 접수해 주시기 바랍니다.</p>
+
+          <div class="notice-highlight" aria-label="송고 유의사항">
+            <p>※ 언론사 기사 송고 시, 해당 언론사의 내부 규정에 따라 기사 내용과 제목이 임의 편집될 수 있음에 동의합니다.</p>
+            <p>ex) 지역명·업체명 키워드, 과도한 홍보문구나 표현, 특수문자, 어뷰징 키워드 등</p>
+          </div>
+
+          <p>보다 안정적인 송출을 위해 사전 검토에 각별한 협조를 부탁드립니다.</p>
+          <p>저희 서비스를 믿고 이용해 주시는 고객사 여러분께 깊은 감사의 말씀을 드립니다.</p>
+          <p>최근 강화된 포털 정책으로 인해 검수 과정이 다소 까다로워졌으나, 이는 고객님의 소중한 보도자료가 중단 없이 안정적으로 송출될 수 있도록 보호하기 위한 필수적인 과정임을 너그러이 양해 부탁드립니다.</p>
+          <p>앞으로도 변화하는 언론 환경에 발맞추어 더욱 신속하고 정확한 검수 프로세스를 구축하고, 고객사의 홍보 효과를 극대화할 수 있는 최상의 서비스를 제공하기 위해 최선을 다하겠습니다.</p>
+          <p>관련하여 궁금하신 사항이 있으시면 언제든 문의해 주시기 바랍니다.</p>
+          <p>감사합니다.</p>
+        </div>
+
+        <div class="notice-footer">
+          <button class="btn btn-primary" type="button" data-confirm-self-order-notice>확인</button>
+        </div>
+      </article>
+    </div>
+
     <div class="modal" id="login-modal" aria-hidden="true">
       <article class="modal-card" role="dialog" aria-modal="true" aria-labelledby="login-title">
         <div class="modal-head">
@@ -1867,6 +1992,8 @@ body.modal-open {
 
     <script>
       const LEGACY_MEMBER_TOKEN_KEY = "deliver_member_token_v1";
+      const SELF_ORDER_NOTICE_ACK_KEY = "dliver_self_order_notice_v1_ack";
+      const SELF_ORDER_NOTICE_ACK_VALUE = "acknowledged";
       const MEMBER_PORTAL_PATH = "/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/index.html?v=20260224r4";
       const CHANNEL_TALK_PLUGIN_KEY = "effcd765-65b5-49ca-b003-b18931fc6f38";
       const SIGNUP_POLICY_PATH = "/01_서비스코드-ServiceCode/공통데이터-SharedData/signup-policy.txt?v=20260224r1";
@@ -1898,6 +2025,8 @@ body.modal-open {
         });
       });
 
+      const noticeModal = document.getElementById("self-order-notice-modal");
+      const noticeConfirmButton = document.querySelector("[data-confirm-self-order-notice]");
       const loginModal = document.getElementById("login-modal");
       const loginForm = document.getElementById("login-form");
       const loginMessage = document.getElementById("login-message");
@@ -1921,6 +2050,7 @@ body.modal-open {
       const signupServicePolicyContent = document.getElementById("signup-service-policy-content");
       let signupPolicyLoaded = false;
       let signupServicePolicyLoaded = false;
+      let pendingSignupEntry = false;
 
       function clearLegacyMemberTokens() {
         try {
@@ -2083,14 +2213,55 @@ body.modal-open {
         } catch (error) {}
       }
 
+      function shouldOpenSelfOrderNotice() {
+        try {
+          return localStorage.getItem(SELF_ORDER_NOTICE_ACK_KEY) !== SELF_ORDER_NOTICE_ACK_VALUE;
+        } catch (error) {
+          return true;
+        }
+      }
+
+      function markSelfOrderNoticeAcknowledged() {
+        try {
+          localStorage.setItem(SELF_ORDER_NOTICE_ACK_KEY, SELF_ORDER_NOTICE_ACK_VALUE);
+        } catch (error) {}
+      }
+
+      function isNoticeModalOpen() {
+        return Boolean(noticeModal && noticeModal.classList.contains("open"));
+      }
+
       function syncModalBodyState() {
-        if (loginModal.classList.contains("open") || signupModal.classList.contains("open")) {
+        if (isNoticeModalOpen() || loginModal.classList.contains("open") || signupModal.classList.contains("open")) {
           document.body.classList.add("modal-open");
           setChannelTalkLauncherVisible(false);
           return;
         }
         document.body.classList.remove("modal-open");
         setChannelTalkLauncherVisible(true);
+      }
+
+      function openSelfOrderNotice() {
+        if (!noticeModal) return;
+        noticeModal.classList.add("open");
+        noticeModal.setAttribute("aria-hidden", "false");
+        syncModalBodyState();
+        window.requestAnimationFrame(() => {
+          noticeConfirmButton?.focus();
+        });
+      }
+
+      function closeSelfOrderNotice() {
+        if (!noticeModal) return;
+        markSelfOrderNoticeAcknowledged();
+        noticeModal.classList.remove("open");
+        noticeModal.setAttribute("aria-hidden", "true");
+        syncModalBodyState();
+        if (pendingSignupEntry) {
+          pendingSignupEntry = false;
+          openSignupModal();
+          consumeSignupHash();
+        }
       }
 
       function updateMemberStatus(member) {
@@ -2131,6 +2302,7 @@ body.modal-open {
       }
 
       function openLoginModal() {
+        if (isNoticeModalOpen()) return;
         closeSignupModal();
         loginModal.classList.add("open");
         loginModal.setAttribute("aria-hidden", "false");
@@ -2146,6 +2318,7 @@ body.modal-open {
       }
 
       function openSignupModal() {
+        if (isNoticeModalOpen()) return;
         closeLoginModal();
         signupModal.classList.add("open");
         signupModal.setAttribute("aria-hidden", "false");
@@ -2182,6 +2355,7 @@ body.modal-open {
 
       loginOpenButtons.forEach((button) => button.addEventListener("click", openLoginModal));
       signupOpenButtons.forEach((button) => button.addEventListener("click", openSignupModal));
+      noticeConfirmButton?.addEventListener("click", closeSelfOrderNotice);
       loginCloseButton?.addEventListener("click", closeLoginModal);
       signupCloseButton?.addEventListener("click", closeSignupModal);
       signupPrivacyToggleButton?.addEventListener("click", (event) => {
@@ -2327,6 +2501,7 @@ body.modal-open {
       (async () => {
         initChannelTalk();
         clearLegacyMemberTokens();
+        const signupRequestedFromEntry = shouldOpenSignupFromEntry();
         let member = null;
         try {
           const response = await apiFetch("/api/auth/me");
@@ -2335,11 +2510,17 @@ body.modal-open {
         } catch (error) {
           updateAuthUI(null);
         }
-        if (!member && shouldOpenSignupFromEntry()) {
+        if (shouldOpenSelfOrderNotice()) {
+          pendingSignupEntry = !member && signupRequestedFromEntry;
+          openSelfOrderNotice();
+          return;
+        }
+        if (!member && signupRequestedFromEntry) {
           openSignupModal();
           consumeSignupHash();
         }
       })();
     </script>
-  </body>
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"0f348a12a25947aba3bd38d6a49e9a37","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
 </html>

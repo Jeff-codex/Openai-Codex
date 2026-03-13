@@ -24,6 +24,17 @@ function Info {
     Write-Host "[INFO] $Text"
 }
 
+function Get-GitValue {
+    param([Parameter(Mandatory = $true)][string[]]$Args)
+
+    $value = @(& git @Args 2>$null) | Select-Object -First 1
+    if ($null -eq $value) {
+        return ''
+    }
+
+    return $value.Trim()
+}
+
 function Run-NpmScript {
     param([Parameter(Mandatory = $true)][string]$Name)
 
@@ -44,8 +55,8 @@ try {
     Pass 'required root files exist'
 
     Step 'git context check'
-    $head = (& git rev-parse --short HEAD).Trim()
-    $branch = (& git branch --show-current 2>$null).Trim()
+    $head = Get-GitValue -Args @('rev-parse', '--short', 'HEAD')
+    $branch = Get-GitValue -Args @('branch', '--show-current')
     if ([string]::IsNullOrWhiteSpace($branch)) {
         Warn 'detached HEAD or branch not resolved'
         $branch = 'DETACHED'
@@ -55,7 +66,7 @@ try {
     Pass "head=$head"
 
     Step 'git status snapshot'
-    $statusLines = @(& git status --short)
+    $statusLines = @(& git -c core.quotepath=false status --short)
     $statusCount = ($statusLines | Measure-Object).Count
     if ($statusCount -eq 0) {
         Pass 'worktree clean'
@@ -114,8 +125,8 @@ try {
     }
 
     Step 'git identity check'
-    $gitUser = (& git config --get user.name 2>$null).Trim()
-    $gitEmail = (& git config --get user.email 2>$null).Trim()
+    $gitUser = Get-GitValue -Args @('config', '--get', 'user.name')
+    $gitEmail = Get-GitValue -Args @('config', '--get', 'user.email')
     if ([string]::IsNullOrWhiteSpace($gitUser) -or [string]::IsNullOrWhiteSpace($gitEmail)) {
         Warn 'git author identity incomplete'
     } else {
