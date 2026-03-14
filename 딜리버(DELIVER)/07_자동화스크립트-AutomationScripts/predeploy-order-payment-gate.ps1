@@ -72,10 +72,37 @@ Write-Host '[PASS] no nul-byte corruption detected'
 
 Write-Host ''
 Write-Host '[STEP] migration sql integrity'
+[string]$pythonExe = $null
+[string]$pythonLabel = ''
+$pythonArgs = @()
+
 $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
-if (-not $pythonCmd) {
-    Write-Host '[WARN] python not found: skipping sqlite dry-run check'
+if ($pythonCmd) {
+    $pythonProbeCmd = '"' + $pythonCmd.Source + '" --version >nul 2>&1'
+    & cmd /c $pythonProbeCmd | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        $pythonExe = $pythonCmd.Source
+        $pythonLabel = 'python'
+    }
+}
+
+if (-not $pythonExe) {
+    $pyCmd = Get-Command py -ErrorAction SilentlyContinue
+    if ($pyCmd) {
+        $pyProbeCmd = '"' + $pyCmd.Source + '" -3 --version >nul 2>&1'
+        & cmd /c $pyProbeCmd | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            $pythonExe = $pyCmd.Source
+            $pythonLabel = 'py -3'
+            $pythonArgs = @('-3')
+        }
+    }
+}
+
+if (-not $pythonExe) {
+    Write-Host '[WARN] executable python interpreter not found: skipping sqlite dry-run check'
 } else {
+    Write-Host "[INFO] sqlite dry-run interpreter: $pythonLabel"
     $script = @"
 import sqlite3
 from pathlib import Path
@@ -118,11 +145,20 @@ if missing_tables or missing_cols or missing_media_cols or not has_sale_price_in
 print('[PASS] migration sql applied successfully in sqlite memory (003/004/005/007)')
 "@
     $tempPy = Join-Path ([System.IO.Path]::GetTempPath()) 'deliver_migration_check.py'
-    Set-Content -LiteralPath $tempPy -Value $script -Encoding utf8
-    & python $tempPy
-    Remove-Item -LiteralPath $tempPy -Force
-    if ($LASTEXITCODE -ne 0) {
-        throw 'migration sql integrity failed'
+    try {
+        Set-Content -LiteralPath $tempPy -Value $script -Encoding utf8
+        if ($pythonArgs.Count -gt 0) {
+            & $pythonExe @pythonArgs $tempPy
+        } else {
+            & $pythonExe $tempPy
+        }
+        if ($LASTEXITCODE -ne 0) {
+            throw 'migration sql integrity failed'
+        }
+    } finally {
+        if (Test-Path -LiteralPath $tempPy) {
+            Remove-Item -LiteralPath $tempPy -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 

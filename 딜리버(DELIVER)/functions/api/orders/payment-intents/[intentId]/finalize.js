@@ -27,6 +27,8 @@ import {
   toSnippet,
 } from "../../_payment_common.js";
 
+const MIN_PAYMENT_TOTAL_AMOUNT = 2;
+
 function buildOrderId() {
   return `ord_${crypto.randomUUID()}`;
 }
@@ -57,6 +59,10 @@ export async function onRequestPost(context) {
     const amount = normalizeAmount(body.amount);
     if (!paymentKey || !orderIdFromToss || amount <= 0) {
       return jsonError("결제 승인 정보가 올바르지 않습니다.", 400);
+    }
+
+    if (amount < MIN_PAYMENT_TOTAL_AMOUNT) {
+      return jsonError(`현재 결제수단 정책상 최소 결제 금액은 ${MIN_PAYMENT_TOTAL_AMOUNT}원입니다.`, 400);
     }
 
     const intent = await fetchIntentForMember(context.env, intentId, session.memberId);

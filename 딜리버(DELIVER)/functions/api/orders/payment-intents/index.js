@@ -27,6 +27,8 @@ import {
   toIntentSummary,
 } from "../_payment_common.js";
 
+const MIN_PAYMENT_TOTAL_AMOUNT = 2;
+
 function buildTossOrderId() {
   return `odr_${crypto.randomUUID().replace(/-/g, "")}`;
 }
@@ -100,6 +102,9 @@ export async function onRequestPost(context) {
     const expiresAt = computeExpiryIso(now, PAYMENT_INTENT_TTL_SEC);
     const tossOrderId = buildTossOrderId();
     const { supplyAmount, vatAmount, totalAmount } = calculateOrderAmounts(unitPrice);
+    if (totalAmount < MIN_PAYMENT_TOTAL_AMOUNT) {
+      return jsonError(`현재 결제수단 정책상 최소 결제 금액은 ${MIN_PAYMENT_TOTAL_AMOUNT}원입니다.`, 400);
+    }
 
     const fileBytes = await input.draftFile.arrayBuffer();
     const safeFileName = normalizeAttachmentName(attachmentInfo.fileName || "draft");
