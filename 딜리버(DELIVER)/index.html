@@ -12,7 +12,7 @@
     <meta name="naver-site-verification" content="db80323608f2018fab38668c4820913ec3ab3414" />
     <meta name="author" content="딜리버" />
     <meta name="theme-color" content="#0038b8" />
-    <link rel="canonical" href="https://dliver.co.kr/" />
+    <link rel="canonical" href="https://dliver.co.kr/review" />
     <link rel="alternate" type="application/rss+xml" title="딜리버 RSS" href="https://dliver.co.kr/rss.xml" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ko_KR" />
@@ -22,7 +22,7 @@
       property="og:description"
       content="보도자료 원고를 업로드하면 승인 가능성, 리스크, 가독성, 브랜딩 적합도를 빠르게 분석합니다."
     />
-    <meta property="og:url" content="https://dliver.co.kr/" />
+    <meta property="og:url" content="https://dliver.co.kr/review" />
     <meta property="og:image" content="https://dliver.co.kr/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
     <meta property="og:image:secure_url" content="https://dliver.co.kr/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
     <meta property="og:image:type" content="image/png" />
@@ -65,7 +65,7 @@
           "name": "딜리버",
           "url": "https://dliver.co.kr/"
         },
-        "url": "https://dliver.co.kr/",
+        "url": "https://dliver.co.kr/review",
         "areaServed": "KR",
         "inLanguage": "ko-KR"
       }
@@ -839,7 +839,7 @@
           <img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" alt="dliver 로고" />
         </a>
         <div class="top-nav-links">
-          <a id="topPromoLink" href="/self-order">언론홍보</a>
+          <a id="topPromoLink" href="/">언론홍보</a>
           <button id="openLoginBtn" class="top-link-btn" type="button" data-open-login>로그인</button>
           <button id="topLogoutButton" class="top-link-btn is-hidden" type="button">로그아웃</button>
         </div>
@@ -1074,7 +1074,7 @@
           return;
         }
         if (host === 'staging.dliver.co.kr' && location.pathname === '/') {
-          location.replace('/self-order');
+          location.replace('/review');
           return;
         }
       })();
@@ -1355,7 +1355,7 @@
             els.topPromoLink.setAttribute('href', '/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/');
           } else {
             els.topPromoLink.textContent = '언론홍보';
-            els.topPromoLink.setAttribute('href', '/self-order');
+            els.topPromoLink.setAttribute('href', '/');
           }
         }
         if (els.openLoginBtn) {

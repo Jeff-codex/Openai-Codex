@@ -24,7 +24,8 @@ PY
 }
 
 echo "[PREVIEW] 검증 경로"
-echo "[PREVIEW] 운영 URL: https://dliver.co.kr/"
+echo "[PREVIEW] 운영 루트(셀프오더): https://dliver.co.kr/"
+echo "[PREVIEW] 운영 검수 URL: https://dliver.co.kr/review"
 echo "[PREVIEW] 운영 관리자 URL: https://admin.dliver.co.kr/"
 echo "[PREVIEW] 운영 API URL: https://api.dliver.co.kr/"
 echo "[PREVIEW] 스테이징 URL: https://staging.dliver.co.kr/"
@@ -37,5 +38,6 @@ echo "[PREVIEW] 관리자 로컬 경로: $ADMIN_PATH"
 echo "[PREVIEW] 관리자 file URL: $(to_file_url "$ADMIN_PATH")"
 echo "[PREVIEW] 회원전용 로컬 경로: $MEMBER_PATH"
 echo "[PREVIEW] 회원전용 file URL: $(to_file_url "$MEMBER_PATH")"
-echo "[PREVIEW] 로컬 서버 URL 예시: http://localhost:4173/$LANDING_REL_PATH"
+echo "[PREVIEW] 로컬 랜딩 URL 예시: http://localhost:4173/$LANDING_REL_PATH"
+echo "[PREVIEW] 운영 rewrite 점검: / -> landing, /review -> root review page, /self-order -> /"
 echo "[PREVIEW] 로컬 서버 실행: python3 -m http.server 4173"
