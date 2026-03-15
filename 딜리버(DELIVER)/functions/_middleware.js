@@ -18,6 +18,9 @@ const RATE_LIMIT_RULES = [
   { prefix: "/api/", key: "api-general", limit: 240, windowSec: 60 },
 ];
 
+const ROOT_LANDING_REWRITE_PATH = "/01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html";
+const REVIEW_REWRITE_PATH = "/index.html";
+
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://dliver.co.kr",
   "https://admin.dliver.co.kr",
@@ -142,6 +145,14 @@ function hasExplicitAuthHeader(request) {
   return Boolean(String(request.headers.get("x-session-token") || "").trim());
 }
 
+function shouldServeRootLanding(hostname) {
+  const host = String(hostname || "").toLowerCase();
+  if (!host) return false;
+  if (host.endsWith(".pages.dev")) return true;
+  if (host === "dliver.co.kr" || host === "staging.dliver.co.kr" || host === "dev.dliver.co.kr") return true;
+  return false;
+}
+
 function jsonErrorResponse(status, message, requestId) {
   const headers = new Headers({
     "content-type": "application/json; charset=utf-8",
@@ -182,6 +193,27 @@ export async function onRequest(context) {
   if (hostname === "www.dliver.co.kr") {
     requestUrl.hostname = "dliver.co.kr";
     return Response.redirect(requestUrl.toString(), 301);
+  }
+
+  let nextInput = undefined;
+  if (!isApiRequest && SAFE_METHODS.has(method)) {
+    if (pathname === "/self-order" || pathname === "/self-order/" || pathname === "/landing" || pathname.startsWith("/landing/")) {
+      requestUrl.pathname = "/";
+      return Response.redirect(requestUrl.toString(), 301);
+    }
+    if (pathname === "/index.html") {
+      requestUrl.pathname = "/review";
+      return Response.redirect(requestUrl.toString(), 301);
+    }
+    if (pathname === "/review/") {
+      requestUrl.pathname = "/review";
+      return Response.redirect(requestUrl.toString(), 301);
+    }
+    if (pathname === "/review") {
+      nextInput = REVIEW_REWRITE_PATH;
+    } else if (pathname === "/" && shouldServeRootLanding(hostname)) {
+      nextInput = ROOT_LANDING_REWRITE_PATH;
+    }
   }
 
   if (isApiRequest && method === "OPTIONS") {
@@ -232,7 +264,7 @@ export async function onRequest(context) {
     }
   }
 
-  let response = await context.next();
+  let response = await context.next(nextInput);
   if (isApiRequest && response.status >= 500) {
     response = jsonErrorResponse(500, "?쒕쾭 泥섎━ 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.", requestId);
   }
