@@ -50,8 +50,8 @@ const NEW_PUBLIC_HOSTS = new Set([PUBLIC_CANONICAL_HOST, PUBLIC_CANONICAL_WWW_HO
 const LEGACY_MEMBER_ENTRY_URL = "https://dliver.co.kr/member/";
 const LEGACY_REVIEW_URL = "https://dliver.co.kr/review";
 const LEGACY_ADMIN_ENTRY_URL = "https://dliver.co.kr/admin/";
-const LEGACY_LOGIN_ENTRY_URL = "https://dliver.co.kr/?login=1";
-const LEGACY_SIGNUP_ENTRY_URL = "https://dliver.co.kr/?signup=1";
+const LEGACY_LOGIN_ENTRY_URL = "https://dliver.co.kr/#login";
+const LEGACY_SIGNUP_ENTRY_URL = "https://dliver.co.kr/#signup";
 
 const BLOCKED_STATIC_PATH_PATTERN = /(^|\/)\.(env|git|npmrc)(?:$|[._-])/i;
 
