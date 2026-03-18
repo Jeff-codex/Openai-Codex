@@ -1,22 +1,58 @@
-const ROBOTS_TXT = `User-agent: Googlebot
-Allow: /
-Disallow: /api/
-Disallow: /functions/
-Disallow: /01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/
-Disallow: /01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/
+const ADMIN_HOSTS = new Set(["admin.everyonepr.com", "admin.dliver.co.kr"]);
 
-User-agent: Yeti
+const PUBLIC_ROBOTS_TXT = `# As a condition of accessing this website, you agree to abide by the following
+# content signals:
+#
+# (a)  If a Content-Signal = yes, you may collect content for the corresponding
+#      use.
+# (b)  If a Content-Signal = no, you may not collect content for the
+#      corresponding use.
+# (c)  If the website operator does not include a Content-Signal for a
+#      corresponding use, the website operator neither grants nor restricts
+#      permission via Content-Signal with respect to the corresponding use.
+#
+# The content signals and their meanings are:
+#
+# search:   building a search index and providing search results (e.g., returning
+#           hyperlinks and short excerpts from your website's contents). Search does not
+#           include providing AI-generated search summaries.
+# ai-input: inputting content into one or more AI models (e.g., retrieval
+#           augmented generation, grounding, or other real-time taking of content for
+#           generative AI search answers).
+# ai-train: training or fine-tuning AI models.
+#
+# ANY RESTRICTIONS EXPRESSED VIA CONTENT SIGNALS ARE EXPRESS RESERVATIONS OF
+# RIGHTS UNDER ARTICLE 4 OF THE EUROPEAN UNION DIRECTIVE 2019/790 ON COPYRIGHT
+# AND RELATED RIGHTS IN THE DIGITAL SINGLE MARKET.
+
+User-agent: *
+Content-Signal: search=yes,ai-input=yes,ai-train=no
 Allow: /
 Disallow: /api/
 Disallow: /functions/
+Disallow: /login
+Disallow: /login/
+Disallow: /signup
+Disallow: /signup/
+Disallow: /member
+Disallow: /member/
+Disallow: /admin
+Disallow: /admin/
 Disallow: /01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/
 Disallow: /01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/
 
 Sitemap: https://everyonepr.com/sitemap.xml
 `;
 
+const ADMIN_ROBOTS_TXT = `User-agent: *
+Content-Signal: search=no,ai-input=no,ai-train=no
+Disallow: /
+`;
+
 export async function onRequest(context) {
   const method = String(context.request.method || "GET").toUpperCase();
+  const hostname = String(new URL(context.request.url).hostname || "").toLowerCase();
+  const body = ADMIN_HOSTS.has(hostname) ? ADMIN_ROBOTS_TXT : PUBLIC_ROBOTS_TXT;
   if (method === "HEAD") {
     return new Response(null, {
       status: 200,
@@ -29,7 +65,7 @@ export async function onRequest(context) {
   if (method !== "GET") {
     return new Response("Method Not Allowed", { status: 405 });
   }
-  return new Response(ROBOTS_TXT, {
+  return new Response(body, {
     status: 200,
     headers: {
       "content-type": "text/plain; charset=utf-8",
