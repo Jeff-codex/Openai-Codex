@@ -25,6 +25,7 @@ const REVIEW_REWRITE_PATH = "/index.html";
 const MEMBER_PAGE_PREFIX =
   "/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/";
 const MEMBER_PAGE_ALIAS_PREFIX = "/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/";
+const MEMBER_REWRITE_PATH = `${MEMBER_PAGE_PREFIX}index.html`;
 const ADMIN_PAGE_PREFIX =
   "/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/";
 const ADMIN_REWRITE_PATH = `${ADMIN_PAGE_PREFIX}index.html`;
@@ -246,6 +247,14 @@ function getMemberCanonicalPath(pathname) {
   return "";
 }
 
+function getMemberRewritePath(pathname) {
+  const prettyPath = getMemberCanonicalPath(pathname);
+  if (!prettyPath) return "";
+  const suffix = prettyPath.slice("/member/".length);
+  if (!suffix) return MEMBER_REWRITE_PATH;
+  return `${MEMBER_PAGE_PREFIX}${suffix}`;
+}
+
 function getPublicAuthEntryMode(requestUrl) {
   if (String(requestUrl.searchParams.get("login") || "") === "1") return "login";
   if (String(requestUrl.searchParams.get("signup") || "") === "1") return "signup";
@@ -312,6 +321,9 @@ export async function onRequest(context) {
       if (isNewPublicHost(hostname) && pathname !== memberCanonicalPath) {
         requestUrl.pathname = memberCanonicalPath;
         return Response.redirect(requestUrl.toString(), 301);
+      }
+      if (isNewPublicHost(hostname)) {
+        nextInput = getMemberRewritePath(pathname);
       }
     }
     if (isLegacyAdminHost(hostname) && isAdminPagePath(pathname)) {
