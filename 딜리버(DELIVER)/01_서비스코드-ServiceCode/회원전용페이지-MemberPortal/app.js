@@ -1,6 +1,6 @@
 const MEMBER_TOKEN_KEY = "deliver_member_token_v1";
 const MEMBER_ORDER_DRAFT_KEY = "deliver_member_order_draft_v2";
-const LANDING_PAGE_PATH = "https://dliver.co.kr/";
+const LANDING_PAGE_PATH = "/";
 const CHANNEL_TALK_PLUGIN_KEY = "effcd765-65b5-49ca-b003-b18931fc6f38";
 const AUTH_LOADING_CLASS = "auth-loading";
 

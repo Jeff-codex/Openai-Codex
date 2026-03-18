@@ -47,10 +47,7 @@ const LEGACY_PUBLIC_HOSTS = new Set([
   "www.xn--hu1b83js0j45b952a.com",
 ]);
 const NEW_PUBLIC_HOSTS = new Set([PUBLIC_CANONICAL_HOST, PUBLIC_CANONICAL_WWW_HOST]);
-const LEGACY_MEMBER_ENTRY_URL = "https://dliver.co.kr/member/";
 const LEGACY_ADMIN_ENTRY_URL = "https://dliver.co.kr/admin/";
-const LEGACY_LOGIN_ENTRY_URL = "https://dliver.co.kr/login";
-const LEGACY_SIGNUP_ENTRY_URL = "https://dliver.co.kr/signup";
 
 const BLOCKED_STATIC_PATH_PATTERN = /(^|\/)\.(env|git|npmrc)(?:$|[._-])/i;
 
@@ -190,33 +187,25 @@ function isLegacySensitivePath(pathname) {
   const value = String(pathname || "");
   return (
     value === "/index.html" ||
-    value === "/login" ||
-    value === "/login/" ||
-    value === "/signup" ||
-    value === "/signup/" ||
-    value.startsWith("/member") ||
     value.startsWith("/admin") ||
-    value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/") ||
     value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/")
+  );
+}
+
+function isLegacyHoldoutPath(pathname) {
+  const value = String(pathname || "");
+  return (
+    value === "/index.html" ||
+    value === "/member" ||
+    value === "/member/" ||
+    value.startsWith("/member/") ||
+    value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/") ||
+    isLegacySensitivePath(value)
   );
 }
 
 function getLegacyDestinationForPath(pathname) {
   const value = String(pathname || "");
-  if (value === "/login" || value === "/login/") {
-    return LEGACY_LOGIN_ENTRY_URL;
-  }
-  if (value === "/signup" || value === "/signup/") {
-    return LEGACY_SIGNUP_ENTRY_URL;
-  }
-  if (
-    value === "/member" ||
-    value === "/member/" ||
-    value.startsWith("/member/") ||
-    value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/")
-  ) {
-    return LEGACY_MEMBER_ENTRY_URL;
-  }
   if (
     value === "/admin" ||
     value === "/admin/" ||
@@ -285,14 +274,19 @@ export async function onRequest(context) {
     const authEntryMode = getPublicAuthEntryMode(requestUrl);
     const isLegacyRootAuthEntry = isLegacyPublicHost(hostname) && authEntryMode && pathname === "/";
     if (isNewPublicHost(hostname) && authEntryMode) {
-      return redirectToUrl(authEntryMode === "signup" ? LEGACY_SIGNUP_ENTRY_URL : LEGACY_LOGIN_ENTRY_URL, 302);
-    }
-    if (isLegacyPublicHost(hostname) && authEntryMode) {
-      if (pathname === "/") {
+      if (pathname === "/" || pathname === "/login" || pathname === "/signup") {
         nextInput = ROOT_LANDING_REWRITE_PATH;
       } else {
-        return redirectToUrl(authEntryMode === "signup" ? LEGACY_SIGNUP_ENTRY_URL : LEGACY_LOGIN_ENTRY_URL, 302);
+        requestUrl.pathname = authEntryMode === "signup" ? "/signup" : "/login";
+        requestUrl.search = "";
+        return Response.redirect(requestUrl.toString(), 302);
       }
+    }
+    if (isLegacyPublicHost(hostname) && authEntryMode) {
+      requestUrl.hostname = PUBLIC_CANONICAL_HOST;
+      requestUrl.pathname = authEntryMode === "signup" ? "/signup" : "/login";
+      requestUrl.search = "";
+      return Response.redirect(requestUrl.toString(), 302);
     }
     if (
       hostname === "www.everyonepr.com" ||
@@ -310,7 +304,7 @@ export async function onRequest(context) {
       if (legacyDestination) {
         return redirectToUrl(legacyDestination, 302);
       }
-    } else if (isLegacyPublicHost(hostname) && !isLegacySensitivePath(pathname) && !isLegacyRootAuthEntry) {
+    } else if (isLegacyPublicHost(hostname) && !isLegacyHoldoutPath(pathname) && !isLegacyRootAuthEntry) {
       return redirectHost(requestUrl, PUBLIC_CANONICAL_HOST, 301);
     } else if (pathname === "/self-order" || pathname === "/self-order/" || pathname === "/landing" || pathname.startsWith("/landing/")) {
       requestUrl.pathname = "/";
@@ -332,9 +326,9 @@ export async function onRequest(context) {
       requestUrl.pathname = "/review";
       return Response.redirect(requestUrl.toString(), 301);
     }
-    if (pathname === "/login" && isLegacyPublicHost(hostname)) {
+    if (pathname === "/login" && shouldServeRootLanding(hostname)) {
       nextInput = ROOT_LANDING_REWRITE_PATH;
-    } else if (pathname === "/signup" && isLegacyPublicHost(hostname)) {
+    } else if (pathname === "/signup" && shouldServeRootLanding(hostname)) {
       nextInput = ROOT_LANDING_REWRITE_PATH;
     } else if (pathname === "/review" && shouldServeRootLanding(hostname)) {
       nextInput = REVIEW_REWRITE_PATH;

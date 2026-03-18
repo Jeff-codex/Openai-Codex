@@ -1531,8 +1531,8 @@ body.modal-open {
         </nav>
         <div class="nav-actions">
           <a class="btn btn-outline" href="https://everyonepr.com/review">원고 검수</a>
-          <a class="btn btn-ghost" href="https://dliver.co.kr/login" id="top-login-button">로그인</a>
-          <a class="btn btn-ghost" href="https://dliver.co.kr/signup" id="top-signup-button">회원가입</a>
+          <a class="btn btn-ghost" href="/login" id="top-login-button">로그인</a>
+          <a class="btn btn-ghost" href="/signup" id="top-signup-button">회원가입</a>
           <span class="chip login-chip is-hidden" id="nav-login-state" aria-live="polite"></span>
           <button class="btn btn-ghost is-hidden" type="button" id="logout-button">로그아웃</button>
         </div>
@@ -1554,7 +1554,7 @@ body.modal-open {
             </p>
             <div class="hero-actions">
           <a class="btn btn-primary" href="/services/press-release-distribution/" data-cta="service-overview">배포 서비스</a>
-            <a class="btn btn-outline" href="https://dliver.co.kr/signup">회원가입 후 바로 시작</a>
+            <a class="btn btn-outline" href="/signup">회원가입 후 바로 시작</a>
             </div>
           </div>
 
@@ -1724,7 +1724,7 @@ body.modal-open {
                 <li><span class="check">✓</span> 주문 완료 후 원고 검열 및 송출</li>
               </ul>
               <div class="hero-actions">
-            <a class="btn btn-primary" href="https://dliver.co.kr/signup">회원가입 후 바로 시작</a>
+            <a class="btn btn-primary" href="/signup">회원가입 후 바로 시작</a>
               </div>
             </aside>
           </div>
@@ -2121,16 +2121,7 @@ body.modal-open {
       const LEGACY_MEMBER_TOKEN_KEY = "deliver_member_token_v1";
       const SELF_ORDER_NOTICE_ACK_KEY = "dliver_self_order_notice_v1_ack";
       const SELF_ORDER_NOTICE_ACK_VALUE = "acknowledged";
-      const MEMBER_PORTAL_PATH = "https://dliver.co.kr/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/index.html?v=20260224r4";
-      const LEGACY_MEMBER_ENTRY_URL = "https://dliver.co.kr/member/";
-      const LEGACY_LOGIN_ENTRY_URL = "https://dliver.co.kr/login";
-      const LEGACY_SIGNUP_ENTRY_URL = "https://dliver.co.kr/signup";
-      const PRIMARY_PUBLIC_HOSTS = new Set([
-        "everyonepr.com",
-        "www.everyonepr.com",
-        "xn--hu1b83js0j45b952a.com",
-        "www.xn--hu1b83js0j45b952a.com",
-      ]);
+      const MEMBER_PORTAL_PATH = "/member/";
       const CHANNEL_TALK_PLUGIN_KEY = "effcd765-65b5-49ca-b003-b18931fc6f38";
       const SIGNUP_POLICY_PATH = "/01_서비스코드-ServiceCode/공통데이터-SharedData/signup-policy.txt?v=20260224r1";
       const SIGNUP_SERVICE_POLICY_PATH = "/01_서비스코드-ServiceCode/공통데이터-SharedData/service-policy.txt?v=20260227r1";
@@ -2212,14 +2203,6 @@ body.modal-open {
       function getMemberPortalUrl() {
         const url = new URL(MEMBER_PORTAL_PATH, window.location.href);
         return url.toString();
-      }
-
-      function shouldRoutePublicAuthToLegacyMember() {
-        return PRIMARY_PUBLIC_HOSTS.has(String(window.location.hostname || "").toLowerCase());
-      }
-
-      function routeToLegacyMemberEntry(url = LEGACY_MEMBER_ENTRY_URL) {
-        window.location.href = url;
       }
 
       function initChannelTalk() {
@@ -2454,10 +2437,6 @@ body.modal-open {
       }
 
       function openLoginModal() {
-        if (shouldRoutePublicAuthToLegacyMember()) {
-          routeToLegacyMemberEntry(LEGACY_LOGIN_ENTRY_URL);
-          return;
-        }
         if (isNoticeModalOpen()) return;
         closeSignupModal();
         loginModal.classList.add("open");
@@ -2474,10 +2453,6 @@ body.modal-open {
       }
 
       function openSignupModal() {
-        if (shouldRoutePublicAuthToLegacyMember()) {
-          routeToLegacyMemberEntry(LEGACY_SIGNUP_ENTRY_URL);
-          return;
-        }
         if (isNoticeModalOpen()) return;
         closeLoginModal();
         signupModal.classList.add("open");

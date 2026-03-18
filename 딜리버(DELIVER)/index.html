@@ -1145,16 +1145,6 @@
       var SIGNUP_POLICY_PATH = '/01_서비스코드-ServiceCode/공통데이터-SharedData/signup-policy.txt?v=20260224r1';
       var SIGNUP_SERVICE_POLICY_PATH = '/01_서비스코드-ServiceCode/공통데이터-SharedData/service-policy.txt?v=20260227r1';
       var CHANNEL_TALK_PLUGIN_KEY = 'effcd765-65b5-49ca-b003-b18931fc6f38';
-      var LEGACY_LOGIN_ENTRY_URL = 'https://dliver.co.kr/login';
-      var LEGACY_SIGNUP_ENTRY_URL = 'https://dliver.co.kr/signup';
-      var PUBLIC_AUTH_LEGACY_HOSTS = new Set([
-        'everyonepr.com',
-        'www.everyonepr.com',
-        '모두의피알.com',
-        'www.모두의피알.com',
-        'xn--hu1b83js0j45b952a.com',
-        'www.xn--hu1b83js0j45b952a.com'
-      ]);
       var signupPolicyLoaded = false;
       var signupServicePolicyLoaded = false;
 
@@ -1363,15 +1353,7 @@
         setChannelTalkLauncherVisible(true);
       }
 
-      function shouldRouteAuthToLegacyHost() {
-        return PUBLIC_AUTH_LEGACY_HOSTS.has(String(window.location.hostname || '').toLowerCase());
-      }
-
       function openLoginModal() {
-        if (shouldRouteAuthToLegacyHost()) {
-          window.location.href = LEGACY_LOGIN_ENTRY_URL;
-          return;
-        }
         if (!els.loginModal) return;
         closeSignupModal();
         clearLoginMessage();
@@ -1389,10 +1371,6 @@
       }
 
       function openSignupModal() {
-        if (shouldRouteAuthToLegacyHost()) {
-          window.location.href = LEGACY_SIGNUP_ENTRY_URL;
-          return;
-        }
         if (!els.signupModal) return;
         clearFormMessage();
         setSignupPrivacyPanelOpen(false);
@@ -1433,7 +1411,7 @@
           els.topPromoLink.classList.remove('is-hidden');
           if (isSignedIn) {
             els.topPromoLink.textContent = '회원전용페이지';
-            els.topPromoLink.setAttribute('href', '/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/');
+            els.topPromoLink.setAttribute('href', '/member/');
           } else {
             els.topPromoLink.textContent = '서비스 소개';
             els.topPromoLink.setAttribute('href', '/about/');
