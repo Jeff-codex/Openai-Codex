@@ -54,6 +54,10 @@ const LEGACY_PUBLIC_HOSTS = new Set([
 ]);
 const NEW_PUBLIC_HOSTS = new Set([PUBLIC_CANONICAL_HOST, PUBLIC_CANONICAL_WWW_HOST]);
 const LEGACY_ADMIN_ENTRY_URL = "https://admin.everyonepr.com/";
+const ADMIN_ROBOTS_TXT = `User-agent: *
+Content-Signal: search=no,ai-input=no,ai-train=no
+Disallow: /
+`;
 
 const BLOCKED_STATIC_PATH_PATTERN = /(^|\/)\.(env|git|npmrc)(?:$|[._-])/i;
 
@@ -278,6 +282,15 @@ function jsonErrorResponse(status, message, requestId) {
   );
 }
 
+function textResponse(status, body, requestId) {
+  const headers = new Headers({
+    "content-type": "text/plain; charset=utf-8",
+    "cache-control": "public, max-age=300",
+  });
+  applySecurityHeaders(headers, requestId);
+  return new Response(body, { status, headers });
+}
+
 export async function onRequest(context) {
   const request = context.request;
   const method = String(request.method || "GET").toUpperCase();
@@ -297,6 +310,10 @@ export async function onRequest(context) {
     });
     applySecurityHeaders(headers, requestId);
     return new Response("Not Found", { status: 404, headers });
+  }
+
+  if (pathname === "/robots.txt" && (isAdminCanonicalHost(hostname) || isLegacyAdminHost(hostname))) {
+    return textResponse(200, ADMIN_ROBOTS_TXT, requestId);
   }
 
   let nextInput = undefined;
