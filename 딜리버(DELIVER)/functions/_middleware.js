@@ -324,7 +324,7 @@ export async function onRequest(context) {
       nextInput = REVIEW_REWRITE_PATH;
     } else if (pathname === "/" && shouldServeRootLanding(hostname)) {
       nextInput = ROOT_LANDING_REWRITE_PATH;
-    } else if (pathname === "/" && isLegacyPublicHost(hostname)) {
+    } else if (pathname === "/" && isLegacyPublicHost(hostname) && !isLegacyRootAuthEntry) {
       return redirectHost(requestUrl, PUBLIC_CANONICAL_HOST, 301);
     }
   }
