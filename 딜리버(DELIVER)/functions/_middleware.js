@@ -24,11 +24,32 @@ const ROOT_LANDING_REWRITE_PATH = "/landing-root.html";
 const REVIEW_REWRITE_PATH = "/index.html";
 
 const DEFAULT_ALLOWED_ORIGINS = [
+  "https://everyonepr.com",
+  "https://www.everyonepr.com",
+  "https://모두의피알.com",
+  "https://www.모두의피알.com",
+  "https://xn--hu1b83js0j45b952a.com",
+  "https://www.xn--hu1b83js0j45b952a.com",
   "https://dliver.co.kr",
   "https://admin.dliver.co.kr",
   "https://staging.dliver.co.kr",
   "https://dev.dliver.co.kr",
 ];
+
+const PUBLIC_CANONICAL_HOST = "everyonepr.com";
+const PUBLIC_CANONICAL_WWW_HOST = "www.everyonepr.com";
+const LEGACY_PUBLIC_HOSTS = new Set([
+  "dliver.co.kr",
+  "www.dliver.co.kr",
+  "모두의피알.com",
+  "www.모두의피알.com",
+  "xn--hu1b83js0j45b952a.com",
+  "www.xn--hu1b83js0j45b952a.com",
+]);
+const NEW_PUBLIC_HOSTS = new Set([PUBLIC_CANONICAL_HOST, PUBLIC_CANONICAL_WWW_HOST]);
+const LEGACY_MEMBER_ENTRY_URL = "https://dliver.co.kr/member/";
+const LEGACY_REVIEW_URL = "https://dliver.co.kr/review";
+const LEGACY_ADMIN_ENTRY_URL = "https://dliver.co.kr/admin/";
 
 const BLOCKED_STATIC_PATH_PATTERN = /(^|\/)\.(env|git|npmrc)(?:$|[._-])/i;
 
@@ -152,8 +173,69 @@ function shouldServeRootLanding(hostname) {
   if (!host) return false;
   if (host === "127.0.0.1" || host === "localhost") return true;
   if (host.endsWith(".pages.dev")) return true;
-  if (host === "dliver.co.kr" || host === "staging.dliver.co.kr" || host === "dev.dliver.co.kr") return true;
+  if (host === PUBLIC_CANONICAL_HOST) return true;
   return false;
+}
+
+function isLegacyPublicHost(hostname) {
+  return LEGACY_PUBLIC_HOSTS.has(String(hostname || "").toLowerCase());
+}
+
+function isNewPublicHost(hostname) {
+  return NEW_PUBLIC_HOSTS.has(String(hostname || "").toLowerCase());
+}
+
+function isLegacySensitivePath(pathname) {
+  const value = String(pathname || "");
+  return (
+    value === "/index.html" ||
+    value === "/review" ||
+    value === "/review/" ||
+    value.startsWith("/member") ||
+    value.startsWith("/admin") ||
+    value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/") ||
+    value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/")
+  );
+}
+
+function getLegacyDestinationForPath(pathname) {
+  const value = String(pathname || "");
+  if (value === "/review" || value === "/review/" || value === "/index.html") {
+    return LEGACY_REVIEW_URL;
+  }
+  if (
+    value === "/member" ||
+    value === "/member/" ||
+    value.startsWith("/member/") ||
+    value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/")
+  ) {
+    return LEGACY_MEMBER_ENTRY_URL;
+  }
+  if (
+    value === "/admin" ||
+    value === "/admin/" ||
+    value.startsWith("/admin/") ||
+    value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/")
+  ) {
+    return LEGACY_ADMIN_ENTRY_URL;
+  }
+  return null;
+}
+
+function isPublicAuthEntryRequest(requestUrl) {
+  return (
+    String(requestUrl.searchParams.get("login") || "") === "1" ||
+    String(requestUrl.searchParams.get("signup") || "") === "1"
+  );
+}
+
+function redirectHost(requestUrl, hostname, status = 301) {
+  requestUrl.hostname = hostname;
+  return Response.redirect(requestUrl.toString(), status);
+}
+
+function redirectToUrl(targetUrl, status = 302) {
+  return Response.redirect(String(targetUrl || ""), status);
 }
 
 function jsonErrorResponse(status, message, requestId) {
@@ -193,14 +275,30 @@ export async function onRequest(context) {
     return new Response("Not Found", { status: 404, headers });
   }
 
-  if (hostname === "www.dliver.co.kr") {
-    requestUrl.hostname = "dliver.co.kr";
-    return Response.redirect(requestUrl.toString(), 301);
-  }
-
   let nextInput = undefined;
   if (!isApiRequest && SAFE_METHODS.has(method)) {
-    if (pathname === "/self-order" || pathname === "/self-order/" || pathname === "/landing" || pathname.startsWith("/landing/")) {
+    if ((isNewPublicHost(hostname) || isLegacyPublicHost(hostname)) && isPublicAuthEntryRequest(requestUrl)) {
+      return redirectToUrl(LEGACY_MEMBER_ENTRY_URL, 302);
+    }
+    if (
+      hostname === "www.everyonepr.com" ||
+      hostname === "www.모두의피알.com" ||
+      hostname === "www.xn--hu1b83js0j45b952a.com" ||
+      hostname === "www.dliver.co.kr"
+    ) {
+      const legacyDestination = getLegacyDestinationForPath(pathname);
+      if (legacyDestination) {
+        return redirectToUrl(legacyDestination, 302);
+      }
+      return redirectHost(requestUrl, PUBLIC_CANONICAL_HOST, 301);
+    } else if (isNewPublicHost(hostname) && isLegacySensitivePath(pathname)) {
+      const legacyDestination = getLegacyDestinationForPath(pathname);
+      if (legacyDestination) {
+        return redirectToUrl(legacyDestination, 302);
+      }
+    } else if (isLegacyPublicHost(hostname) && !isLegacySensitivePath(pathname)) {
+      return redirectHost(requestUrl, PUBLIC_CANONICAL_HOST, 301);
+    } else if (pathname === "/self-order" || pathname === "/self-order/" || pathname === "/landing" || pathname.startsWith("/landing/")) {
       requestUrl.pathname = "/";
       return Response.redirect(requestUrl.toString(), 301);
     }
@@ -212,10 +310,12 @@ export async function onRequest(context) {
       requestUrl.pathname = "/review";
       return Response.redirect(requestUrl.toString(), 301);
     }
-    if (pathname === "/review") {
+    if (pathname === "/review" && isLegacyPublicHost(hostname)) {
       nextInput = REVIEW_REWRITE_PATH;
     } else if (pathname === "/" && shouldServeRootLanding(hostname)) {
       nextInput = ROOT_LANDING_REWRITE_PATH;
+    } else if (pathname === "/" && isLegacyPublicHost(hostname)) {
+      return redirectHost(requestUrl, PUBLIC_CANONICAL_HOST, 301);
     }
   }
 

@@ -126,7 +126,6 @@ try {
     }
 
     $redirectsPath = Join-Path $projectRoot '_redirects'
-    $expectedFirst = 'https://www.dliver.co.kr/* https://dliver.co.kr/:splat 301!'
     if (-not (Test-Path -LiteralPath $redirectsPath)) {
         Write-Fail '_redirects not found'
     }
@@ -141,11 +140,19 @@ try {
             Write-Fail '_redirects has no active rules'
         }
         else {
-            if ($active[0] -eq $expectedFirst) {
-                Write-Pass '_redirects first rule check'
+            $requiredPatterns = @(
+                'https://www\.everyonepr\.com/\* https://everyonepr\.com/:splat 301!',
+                'https://everyonepr\.com/review https://dliver\.co\.kr/review 302!',
+                'https://www\.xn--hu1b83js0j45b952a\.com/\* https://everyonepr\.com/:splat 301!',
+                'https://xn--hu1b83js0j45b952a\.com/\* https://everyonepr\.com/:splat 301!',
+                'https://www\.dliver\.co\.kr/\* https://everyonepr\.com/:splat 301!'
+            )
+            $missingRules = @($requiredPatterns | Where-Object { ($lines -join "`n") -notmatch $_ })
+            if ($missingRules.Count -eq 0) {
+                Write-Pass '_redirects required rules check'
             }
             else {
-                Write-Fail '_redirects first rule mismatch'
+                Write-Fail ('_redirects required rule mismatch: ' + ($missingRules -join '; '))
             }
 
             if (($lines -join "`n") -match '<!doctype|<html') {

@@ -103,8 +103,17 @@ function Assert-RedirectsIntegrity {
     if ($first -match '<!doctype|<html') {
         throw '_redirects appears to contain html fallback content'
     }
-    if ($first -ne 'https://www.dliver.co.kr/* https://dliver.co.kr/:splat 301!') {
-        throw '_redirects first rule mismatch (www -> apex rule missing or altered)'
+    $requiredPatterns = @(
+        'https://www\.everyonepr\.com/\* https://everyonepr\.com/:splat 301!',
+        'https://everyonepr\.com/review https://dliver\.co\.kr/review 302!',
+        'https://www\.xn--hu1b83js0j45b952a\.com/\* https://everyonepr\.com/:splat 301!',
+        'https://xn--hu1b83js0j45b952a\.com/\* https://everyonepr\.com/:splat 301!',
+        'https://www\.dliver\.co\.kr/\* https://everyonepr\.com/:splat 301!'
+    )
+    foreach ($pattern in $requiredPatterns) {
+        if ($raw -notmatch $pattern) {
+            throw "_redirects required rule missing or altered: $pattern"
+        }
     }
 }
 
