@@ -14,9 +14,12 @@
 
 ## 3. Cloudflare 리소스(내부 식별자 기준)
 - Pages Project: `dliver`
-- D1 Binding: `DB` (`dliver-prod-db`)
-- KV Binding: `SESSION_KV` (`dliver-session-kv-prod`)
-- R2 Binding: `FILES_BUCKET` (`dliver-prod-files`, 선택)
+- Production D1 Binding: `DB` (`dliver-prod-db`)
+- Production KV Binding: `SESSION_KV` (`dliver-session-kv-prod`)
+- Production R2 Binding: `FILES_BUCKET` (`dliver-prod-files`, 선택)
+- Preview D1 Binding: `DB` (`dliver-preview-db`)
+- Preview KV Binding: `SESSION_KV` (`dliver-session-kv-preview`)
+- Preview R2 Binding: `FILES_BUCKET` (`dliver-preview-files`)
 - Public Host: `https://everyonepr.com`
 - Legacy Holdout: `https://admin.dliver.co.kr/`, `https://api.dliver.co.kr/`
 
@@ -59,6 +62,8 @@
    - `npx wrangler d1 execute dliver-prod-db --remote --file 08_데이터베이스-Database/01_마이그레이션-Migrations/007_media_channels_pricing_v2.sql`
 2. Pages 배포
    - `npx wrangler pages deploy . --project-name dliver`
+3. Preview smoke 배포
+   - `powershell -NoProfile -ExecutionPolicy Bypass -File .\07_자동화스크립트-AutomationScripts\deploy-pages-windows.ps1 -Branch preview-split-check`
 
 ## 9. D1 복구(백업 기준)
 1. 백업 zip 압축 해제

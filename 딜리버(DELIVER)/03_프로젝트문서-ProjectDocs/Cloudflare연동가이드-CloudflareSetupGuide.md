@@ -16,6 +16,9 @@
 - D1 DB: `dliver-prod-db` (`9b95eaf5-2246-43fe-b055-4417f2e07e8d`)
 - KV Namespace: `dliver-session-kv-prod` (`5c0c1bad266d43cda9e3820098de2d69`)
 - R2 Bucket: `dliver-prod-files` (2026-02-23 생성)
+- Preview D1 DB: `dliver-preview-db` (`94f3d6b2-7aa0-42a6-b485-1daa854df11f`)
+- Preview KV Namespace: `dliver-session-kv-preview` (`dcdf602c960d4798ba4bf8354c70db6a`)
+- Preview R2 Bucket: `dliver-preview-files` (2026-03-18 생성)
 
 ## 2-1) 권장 API 토큰 권한(자동화용)
 - Account - Cloudflare Pages: `Edit`
@@ -27,13 +30,19 @@
   - Pages API `Authentication error(10000)` -> Pages 권한 부족
   - R2 API `code 10042` -> 권한 문제가 아니라 R2 온보딩 미완료
 
-## 3) Pages 환경변수(Production/Preview 공통)
+## 3) Pages 환경변수와 바인딩(Production/Preview 분리)
 - Pages Functions 런타임은 API 토큰을 쓰지 않고 바인딩을 사용한다.
-- 필수 바인딩:
+- Production 바인딩:
   - `DB` -> D1 `dliver-prod-db`
   - `SESSION_KV` -> KV `dliver-session-kv-prod`
-- 선택 바인딩:
-  - `FILES_BUCKET` -> R2 bucket (첨부/파일 기능 사용 시)
+  - `FILES_BUCKET` -> R2 `dliver-prod-files` (선택)
+- Preview 바인딩:
+  - `DB` -> D1 `dliver-preview-db`
+  - `SESSION_KV` -> KV `dliver-session-kv-preview`
+  - `FILES_BUCKET` -> R2 `dliver-preview-files`
+- 주의:
+  - Preview는 production과 stateful binding을 공유하지 않는다.
+  - Preview smoke는 `preview-split-check.dliver.pages.dev` 같은 preview branch 배포로 검증한다.
 - (선택) `MEMBER_SESSION_TTL_SEC`, `ADMIN_SESSION_TTL_SEC`
 - 보안 권장 변수:
   - `CORS_ALLOW_ORIGINS`

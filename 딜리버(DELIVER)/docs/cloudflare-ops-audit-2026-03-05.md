@@ -31,6 +31,21 @@
   - `functions/api/payments/toss/*.js`
   - `functions/api/_lib/cloudflare_store.js`
 
+## Preview/Production 분리 상태
+
+- 2026-03-18 기준 Pages `preview` 바인딩은 production과 분리되었다.
+- Production:
+  - D1 `dliver-prod-db`
+  - KV `dliver-session-kv-prod`
+  - R2 `dliver-prod-files`
+- Preview:
+  - D1 `dliver-preview-db`
+  - KV `dliver-session-kv-preview`
+  - R2 `dliver-preview-files`
+- 검증 기준:
+  - Preview branch 배포에서 회원가입/세션 쓰기가 preview D1/KV에만 증가
+  - Production `members`/KV count는 동일 유지
+
 ## D1 점검
 
 - 기준 마이그레이션 파일

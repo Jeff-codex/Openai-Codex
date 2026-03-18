@@ -1,3 +1,7 @@
+param(
+    [string]$Branch = ''
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
@@ -320,7 +324,11 @@ try {
     Write-State -Key 'HTML_UTF8_GUARD' -Value 'SET'
     Write-State -Key 'DEPLOY_DIR_READY' -Value 'SET'
 
-    & $nodeExePath $wranglerJsPath pages deploy $deployDir --project-name dliver
+    $deployArgs = @('pages', 'deploy', $deployDir, '--project-name', 'dliver')
+    if (-not [string]::IsNullOrWhiteSpace($Branch)) {
+        $deployArgs += @('--branch', $Branch)
+    }
+    & $nodeExePath $wranglerJsPath @deployArgs
     if ($LASTEXITCODE -ne 0) {
         throw "wrangler deploy failed with code $LASTEXITCODE"
     }
