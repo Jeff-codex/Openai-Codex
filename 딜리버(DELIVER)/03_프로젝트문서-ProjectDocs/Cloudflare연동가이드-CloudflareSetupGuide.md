@@ -1,4 +1,6 @@
-# Cloudflare 연동 가이드 (딜리버)
+# Cloudflare 연동 가이드 (EveryonePR/모두의피알)
+
+> 외부 공개 브랜드/도메인은 `EveryonePR/모두의피알`, `https://everyonepr.com` 기준이다. 아래 `dliver` 표기는 현재 Cloudflare 내부 리소스 식별자와 legacy holdout 경로를 의미한다.
 
 ## 1) 고정 데이터 스택
 - 정적 배포: Cloudflare Pages
@@ -7,6 +9,8 @@
 - 파일 저장(선택): Cloudflare R2
 
 ## 2) 필수 식별자
+- Public Host: `https://everyonepr.com`
+- Legacy Holdout: `https://admin.dliver.co.kr/`, `https://api.dliver.co.kr/`
 - Account ID: `9970b838c7747b87db3fd2c268b533b6`
 - Pages Project: `dliver`
 - D1 DB: `dliver-prod-db` (`9b95eaf5-2246-43fe-b055-4417f2e07e8d`)

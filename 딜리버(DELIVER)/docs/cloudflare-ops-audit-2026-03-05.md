@@ -1,5 +1,7 @@
 # Cloudflare 운영 점검표 (2026-03-05)
 
+> 2026-03-18 기준 공개 대표 도메인은 `https://everyonepr.com`이다. 아래 `dliver` 표기는 Cloudflare 내부 리소스명 또는 legacy 운영 경로를 의미한다.
+
 ## 리소스 인벤토리
 
 | 리소스 유형 | 이름/바인딩 | 코드 참조 | 상태 |
@@ -10,7 +12,7 @@
 | KV | `dliver-session-kv-prod` / `SESSION_KV` | `functions/_middleware.js`, `cloudflare_store.js` | 사용 중 |
 | R2 | `dliver-prod-files` / `FILES_BUCKET` | `functions/api/review/analyze.js`, `cloudflare_store.js` | 선택 사용 |
 | Secrets/Vars | `.env.cloudflare.example` 키 목록 | `functions/api/**`, `07_자동화스크립트-AutomationScripts/**` | 사용 중 |
-| DNS/Routes | `dliver.co.kr`, `admin.dliver.co.kr`, `api.dliver.co.kr` 등 | `_redirects`, README, Cloudflare 가이드 | 사용 중 |
+| DNS/Routes | `everyonepr.com`, `admin.dliver.co.kr`, `api.dliver.co.kr` 등 | `_redirects`, README, Cloudflare 가이드 | 사용 중 |
 
 ## 코드-리소스 매핑
 

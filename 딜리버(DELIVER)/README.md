@@ -1,8 +1,10 @@
-# 딜리버(DELIVER) 운영/개발 가이드 (Windows Codex 앱 기준)
+# EveryonePR/모두의피알 운영/개발 가이드 (Windows Codex 앱 기준)
 
 ## 1. 프로젝트 위치
 - Windows 경로: `C:\Users\gusru\code\Openai-Codex\딜리버(DELIVER)`
 - 이 문서는 WSL 없이 Windows PowerShell 기준으로 작성되었다.
+- 외부 공개 브랜드와 대표 도메인은 `EveryonePR/모두의피알`, `https://everyonepr.com` 기준으로 설명한다.
+- Pages 프로젝트명 `dliver`, D1/KV/R2 이름 등은 현재 Cloudflare 내부 식별자이므로 문서에서 그대로 유지한다.
 
 ## 2. 핵심 디렉터리
 - `01_서비스코드-ServiceCode`: 서비스 코드/환경 파일
@@ -10,11 +12,13 @@
 - `08_데이터베이스-Database`: D1 마이그레이션/백업
 - `functions/api`: Cloudflare Pages Functions API
 
-## 3. Cloudflare 리소스(코드 기준)
+## 3. Cloudflare 리소스(내부 식별자 기준)
 - Pages Project: `dliver`
 - D1 Binding: `DB` (`dliver-prod-db`)
 - KV Binding: `SESSION_KV` (`dliver-session-kv-prod`)
 - R2 Binding: `FILES_BUCKET` (`dliver-prod-files`, 선택)
+- Public Host: `https://everyonepr.com`
+- Legacy Holdout: `https://admin.dliver.co.kr/`, `https://api.dliver.co.kr/`
 
 ## 4. 설치 (Windows)
 1. Node.js 20+

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${1:-https://dliver.co.kr}"
+BASE_URL="${1:-https://everyonepr.com}"
 RID="$(date +%Y%m%d%H%M%S)"
 TMP_ID="diag_${RID}"
 TMP_EMAIL="${TMP_ID}@example.com"
@@ -34,7 +34,7 @@ member_me_ok="$(json_get "$member_me" 'j.ok')"
 [[ "$member_me_ok" == "true" ]] || fail "member me failed: $member_me"
 pass "member me ok"
 
-signup_payload="$(printf '{"loginId":"%s","name":"자동진단","email":"%s","company":"DLIVER-DIAG","password":"%s"}' "$TMP_ID" "$TMP_EMAIL" "$TMP_PW")"
+signup_payload="$(printf '{"loginId":"%s","name":"자동진단","email":"%s","company":"EVERYONEPR-DIAG","password":"%s"}' "$TMP_ID" "$TMP_EMAIL" "$TMP_PW")"
 member_signup="$(curl -sS -X POST "$BASE_URL/api/auth/signup" -H 'content-type: application/json' --data "$signup_payload")"
 signup_token="$(json_get "$member_signup" 'j.token')"
 [[ -n "$signup_token" ]] || fail "signup failed: $member_signup"

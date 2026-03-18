@@ -28,8 +28,11 @@ function To-FileUrl {
 }
 
 Write-Host '[PREVIEW] verification paths'
-Write-Host '[PREVIEW] prod root (self-order): https://dliver.co.kr/'
+Write-Host '[PREVIEW] prod root (public): https://everyonepr.com/'
 Write-Host '[PREVIEW] prod review: https://everyonepr.com/review'
+Write-Host '[PREVIEW] prod login: https://everyonepr.com/login'
+Write-Host '[PREVIEW] prod signup: https://everyonepr.com/signup'
+Write-Host '[PREVIEW] prod member: https://everyonepr.com/member/'
 Write-Host '[PREVIEW] prod admin: https://admin.dliver.co.kr/'
 Write-Host '[PREVIEW] prod api: https://api.dliver.co.kr/'
 Write-Host '[PREVIEW] staging: https://staging.dliver.co.kr/'
@@ -43,5 +46,5 @@ Write-Host "[PREVIEW] admin file URL: $(To-FileUrl -Path $adminPath)"
 Write-Host "[PREVIEW] member path: $memberPath"
 Write-Host "[PREVIEW] member file URL: $(To-FileUrl -Path $memberPath)"
 Write-Host "[PREVIEW] local landing file URL example: http://localhost:4173/$($serviceRoot.Name)/$($landingDir.Name)/index.html"
-Write-Host '[PREVIEW] production rewrite check: / -> landing, /review -> root review page, /self-order -> /'
+Write-Host '[PREVIEW] production rewrite check: / -> public landing, /review -> review page, /login -> login modal entry, /signup -> signup modal entry'
 Write-Host '[PREVIEW] local server command: python -m http.server 4173'

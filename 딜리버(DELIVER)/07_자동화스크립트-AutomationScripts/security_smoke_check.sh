@@ -21,7 +21,7 @@ load_env_file() {
 load_env_file "$SERVICE_ENV_FILE"
 load_env_file "$SECRETS_FILE"
 
-BASE_URL="${BASE_URL:-https://dliver.co.kr}"
+BASE_URL="${BASE_URL:-https://everyonepr.com}"
 SMOKE_ADMIN_LOGIN_ID="${SECURITY_SMOKE_ADMIN_LOGIN_ID:-${ADMIN_LOGIN_ID:-admin}}"
 SMOKE_ADMIN_PASSWORD="${SECURITY_SMOKE_ADMIN_PASSWORD:-${ADMIN_PASSWORD:-admin1234}}"
 ORIGIN="${ORIGIN:-$BASE_URL}"
