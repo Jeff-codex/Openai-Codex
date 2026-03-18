@@ -198,7 +198,8 @@ function isAdminPagePath(pathname) {
     value === "/admin" ||
     value === "/admin/" ||
     value.startsWith("/admin/") ||
-    value.startsWith(ADMIN_PAGE_PREFIX)
+    value === ADMIN_PAGE_PREFIX ||
+    value === ADMIN_REWRITE_PATH
   );
 }
 
@@ -215,7 +216,8 @@ function isLegacySensitivePath(pathname) {
   return (
     value === "/index.html" ||
     value.startsWith("/admin") ||
-    value.startsWith(ADMIN_PAGE_PREFIX)
+    value === ADMIN_PAGE_PREFIX ||
+    value === ADMIN_REWRITE_PATH
   );
 }
 
@@ -237,7 +239,8 @@ function getLegacyDestinationForPath(pathname) {
     value === "/admin" ||
     value === "/admin/" ||
     value.startsWith("/admin/") ||
-    value.startsWith(ADMIN_PAGE_PREFIX)
+    value === ADMIN_PAGE_PREFIX ||
+    value === ADMIN_REWRITE_PATH
   ) {
     return LEGACY_ADMIN_ENTRY_URL;
   }
