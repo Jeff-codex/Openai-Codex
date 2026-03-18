@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
-    <title>딜리버</title>
+    <title>모두의피알</title>
     <link>https://everyonepr.com/</link>
-    <description>딜리버 공식 페이지 업데이트 피드</description>
+    <description>모두의피알 공식 페이지 업데이트 피드</description>
     <language>ko-kr</language>
     <lastBuildDate>Wed, 18 Mar 2026 12:00:00 +09:00</lastBuildDate>
 
     <item>
-      <title>딜리버 메인 랜딩 - 셀프 PR 홈</title>
+      <title>모두의피알 메인 랜딩 - 셀프 PR 홈</title>
       <link>https://everyonepr.com/</link>
       <guid isPermaLink="true">https://everyonepr.com/</guid>
       <pubDate>Wed, 18 Mar 2026 12:00:00 +09:00</pubDate>
@@ -16,15 +16,15 @@
     </item>
 
     <item>
-      <title>딜리버 서비스 소개 페이지</title>
+      <title>모두의피알 서비스 소개 페이지</title>
       <link>https://everyonepr.com/about/</link>
       <guid isPermaLink="true">https://everyonepr.com/about/</guid>
       <pubDate>Wed, 18 Mar 2026 12:00:00 +09:00</pubDate>
-      <description>딜리버가 어떤 서비스인지, 무엇을 제공하고 무엇을 보장하지 않는지 정리한 소개 페이지입니다.</description>
+      <description>모두의피알이 어떤 서비스인지, 무엇을 제공하고 무엇을 보장하지 않는지 정리한 소개 페이지입니다.</description>
     </item>
 
     <item>
-      <title>딜리버 배포 서비스 페이지</title>
+      <title>모두의피알 배포 서비스 페이지</title>
       <link>https://everyonepr.com/services/press-release-distribution/</link>
       <guid isPermaLink="true">https://everyonepr.com/services/press-release-distribution/</guid>
       <pubDate>Wed, 18 Mar 2026 12:00:00 +09:00</pubDate>
@@ -32,7 +32,7 @@
     </item>
 
     <item>
-      <title>딜리버 검수 서비스 페이지</title>
+      <title>모두의피알 검수 서비스 페이지</title>
       <link>https://everyonepr.com/services/press-release-review/</link>
       <guid isPermaLink="true">https://everyonepr.com/services/press-release-review/</guid>
       <pubDate>Wed, 18 Mar 2026 12:00:00 +09:00</pubDate>
@@ -40,7 +40,7 @@
     </item>
 
     <item>
-      <title>딜리버 원고 검수 도구</title>
+      <title>모두의피알 원고 검수 도구</title>
       <link>https://everyonepr.com/review</link>
       <guid isPermaLink="true">https://everyonepr.com/review</guid>
       <pubDate>Wed, 18 Mar 2026 12:00:00 +09:00</pubDate>
@@ -48,7 +48,7 @@
     </item>
 
     <item>
-      <title>딜리버 가격 구조 페이지</title>
+      <title>모두의피알 가격 구조 페이지</title>
       <link>https://everyonepr.com/pricing/</link>
       <guid isPermaLink="true">https://everyonepr.com/pricing/</guid>
       <pubDate>Wed, 18 Mar 2026 12:00:00 +09:00</pubDate>
@@ -56,7 +56,7 @@
     </item>
 
     <item>
-      <title>딜리버 PR 대행 비교 페이지</title>
+      <title>모두의피알 PR 대행 비교 페이지</title>
       <link>https://everyonepr.com/compare/pr-agency-vs-self-service/</link>
       <guid isPermaLink="true">https://everyonepr.com/compare/pr-agency-vs-self-service/</guid>
       <pubDate>Wed, 18 Mar 2026 12:00:00 +09:00</pubDate>
@@ -64,7 +64,7 @@
     </item>
 
     <item>
-      <title>딜리버 보도자료 배포 가이드 허브</title>
+      <title>모두의피알 보도자료 배포 가이드 허브</title>
       <link>https://everyonepr.com/guides/</link>
       <guid isPermaLink="true">https://everyonepr.com/guides/</guid>
       <pubDate>Wed, 18 Mar 2026 12:00:00 +09:00</pubDate>
@@ -112,7 +112,7 @@
     </item>
 
     <item>
-      <title>딜리버 인사이트 허브</title>
+      <title>모두의피알 인사이트 허브</title>
       <link>https://everyonepr.com/insights/</link>
       <guid isPermaLink="true">https://everyonepr.com/insights/</guid>
       <pubDate>Wed, 18 Mar 2026 12:00:00 +09:00</pubDate>

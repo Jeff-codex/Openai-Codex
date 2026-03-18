@@ -644,7 +644,13 @@ function computeBranding(text) {
     minus += hits.length * 8;
   }
 
-  if (!source.includes('hwik') && !source.includes('딜리버') && !source.includes('dliver')) {
+  if (
+    !source.includes('hwik') &&
+    !source.includes('딜리버') &&
+    !source.includes('dliver') &&
+    !source.includes('everyonepr') &&
+    !source.includes('모두의피알')
+  ) {
     minus += 12;
   }
 
