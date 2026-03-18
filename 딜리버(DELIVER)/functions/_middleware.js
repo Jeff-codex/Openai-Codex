@@ -50,6 +50,8 @@ const NEW_PUBLIC_HOSTS = new Set([PUBLIC_CANONICAL_HOST, PUBLIC_CANONICAL_WWW_HO
 const LEGACY_MEMBER_ENTRY_URL = "https://dliver.co.kr/member/";
 const LEGACY_REVIEW_URL = "https://dliver.co.kr/review";
 const LEGACY_ADMIN_ENTRY_URL = "https://dliver.co.kr/admin/";
+const LEGACY_LOGIN_ENTRY_URL = "https://dliver.co.kr/?login=1";
+const LEGACY_SIGNUP_ENTRY_URL = "https://dliver.co.kr/?signup=1";
 
 const BLOCKED_STATIC_PATH_PATTERN = /(^|\/)\.(env|git|npmrc)(?:$|[._-])/i;
 
@@ -222,11 +224,10 @@ function getLegacyDestinationForPath(pathname) {
   return null;
 }
 
-function isPublicAuthEntryRequest(requestUrl) {
-  return (
-    String(requestUrl.searchParams.get("login") || "") === "1" ||
-    String(requestUrl.searchParams.get("signup") || "") === "1"
-  );
+function getPublicAuthEntryMode(requestUrl) {
+  if (String(requestUrl.searchParams.get("login") || "") === "1") return "login";
+  if (String(requestUrl.searchParams.get("signup") || "") === "1") return "signup";
+  return "";
 }
 
 function redirectHost(requestUrl, hostname, status = 301) {
@@ -277,8 +278,9 @@ export async function onRequest(context) {
 
   let nextInput = undefined;
   if (!isApiRequest && SAFE_METHODS.has(method)) {
-    if ((isNewPublicHost(hostname) || isLegacyPublicHost(hostname)) && isPublicAuthEntryRequest(requestUrl)) {
-      return redirectToUrl(LEGACY_MEMBER_ENTRY_URL, 302);
+    const authEntryMode = getPublicAuthEntryMode(requestUrl);
+    if (isNewPublicHost(hostname) && authEntryMode) {
+      return redirectToUrl(authEntryMode === "signup" ? LEGACY_SIGNUP_ENTRY_URL : LEGACY_LOGIN_ENTRY_URL, 302);
     }
     if (
       hostname === "www.everyonepr.com" ||
