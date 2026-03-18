@@ -754,6 +754,10 @@
     <script>
       (function redirectSubdomains() {
         var host = location.hostname;
+        if (host === 'admin.everyonepr.com' && !location.pathname.startsWith('/01_서비스코드-ServiceCode/관리자페이지-AdminPage/')) {
+          location.replace('https://admin.everyonepr.com/');
+          return;
+        }
         if (host === 'admin.dliver.co.kr' && !location.pathname.startsWith('/01_서비스코드-ServiceCode/관리자페이지-AdminPage/')) {
           location.replace('/01_서비스코드-ServiceCode/관리자페이지-AdminPage/');
           return;

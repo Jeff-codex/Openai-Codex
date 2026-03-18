@@ -22,10 +22,14 @@ const RATE_LIMIT_RULES = [
 // to serve the original Korean asset path reliably.
 const ROOT_LANDING_REWRITE_PATH = "/landing-root.html";
 const REVIEW_REWRITE_PATH = "/index.html";
+const ADMIN_PAGE_PREFIX =
+  "/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/";
+const ADMIN_REWRITE_PATH = `${ADMIN_PAGE_PREFIX}index.html`;
 
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://everyonepr.com",
   "https://www.everyonepr.com",
+  "https://admin.everyonepr.com",
   "https://모두의피알.com",
   "https://www.모두의피알.com",
   "https://xn--hu1b83js0j45b952a.com",
@@ -38,6 +42,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
 
 const PUBLIC_CANONICAL_HOST = "everyonepr.com";
 const PUBLIC_CANONICAL_WWW_HOST = "www.everyonepr.com";
+const ADMIN_CANONICAL_HOST = "admin.everyonepr.com";
+const LEGACY_ADMIN_HOST = "admin.dliver.co.kr";
 const LEGACY_PUBLIC_HOSTS = new Set([
   "dliver.co.kr",
   "www.dliver.co.kr",
@@ -47,7 +53,7 @@ const LEGACY_PUBLIC_HOSTS = new Set([
   "www.xn--hu1b83js0j45b952a.com",
 ]);
 const NEW_PUBLIC_HOSTS = new Set([PUBLIC_CANONICAL_HOST, PUBLIC_CANONICAL_WWW_HOST]);
-const LEGACY_ADMIN_ENTRY_URL = "https://dliver.co.kr/admin/";
+const LEGACY_ADMIN_ENTRY_URL = "https://admin.dliver.co.kr/";
 
 const BLOCKED_STATIC_PATH_PATTERN = /(^|\/)\.(env|git|npmrc)(?:$|[._-])/i;
 
@@ -175,6 +181,27 @@ function shouldServeRootLanding(hostname) {
   return false;
 }
 
+function isAdminCanonicalHost(hostname) {
+  return String(hostname || "").toLowerCase() === ADMIN_CANONICAL_HOST;
+}
+
+function isLegacyAdminHost(hostname) {
+  return String(hostname || "").toLowerCase() === LEGACY_ADMIN_HOST;
+}
+
+function isAdminPagePath(pathname) {
+  const value = String(pathname || "");
+  return (
+    value === "/" ||
+    value === "/login" ||
+    value === "/login/" ||
+    value === "/admin" ||
+    value === "/admin/" ||
+    value.startsWith("/admin/") ||
+    value.startsWith(ADMIN_PAGE_PREFIX)
+  );
+}
+
 function isLegacyPublicHost(hostname) {
   return LEGACY_PUBLIC_HOSTS.has(String(hostname || "").toLowerCase());
 }
@@ -188,7 +215,7 @@ function isLegacySensitivePath(pathname) {
   return (
     value === "/index.html" ||
     value.startsWith("/admin") ||
-    value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/")
+    value.startsWith(ADMIN_PAGE_PREFIX)
   );
 }
 
@@ -210,7 +237,7 @@ function getLegacyDestinationForPath(pathname) {
     value === "/admin" ||
     value === "/admin/" ||
     value.startsWith("/admin/") ||
-    value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/")
+    value.startsWith(ADMIN_PAGE_PREFIX)
   ) {
     return LEGACY_ADMIN_ENTRY_URL;
   }
@@ -334,6 +361,8 @@ export async function onRequest(context) {
       nextInput = REVIEW_REWRITE_PATH;
     } else if (pathname === "/" && shouldServeRootLanding(hostname)) {
       nextInput = ROOT_LANDING_REWRITE_PATH;
+    } else if ((isAdminCanonicalHost(hostname) || isLegacyAdminHost(hostname)) && isAdminPagePath(pathname)) {
+      nextInput = ADMIN_REWRITE_PATH;
     } else if (pathname === "/" && isLegacyPublicHost(hostname) && !isLegacyRootAuthEntry) {
       return redirectHost(requestUrl, PUBLIC_CANONICAL_HOST, 301);
     }
