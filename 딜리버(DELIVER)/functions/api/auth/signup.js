@@ -81,7 +81,6 @@ export async function onRequestPost(context) {
     });
 
     return jsonOk({
-      token,
       member: {
         id,
         loginId,

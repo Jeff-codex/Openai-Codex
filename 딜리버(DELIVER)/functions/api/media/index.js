@@ -1,8 +1,16 @@
-import { d1Query, jsonError, jsonOk } from "../_lib/cloudflare_store.js";
+import { d1Query, getSessionToken, jsonError, jsonOk, readSession } from "../_lib/cloudflare_store.js";
 import { ensureMediaPricingSchema, mediaCategorySortRank } from "../_lib/media_pricing.js";
 
 export async function onRequestGet(context) {
   try {
+    const memberToken = getSessionToken(context.request, "member");
+    const memberSession = await readSession(context.env, memberToken, "member", context.request);
+    const adminToken = memberSession ? "" : getSessionToken(context.request, "admin");
+    const adminSession = memberSession ? null : await readSession(context.env, adminToken, "admin", context.request);
+    if (!memberSession && !adminSession) {
+      return jsonError("로그인이 필요합니다.", 401);
+    }
+
     await ensureMediaPricingSchema(context.env);
     const rows = await d1Query(
       context.env,

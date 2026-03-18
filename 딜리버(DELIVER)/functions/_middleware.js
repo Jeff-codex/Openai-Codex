@@ -22,23 +22,12 @@ const RATE_LIMIT_RULES = [
 // to serve the original Korean asset path reliably.
 const ROOT_LANDING_REWRITE_PATH = "/landing-root.html";
 const REVIEW_REWRITE_PATH = "/index.html";
+const MEMBER_PAGE_PREFIX =
+  "/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/";
+const MEMBER_PAGE_ALIAS_PREFIX = "/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/";
 const ADMIN_PAGE_PREFIX =
   "/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/";
 const ADMIN_REWRITE_PATH = `${ADMIN_PAGE_PREFIX}index.html`;
-
-const DEFAULT_ALLOWED_ORIGINS = [
-  "https://everyonepr.com",
-  "https://www.everyonepr.com",
-  "https://admin.everyonepr.com",
-  "https://모두의피알.com",
-  "https://www.모두의피알.com",
-  "https://xn--hu1b83js0j45b952a.com",
-  "https://www.xn--hu1b83js0j45b952a.com",
-  "https://dliver.co.kr",
-  "https://admin.dliver.co.kr",
-  "https://staging.dliver.co.kr",
-  "https://dev.dliver.co.kr",
-];
 
 const PUBLIC_CANONICAL_HOST = "everyonepr.com";
 const PUBLIC_CANONICAL_WWW_HOST = "www.everyonepr.com";
@@ -105,23 +94,15 @@ function isBlockedStaticPath(pathname) {
   return BLOCKED_STATIC_PATH_PATTERN.test(value);
 }
 
-function parseAllowedOrigins(env, request) {
-  const set = new Set(DEFAULT_ALLOWED_ORIGINS);
-  const fromEnv = String(env.CORS_ALLOW_ORIGINS || "")
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-  fromEnv.forEach((origin) => set.add(origin));
-
-  // Allow current preview origin for *.pages.dev deployments.
+function parseAllowedOrigins(request) {
+  const set = new Set();
   try {
     const current = new URL(request.url);
-    if (current.hostname.endsWith(".pages.dev")) {
+    if (current.origin) {
       set.add(current.origin);
     }
   } catch (error) {
   }
-
   return set;
 }
 
@@ -225,10 +206,6 @@ function isLegacyHoldoutPath(pathname) {
   const value = String(pathname || "");
   return (
     value === "/index.html" ||
-    value === "/member" ||
-    value === "/member/" ||
-    value.startsWith("/member/") ||
-    value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/") ||
     isLegacySensitivePath(value)
   );
 }
@@ -245,6 +222,28 @@ function getLegacyDestinationForPath(pathname) {
     return LEGACY_ADMIN_ENTRY_URL;
   }
   return null;
+}
+
+function getMemberCanonicalPath(pathname) {
+  const value = String(pathname || "");
+  if (value === "/member" || value === "/member/") return "/member/";
+  if (value.startsWith("/member/")) return value;
+
+  if (value === MEMBER_PAGE_PREFIX || value === `${MEMBER_PAGE_PREFIX}index.html`) return "/member/";
+  if (value.startsWith(MEMBER_PAGE_PREFIX)) {
+    const suffix = value.slice(MEMBER_PAGE_PREFIX.length);
+    if (!suffix || suffix === "index.html") return "/member/";
+    return `/member/${suffix}`;
+  }
+
+  if (value === MEMBER_PAGE_ALIAS_PREFIX || value === `${MEMBER_PAGE_ALIAS_PREFIX}index.html`) return "/member/";
+  if (value.startsWith(MEMBER_PAGE_ALIAS_PREFIX)) {
+    const suffix = value.slice(MEMBER_PAGE_ALIAS_PREFIX.length);
+    if (!suffix || suffix === "index.html") return "/member/";
+    return `/member/${suffix}`;
+  }
+
+  return "";
 }
 
 function getPublicAuthEntryMode(requestUrl) {
@@ -287,7 +286,7 @@ export async function onRequest(context) {
   const isApiRequest = pathname.startsWith(API_PREFIX);
   const requestId = crypto.randomUUID();
   const origin = String(request.headers.get("origin") || "").trim();
-  const allowedOrigins = parseAllowedOrigins(context.env, request);
+  const allowedOrigins = parseAllowedOrigins(request);
   const cookies = parseCookies(request);
 
   if (isBlockedStaticPath(pathname)) {
@@ -303,6 +302,18 @@ export async function onRequest(context) {
   if (!isApiRequest && SAFE_METHODS.has(method)) {
     const authEntryMode = getPublicAuthEntryMode(requestUrl);
     const isLegacyRootAuthEntry = isLegacyPublicHost(hostname) && authEntryMode && pathname === "/";
+    const memberCanonicalPath = getMemberCanonicalPath(pathname);
+    if (memberCanonicalPath) {
+      if (isLegacyPublicHost(hostname)) {
+        requestUrl.hostname = PUBLIC_CANONICAL_HOST;
+        requestUrl.pathname = memberCanonicalPath;
+        return Response.redirect(requestUrl.toString(), 301);
+      }
+      if (isNewPublicHost(hostname) && pathname !== memberCanonicalPath) {
+        requestUrl.pathname = memberCanonicalPath;
+        return Response.redirect(requestUrl.toString(), 301);
+      }
+    }
     if (isLegacyAdminHost(hostname) && isAdminPagePath(pathname)) {
       requestUrl.hostname = ADMIN_CANONICAL_HOST;
       if (pathname.startsWith(ADMIN_PAGE_PREFIX)) {
@@ -387,7 +398,7 @@ export async function onRequest(context) {
     headers.set("access-control-allow-methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
     headers.set(
       "access-control-allow-headers",
-      "content-type, authorization, x-session-token, x-csrf-token, x-request-id"
+      "content-type, x-csrf-token, x-request-id"
     );
     headers.set("access-control-max-age", "600");
     applySecurityHeaders(headers, requestId);

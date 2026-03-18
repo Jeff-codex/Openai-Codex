@@ -2665,11 +2665,16 @@ body.modal-open {
         const loginRequestedFromEntry = shouldOpenLoginFromEntry();
         const signupRequestedFromEntry = shouldOpenSignupFromEntry();
         let member = null;
-        try {
-          const response = await apiFetch("/api/auth/me");
-          member = response.member;
-          updateAuthUI(member);
-        } catch (error) {
+        const hasMemberSession = Boolean(getCookieValue("deliver_member_session"));
+        if (hasMemberSession) {
+          try {
+            const response = await apiFetch("/api/auth/me");
+            member = response.member;
+            updateAuthUI(member);
+          } catch (error) {
+            updateAuthUI(null);
+          }
+        } else {
           updateAuthUI(null);
         }
         if (shouldOpenSelfOrderNotice()) {

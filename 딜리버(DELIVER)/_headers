@@ -19,13 +19,20 @@
 /api/*
   Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none';
 
-/01_?쒕퉬?ㅼ퐫??ServiceCode/?뚯썝?꾩슜?섏씠吏-MemberPortal/*
+/member*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
   Cross-Origin-Opener-Policy: same-origin-allow-popups
 
-/01_?쒕퉬?ㅼ퐫??ServiceCode/?뚯썝?꾩슜?섏씠吏-MemberPortal/
+/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
   Cross-Origin-Opener-Policy: same-origin-allow-popups
 
-/01_?쒕퉬?ㅼ퐫??ServiceCode/愿由ъ옄?섏씠吏-AdminPage/*
+/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+
+/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex

@@ -115,7 +115,6 @@ export async function onRequestPost(context) {
     });
 
     return jsonOk({
-      token,
       admin: {
         id: admin.id,
         loginId: admin.login_id,

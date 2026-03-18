@@ -1753,6 +1753,10 @@
       initChannelTalk();
 
       (async function syncTopNavBySession() {
+        if (!getCookieValue('deliver_member_session')) {
+          setTopNavSignedInState(false);
+          return;
+        }
         try {
           var me = await apiFetch('/api/auth/me');
           var signedIn = Boolean(me && me.ok && me.member && me.member.id);
