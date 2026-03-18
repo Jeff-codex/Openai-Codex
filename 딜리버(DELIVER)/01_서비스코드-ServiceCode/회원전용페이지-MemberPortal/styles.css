@@ -99,7 +99,7 @@ body.auth-loading .site-footer {
   display: inline-flex;
   align-items: center;
   line-height: 0;
-  width: clamp(96px, 8.2vw, 122px);
+  width: clamp(132px, 11vw, 176px);
   flex-shrink: 0;
 }
 
@@ -1348,7 +1348,7 @@ tbody tr.selected {
 
 @media (max-width: 520px) {
   .brand {
-    width: 96px;
+    width: 128px;
   }
 
   .brand-logo {

@@ -81,7 +81,7 @@ a {
 }
 
 .brand-mark img {
-    width: clamp(102px, 8.7vw, 128px);
+    width: clamp(136px, 11vw, 176px);
     height: auto;
 }
 
@@ -1134,6 +1134,10 @@ body.has-channel-talk .footer-line {
 @media (max-width: 640px) {
     .container {
         width: min(100% - 1.4rem, 1120px);
+    }
+
+    .brand-mark img {
+        width: clamp(132px, 42vw, 170px);
     }
 
     .hero {

@@ -80,7 +80,7 @@ body {
   display: inline-flex;
   align-items: center;
   line-height: 0;
-  width: clamp(122px, 11vw, 156px);
+  width: clamp(150px, 13vw, 196px);
   flex-shrink: 0;
 }
 
@@ -1203,7 +1203,7 @@ textarea {
   }
 
   .brand {
-    width: 136px;
+    width: 156px;
   }
 
   .brand-logo {
