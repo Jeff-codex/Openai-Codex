@@ -282,6 +282,13 @@ export async function onRequest(context) {
     if (isNewPublicHost(hostname) && authEntryMode) {
       return redirectToUrl(authEntryMode === "signup" ? LEGACY_SIGNUP_ENTRY_URL : LEGACY_LOGIN_ENTRY_URL, 302);
     }
+    if (isLegacyPublicHost(hostname) && authEntryMode) {
+      if (pathname === "/") {
+        nextInput = ROOT_LANDING_REWRITE_PATH;
+      } else {
+        return redirectToUrl(authEntryMode === "signup" ? LEGACY_SIGNUP_ENTRY_URL : LEGACY_LOGIN_ENTRY_URL, 302);
+      }
+    }
     if (
       hostname === "www.everyonepr.com" ||
       hostname === "www.모두의피알.com" ||
