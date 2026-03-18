@@ -210,17 +210,7 @@ export function getCsrfTokenFromCookie(request) {
   return getCookieValue(request, CSRF_COOKIE_NAME);
 }
 
-export function getBearerToken(request) {
-  const auth = String(request.headers.get("authorization") || "");
-  if (auth.toLowerCase().startsWith("bearer ")) {
-    return auth.slice(7).trim();
-  }
-  return String(request.headers.get("x-session-token") || "").trim();
-}
-
 export function getSessionToken(request, expectedType = "") {
-  const direct = getBearerToken(request);
-  if (direct) return direct;
   const cookieName =
     expectedType === "admin"
       ? ADMIN_SESSION_COOKIE
@@ -280,8 +270,7 @@ export async function verifyPassword(password, storedHash, env) {
   const stored = String(storedHash || "");
   if (!stored) return { ok: false, needsRehash: false };
   if (!stored.startsWith(`${PASSWORD_HASH_PREFIX}$`)) {
-    const ok = timingSafeEqual(encoder.encode(input), encoder.encode(stored));
-    return { ok, needsRehash: ok };
+    return { ok: false, needsRehash: false };
   }
 
   const [, iterationText, saltB64, hashB64] = stored.split("$");

@@ -148,12 +148,6 @@ function getRateRule(pathname) {
   return null;
 }
 
-function hasExplicitAuthHeader(request) {
-  const auth = String(request.headers.get("authorization") || "").trim().toLowerCase();
-  if (auth.startsWith("bearer ")) return true;
-  return Boolean(String(request.headers.get("x-session-token") || "").trim());
-}
-
 function shouldServeRootLanding(hostname) {
   const host = String(hostname || "").toLowerCase();
   if (!host) return false;
@@ -438,7 +432,7 @@ export async function onRequest(context) {
     }
 
     const isStateChanging = !SAFE_METHODS.has(method);
-    if (isStateChanging && !CSRF_EXEMPT_PATHS.has(pathname) && !hasExplicitAuthHeader(request)) {
+    if (isStateChanging && !CSRF_EXEMPT_PATHS.has(pathname)) {
       const csrfCookie = String(cookies[CSRF_COOKIE_NAME] || "").trim();
       const csrfHeader = String(request.headers.get("x-csrf-token") || "").trim();
       if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
