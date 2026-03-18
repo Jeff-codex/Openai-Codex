@@ -417,6 +417,14 @@
         color: #5f6368;
       }
 
+      .hero-note {
+        margin: 2px 0 12px;
+        text-align: center;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #4b6286;
+      }
+
       .signup-cta-wrap {
         margin-top: 10px;
         display: flex;
@@ -470,6 +478,47 @@
         padding: 0;
         list-style: none;
         display: block;
+      }
+
+      .doc-rail {
+        width: min(860px, 100%);
+        margin: 14px 0 0;
+        padding: 14px 16px;
+        border: 1px solid #d9e5fb;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 10px 24px rgba(20, 57, 120, 0.08);
+      }
+
+      .doc-rail-label {
+        margin: 0 0 10px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: #496180;
+      }
+
+      .doc-rail-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .doc-rail-links a {
+        color: #1b4fa7;
+        text-decoration: none;
+        background: #f4f8ff;
+        border: 1px solid #d7e2f4;
+        border-radius: 999px;
+        padding: 9px 12px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .doc-rail-links a:hover {
+        border-color: #bfd0ea;
+        background: #edf4ff;
       }
 
       .feedback li {
@@ -835,11 +884,11 @@
   <body>
     <div class="page">
       <nav class="top-nav" aria-label="빠른 이동">
-        <a class="top-brand" href="/" aria-label="dliver 홈으로 이동">
-          <img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" alt="dliver 로고" />
+        <a class="top-brand" href="/" aria-label="딜리버 홈으로 이동">
+          <img src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" alt="딜리버 로고" />
         </a>
         <div class="top-nav-links">
-          <a id="topPromoLink" href="/">언론홍보</a>
+          <a id="topPromoLink" href="/about/">서비스 소개</a>
           <button id="openLoginBtn" class="top-link-btn" type="button" data-open-login>로그인</button>
           <button id="topLogoutButton" class="top-link-btn is-hidden" type="button">로그아웃</button>
         </div>
@@ -853,7 +902,7 @@
               <img
                 class="logo-image"
                 src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-character-logo-transparent.png"
-                alt="DLIVER 캐릭터 로고"
+                alt="딜리버 캐릭터 로고"
                 decoding="async"
               />
             </div>
@@ -869,6 +918,7 @@
           </div>
 
           <form id="reviewForm" class="upload-form">
+            <p class="hero-note">이 페이지는 실제 원고 검수 실행 도구입니다. 기준 설명은 검수 안내, 작성법, 체크리스트에서 먼저 확인할 수 있습니다.</p>
             <div class="upload-bar">
               <label class="file-pick">
                 파일 첨부
@@ -888,6 +938,15 @@
           </form>
 
           <ul id="feedbackList" class="feedback" aria-live="polite"></ul>
+          <section class="doc-rail" aria-label="관련 문서 바로가기">
+            <p class="doc-rail-label">검수 기준을 더 보고 싶다면 아래 문서로 바로 이동하세요.</p>
+            <div class="doc-rail-links">
+              <a href="/services/press-release-review/">원고 검수 안내</a>
+              <a href="/guides/how-to-write-a-press-release/">보도자료 작성법</a>
+              <a href="/guides/press-release-review-checklist/">검수 체크리스트</a>
+              <a href="/services/press-release-distribution/">배포 안내</a>
+            </div>
+          </section>
         </section>
       </main>
 
@@ -1354,8 +1413,8 @@
             els.topPromoLink.textContent = '회원전용페이지';
             els.topPromoLink.setAttribute('href', '/01_서비스코드-ServiceCode/회원전용페이지-MemberPortal/');
           } else {
-            els.topPromoLink.textContent = '언론홍보';
-            els.topPromoLink.setAttribute('href', '/');
+            els.topPromoLink.textContent = '서비스 소개';
+            els.topPromoLink.setAttribute('href', '/about/');
           }
         }
         if (els.openLoginBtn) {

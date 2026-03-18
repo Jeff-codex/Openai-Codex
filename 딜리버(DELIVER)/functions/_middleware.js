@@ -18,7 +18,9 @@ const RATE_LIMIT_RULES = [
   { prefix: "/api/", key: "api-general", limit: 240, windowSec: 60 },
 ];
 
-const ROOT_LANDING_REWRITE_PATH = "/01_서비스코드-ServiceCode/랜딩페이지-LandingPage/index.html";
+// Keep an ASCII alias for the root landing because local Pages preview fails
+// to serve the original Korean asset path reliably.
+const ROOT_LANDING_REWRITE_PATH = "/landing-root.html";
 const REVIEW_REWRITE_PATH = "/index.html";
 
 const DEFAULT_ALLOWED_ORIGINS = [
@@ -148,6 +150,7 @@ function hasExplicitAuthHeader(request) {
 function shouldServeRootLanding(hostname) {
   const host = String(hostname || "").toLowerCase();
   if (!host) return false;
+  if (host === "127.0.0.1" || host === "localhost") return true;
   if (host.endsWith(".pages.dev")) return true;
   if (host === "dliver.co.kr" || host === "staging.dliver.co.kr" || host === "dev.dliver.co.kr") return true;
   return false;

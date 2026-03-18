@@ -150,7 +150,7 @@
             "name": "처음 방문했는데 어떤 페이지부터 보면 좋나요?",
             "acceptedAnswer": {
               "@type": "Answer",
-            "text": "서비스 구조를 먼저 알고 싶다면 소개와 배포 서비스 안내를, 비용 판단이 먼저라면 가격과 비교 페이지를, 송출 전 점검이 필요하다면 가이드 모음과 원고 점검 도구를 먼저 보는 흐름을 권장합니다."
+                "text": "서비스 구조를 먼저 알고 싶다면 소개와 배포 서비스를, 비용 판단이 먼저라면 가격과 비교 페이지를, 송출 전 점검이 필요하다면 가이드 모음과 원고 점검 도구를 먼저 보는 흐름을 권장합니다."
             }
           }
         ]
@@ -308,6 +308,9 @@ a {
   appearance: none;
   border: 1px solid transparent;
   border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   padding: 0.64rem 1rem;
   font-size: 0.86rem;
   font-weight: 700;
@@ -324,27 +327,40 @@ a {
   transform: translateY(-1px);
 }
 
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 48%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
 .btn-primary {
   color: #fff;
   border-color: #00349f;
   background: linear-gradient(145deg, #2386ea 0%, var(--primary) 56%, var(--primary-deep) 100%);
-  box-shadow: 0 10px 24px rgba(0, 56, 184, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 10px 24px rgba(0, 56, 184, 0.24);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 14px 30px rgba(0, 56, 184, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 14px 30px rgba(0, 56, 184, 0.3);
 }
 
 .btn-outline {
   color: var(--primary-deep);
-  background: #fff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(244, 248, 255, 0.98) 100%);
   border-color: #b8c9eb;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 8px 18px rgba(17, 34, 68, 0.05);
 }
 
 .btn-ghost {
   color: #244377;
-  background: #fff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 250, 255, 0.96) 100%);
   border-color: #d3def2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 7px 16px rgba(17, 34, 68, 0.04);
 }
 
 .btn-ghost:hover,
@@ -360,6 +376,15 @@ section {
 .section-head {
   max-width: 760px;
   margin-bottom: 1.6rem;
+}
+
+.section-head h2 {
+  max-width: 18ch;
+  text-wrap: pretty;
+}
+
+.section-head h2.section-title--wide {
+  max-width: none;
 }
 
 .eyebrow {
@@ -391,6 +416,8 @@ h2 {
 
 h1 {
   font-size: clamp(2rem, 3.2vw, 3.05rem);
+  max-width: 10.5ch;
+  text-wrap: pretty;
 }
 
 h2 {
@@ -402,6 +429,7 @@ h2 {
   color: var(--text-sub);
   line-height: 1.72;
   font-size: clamp(0.93rem, 1.4vw, 1.01rem);
+  text-wrap: pretty;
 }
 
 #hero {
@@ -425,7 +453,7 @@ h2 {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94), var(--shadow-sm);
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
 }
 
@@ -470,7 +498,7 @@ h2 {
     linear-gradient(155deg, #f4f8ff 0%, #e9f1ff 48%, #dde9ff 100%);
   border-color: #bcd0f2;
   color: #1a2f57;
-  box-shadow: 0 14px 34px rgba(26, 74, 150, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62), 0 16px 38px rgba(26, 74, 150, 0.16);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -496,7 +524,8 @@ h2 {
 .hero-panel {
   border-radius: var(--radius-md);
   border: 1px solid #c9daf8;
-  background: rgba(255, 255, 255, 0.68);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(247, 250, 255, 0.72) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
   padding: 0.74rem 0.84rem;
 }
 
@@ -528,7 +557,7 @@ h2 {
 .metric {
   padding: 1rem 0.9rem;
   text-align: center;
-  box-shadow: 0 8px 18px rgba(8, 117, 223, 0.08), var(--shadow-sm);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 10px 22px rgba(8, 117, 223, 0.1), var(--shadow-sm);
 }
 
 .metric-value {
@@ -542,6 +571,10 @@ h2 {
   margin-top: 0.28rem;
   color: var(--text-sub);
   font-size: 0.82rem;
+  max-width: 12ch;
+  margin-left: auto;
+  margin-right: auto;
+  text-wrap: pretty;
 }
 
 .process-grid {
@@ -854,7 +887,7 @@ h2 {
 
 .faq-item {
   overflow: hidden;
-  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
 }
 
 .faq-question {
@@ -906,7 +939,10 @@ h2 {
 
 .cta-wrap {
   padding: clamp(1.1rem, 2.2vw, 1.7rem);
-  background: linear-gradient(140deg, #eef4ff 0%, #ffffff 65%);
+  background:
+    radial-gradient(240px 140px at 100% 0%, rgba(36, 135, 236, 0.14), transparent 72%),
+    linear-gradient(140deg, #eef4ff 0%, #ffffff 65%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94), 0 14px 30px rgba(17, 40, 86, 0.08);
 }
 
 footer {
@@ -921,6 +957,10 @@ footer {
   padding: 1.1rem 0 1.3rem;
   color: #60708b;
   font-size: 0.78rem;
+}
+
+body.has-channel-talk .footer-line {
+  padding-bottom: 2rem;
 }
 
 .modal {
@@ -1413,7 +1453,7 @@ body.modal-open {
 
   .footer-line {
     font-size: 0.74rem;
-    padding: 1rem 0 1.2rem;
+    padding: 1rem 0 6.9rem;
   }
 
   .modal {
@@ -1479,16 +1519,14 @@ body.modal-open {
           <img class="brand-logo" src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" alt="딜리버" />
         </a>
         <nav class="nav-links" aria-label="공개 페이지 및 핵심 섹션">
-          <a href="/about/">소개</a>
+          <a href="/about/">서비스 소개</a>
           <a href="/services/press-release-distribution/">배포 서비스</a>
           <a href="/services/press-release-review/">검수 안내</a>
           <a href="/pricing/">가격 안내</a>
-          <a href="/compare/pr-agency-vs-self-service/">대행 비교</a>
-          <a href="#faq">자주 묻는 질문</a>
           <a href="#contact">문의</a>
         </nav>
         <div class="nav-actions">
-          <a class="btn btn-outline" href="/review">원고검수</a>
+          <a class="btn btn-outline" href="/review">원고 검수</a>
           <button class="btn btn-ghost" type="button" data-open-login id="top-login-button">로그인</button>
           <button class="btn btn-ghost" type="button" data-open-signup id="top-signup-button">회원가입</button>
           <span class="chip login-chip is-hidden" id="nav-login-state" aria-live="polite"></span>
@@ -1501,23 +1539,23 @@ body.modal-open {
       <section id="hero" aria-labelledby="hero-title">
         <div class="container hero-grid">
           <div class="hero-copy reveal">
-            <span class="eyebrow">회원 전용 직접 주문</span>
+            <span class="eyebrow">보도자료 배포를 직접 진행하는 서비스</span>
             <h1 id="hero-title">
-              복잡한 언론홍보<br />
-              딜리버로 빠르고 간편하게
+              보도자료 배포를<br />
+              더 쉽고 빠르게
             </h1>
             <p class="hero-sub">
-              회원가입 후 매체별 단가를 확인하고 원하는 매체를 직접 선택해 바로 주문하세요.<br />
-              주문 접수부터 결제 상태와 진행 상태까지 대시보드에서 실시간으로 확인할 수 있습니다.
+              딜리버는 보도자료 검수, 매체 선택, 주문 접수, 결제와 진행 상태 확인까지 한 곳에서 이어서 진행할 수 있는 서비스입니다.<br />
+              회원가입 후 매체별 단가를 확인하고 필요한 순간 바로 접수할 수 있습니다.
             </p>
             <div class="hero-actions">
-              <a class="btn btn-primary" href="/services/press-release-distribution/" data-cta="service-overview">배포 서비스 안내</a>
-              <button class="btn btn-outline" type="button" data-open-signup>회원가입 후 직접 주문</button>
+          <a class="btn btn-primary" href="/services/press-release-distribution/" data-cta="service-overview">배포 서비스</a>
+              <button class="btn btn-outline" type="button" data-open-signup>회원가입 후 바로 시작</button>
             </div>
           </div>
 
           <article class="hero-card reveal" aria-label="서비스 핵심 포인트">
-            <h3>가입 후 바로 주문 등록</h3>
+            <h3>회원가입 후 바로 시작</h3>
             <div class="hero-panel">
               <strong>01. 매체 직접 선택</strong>
               <p>회원 전용 매체 목록에서 단가와 특성을 비교한 뒤 원하는 매체를 직접 고를 수 있습니다.</p>
@@ -1538,7 +1576,7 @@ body.modal-open {
         <div class="container">
           <div class="section-head reveal">
             <span class="eyebrow">서비스 안내</span>
-            <h2 id="services-title">필요한 정보부터 바로 확인할 수 있게 공개 페이지를 나눴습니다</h2>
+              <h2 id="services-title">필요한 정보를 확인해보세요</h2>
             <p class="copy">소개, 배포 서비스, 원고 점검, 가격, 비교 페이지를 먼저 보고, 질문형 가이드 모음과 해설 모음으로 이해를 넓힌 뒤 회원가입 또는 원고 점검으로 이어지면 됩니다.</p>
           </div>
           <div class="proof-grid">
@@ -1582,7 +1620,7 @@ body.modal-open {
         <div class="container">
           <div class="section-head reveal">
             <span class="eyebrow">노출 네트워크</span>
-            <h2 id="reviews-title">주요 포털·메이저 언론사 노출 네트워크</h2>
+              <h2 id="reviews-title" class="section-title--wide">주요 포털·메이저 언론사 노출 네트워크</h2>
             <p class="copy">딜리버 주문은 주요 포털과 메이저 언론사 노출 전략을 기준으로 운영됩니다.</p>
           </div>
 
@@ -1682,7 +1720,7 @@ body.modal-open {
                 <li><span class="check">✓</span> 주문 완료 후 원고 검열 및 송출</li>
               </ul>
               <div class="hero-actions">
-              <button class="btn btn-primary" type="button" data-open-signup>회원가입 후 직접 주문 시작</button>
+            <button class="btn btn-primary" type="button" data-open-signup>회원가입 후 바로 시작</button>
               </div>
             </aside>
           </div>
@@ -1726,7 +1764,7 @@ body.modal-open {
         <div class="container">
           <div class="section-head reveal">
             <span class="eyebrow">직접 주문 장점</span>
-            <h2 id="proof-title">회원전용 직접 주문의 핵심 장점</h2>
+              <h2 id="proof-title" class="section-title--wide">회원전용 직접 주문의 핵심 장점</h2>
             <p class="copy">상담 대기 없이 필요한 시점에 직접 주문하고, 모든 진행상태를 즉시 확인할 수 있습니다.</p>
           </div>
           <div class="proof-grid">
@@ -1812,7 +1850,7 @@ body.modal-open {
               </button>
               <div class="faq-panel">
                 <div class="faq-panel-inner">
-                  서비스 구조를 먼저 알고 싶다면 소개와 배포 서비스 안내를, 비용 판단이 먼저라면 가격과 비교 페이지를,
+            서비스 구조를 먼저 알고 싶다면 소개와 배포 서비스를, 비용 판단이 먼저라면 가격과 비교 페이지를,
                   송출 전 점검이 필요하다면 가이드 모음과 원고 점검 도구를 먼저 보는 흐름을 권장합니다.
                 </div>
               </div>
@@ -2166,6 +2204,7 @@ body.modal-open {
       function initChannelTalk() {
         const pluginKey = String(window.DLIVER_CHANNEL_TALK_PLUGIN_KEY || CHANNEL_TALK_PLUGIN_KEY || "").trim();
         if (!pluginKey) return;
+        document.body?.classList.add("has-channel-talk");
 
         const w = window;
         if (w.ChannelIO) return;
