@@ -279,6 +279,7 @@ export async function onRequest(context) {
   let nextInput = undefined;
   if (!isApiRequest && SAFE_METHODS.has(method)) {
     const authEntryMode = getPublicAuthEntryMode(requestUrl);
+    const isLegacyRootAuthEntry = isLegacyPublicHost(hostname) && authEntryMode && pathname === "/";
     if (isNewPublicHost(hostname) && authEntryMode) {
       return redirectToUrl(authEntryMode === "signup" ? LEGACY_SIGNUP_ENTRY_URL : LEGACY_LOGIN_ENTRY_URL, 302);
     }
@@ -305,7 +306,7 @@ export async function onRequest(context) {
       if (legacyDestination) {
         return redirectToUrl(legacyDestination, 302);
       }
-    } else if (isLegacyPublicHost(hostname) && !isLegacySensitivePath(pathname)) {
+    } else if (isLegacyPublicHost(hostname) && !isLegacySensitivePath(pathname) && !isLegacyRootAuthEntry) {
       return redirectHost(requestUrl, PUBLIC_CANONICAL_HOST, 301);
     } else if (pathname === "/self-order" || pathname === "/self-order/" || pathname === "/landing" || pathname.startsWith("/landing/")) {
       requestUrl.pathname = "/";
