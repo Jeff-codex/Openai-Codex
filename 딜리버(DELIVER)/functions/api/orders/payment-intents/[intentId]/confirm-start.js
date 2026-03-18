@@ -14,7 +14,7 @@ import {
 } from "../../_payment_common.js";
 
 function buildOrderName(intent) {
-  return `딜리버 주문 결제 ${String(intent.media_name || "").trim() || "주문"}`;
+  return `모두의피알 주문 결제 ${String(intent.media_name || "").trim() || "주문"}`;
 }
 
 function buildCustomerKey(intent, fallbackActorId = "") {

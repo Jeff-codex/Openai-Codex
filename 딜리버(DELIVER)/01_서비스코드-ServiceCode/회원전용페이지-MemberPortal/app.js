@@ -422,7 +422,7 @@ async function preparePaymentWidgetForIntent(intentId, { force = false } = {}) {
     state.paymentWidgetData = {
       amount,
       orderId,
-      orderName: String(payment.orderName || "딜리버 주문 결제"),
+      orderName: String(payment.orderName || "모두의피알 주문 결제"),
       successUrl: String(payment.successUrl || window.location.href),
       failUrl: String(payment.failUrl || window.location.href),
     };
@@ -596,7 +596,7 @@ async function submitPaymentConfirm(form) {
     persistOrderDraft();
     await state.paymentWidget.requestPayment({
       orderId: String(paymentData.orderId),
-      orderName: String(paymentData.orderName || "딜리버 주문 결제"),
+      orderName: String(paymentData.orderName || "모두의피알 주문 결제"),
       customerName: String(state.member?.name || ""),
       customerEmail: String(state.member?.email || ""),
       successUrl: String(paymentData.successUrl || window.location.href),
@@ -1038,3 +1038,4 @@ window.addEventListener("beforeunload", () => {
 });
 
 init();
+
