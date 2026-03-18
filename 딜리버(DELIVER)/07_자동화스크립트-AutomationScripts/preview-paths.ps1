@@ -29,7 +29,7 @@ function To-FileUrl {
 
 Write-Host '[PREVIEW] verification paths'
 Write-Host '[PREVIEW] prod root (self-order): https://dliver.co.kr/'
-Write-Host '[PREVIEW] prod review: https://dliver.co.kr/review'
+Write-Host '[PREVIEW] prod review: https://everyonepr.com/review'
 Write-Host '[PREVIEW] prod admin: https://admin.dliver.co.kr/'
 Write-Host '[PREVIEW] prod api: https://api.dliver.co.kr/'
 Write-Host '[PREVIEW] staging: https://staging.dliver.co.kr/'

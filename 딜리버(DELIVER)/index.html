@@ -9,11 +9,11 @@
       content="딜리버 원고 검수에서 DOC/DOCX/PDF 보도자료를 업로드하고 승인 가능성, 리스크, 가독성, 브랜딩 적합도를 빠르게 확인하세요."
     />
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
-    <meta name="naver-site-verification" content="db80323608f2018fab38668c4820913ec3ab3414" />
+    <meta name="naver-site-verification" content="ee3c5bd3317a0f6de73e62a532c1c04cdaf2e5e0" />
     <meta name="author" content="딜리버" />
     <meta name="theme-color" content="#0038b8" />
-    <link rel="canonical" href="https://dliver.co.kr/review" />
-    <link rel="alternate" type="application/rss+xml" title="딜리버 RSS" href="https://dliver.co.kr/rss.xml" />
+    <link rel="canonical" href="https://everyonepr.com/review" />
+    <link rel="alternate" type="application/rss+xml" title="딜리버 RSS" href="https://everyonepr.com/rss.xml" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ko_KR" />
     <meta property="og:site_name" content="딜리버" />
@@ -22,9 +22,9 @@
       property="og:description"
       content="보도자료 원고를 업로드하면 승인 가능성, 리스크, 가독성, 브랜딩 적합도를 빠르게 분석합니다."
     />
-    <meta property="og:url" content="https://dliver.co.kr/review" />
-    <meta property="og:image" content="https://dliver.co.kr/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
-    <meta property="og:image:secure_url" content="https://dliver.co.kr/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
+    <meta property="og:url" content="https://everyonepr.com/review" />
+    <meta property="og:image" content="https://everyonepr.com/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
+    <meta property="og:image:secure_url" content="https://everyonepr.com/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -35,14 +35,14 @@
       name="twitter:description"
       content="보도자료 원고를 업로드하면 승인 가능성, 리스크, 가독성, 브랜딩 적합도를 빠르게 분석합니다."
     />
-    <meta name="twitter:image" content="https://dliver.co.kr/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
+    <meta name="twitter:image" content="https://everyonepr.com/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/dliver-logo-wordmark-primary.png" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "딜리버",
-        "url": "https://dliver.co.kr/",
-        "logo": "https://dliver.co.kr/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B3%B5%ED%86%B5%EB%8D%B0%EC%9D%B4%ED%84%B0-SharedData/brand/dliver-logo-wordmark-primary.png"
+        "url": "https://everyonepr.com/",
+        "logo": "https://everyonepr.com/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B3%B5%ED%86%B5%EB%8D%B0%EC%9D%B4%ED%84%B0-SharedData/brand/dliver-logo-wordmark-primary.png"
       }
     </script>
     <script type="application/ld+json">
@@ -50,7 +50,7 @@
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "딜리버",
-        "url": "https://dliver.co.kr/",
+        "url": "https://everyonepr.com/",
         "inLanguage": "ko-KR"
       }
     </script>
@@ -63,9 +63,9 @@
         "provider": {
           "@type": "Organization",
           "name": "딜리버",
-          "url": "https://dliver.co.kr/"
+          "url": "https://everyonepr.com/"
         },
-        "url": "https://dliver.co.kr/review",
+        "url": "https://everyonepr.com/review",
         "areaServed": "KR",
         "inLanguage": "ko-KR"
       }
@@ -1145,6 +1145,16 @@
       var SIGNUP_POLICY_PATH = '/01_서비스코드-ServiceCode/공통데이터-SharedData/signup-policy.txt?v=20260224r1';
       var SIGNUP_SERVICE_POLICY_PATH = '/01_서비스코드-ServiceCode/공통데이터-SharedData/service-policy.txt?v=20260227r1';
       var CHANNEL_TALK_PLUGIN_KEY = 'effcd765-65b5-49ca-b003-b18931fc6f38';
+      var LEGACY_LOGIN_ENTRY_URL = 'https://dliver.co.kr/login';
+      var LEGACY_SIGNUP_ENTRY_URL = 'https://dliver.co.kr/signup';
+      var PUBLIC_AUTH_LEGACY_HOSTS = new Set([
+        'everyonepr.com',
+        'www.everyonepr.com',
+        '모두의피알.com',
+        'www.모두의피알.com',
+        'xn--hu1b83js0j45b952a.com',
+        'www.xn--hu1b83js0j45b952a.com'
+      ]);
       var signupPolicyLoaded = false;
       var signupServicePolicyLoaded = false;
 
@@ -1353,7 +1363,15 @@
         setChannelTalkLauncherVisible(true);
       }
 
+      function shouldRouteAuthToLegacyHost() {
+        return PUBLIC_AUTH_LEGACY_HOSTS.has(String(window.location.hostname || '').toLowerCase());
+      }
+
       function openLoginModal() {
+        if (shouldRouteAuthToLegacyHost()) {
+          window.location.href = LEGACY_LOGIN_ENTRY_URL;
+          return;
+        }
         if (!els.loginModal) return;
         closeSignupModal();
         clearLoginMessage();
@@ -1371,6 +1389,10 @@
       }
 
       function openSignupModal() {
+        if (shouldRouteAuthToLegacyHost()) {
+          window.location.href = LEGACY_SIGNUP_ENTRY_URL;
+          return;
+        }
         if (!els.signupModal) return;
         clearFormMessage();
         setSignupPrivacyPanelOpen(false);

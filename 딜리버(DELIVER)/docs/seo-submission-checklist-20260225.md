@@ -2,13 +2,13 @@
 
 ## 1) Current production URLs
 - Main landing: `https://dliver.co.kr/`
-- Review landing: `https://dliver.co.kr/review`
+- Review landing: `https://everyonepr.com/review`
 - Sitemap: `https://dliver.co.kr/sitemap.xml`
 - Robots: `https://dliver.co.kr/robots.txt`
 
 ## 2) Verified on production
 - Main landing has `canonical=https://dliver.co.kr/`
-- Review landing has `canonical=https://dliver.co.kr/review`
+- Review landing has `canonical=https://everyonepr.com/review`
 - Both pages include robots meta `index,follow`
 - Main landing includes Naver site verification meta
 - `sitemap.xml` contains both URLs (`/`, `/review`)
@@ -18,7 +18,7 @@
 1. Open Google Search Console property for `https://dliver.co.kr/`
 2. Use URL Inspection:
    - `https://dliver.co.kr/`
-   - `https://dliver.co.kr/review`
+   - `https://everyonepr.com/review`
 3. Click `Request indexing` for both URLs
 4. Open Sitemaps menu and submit:
    - `https://dliver.co.kr/sitemap.xml`
@@ -30,7 +30,7 @@
    - `https://dliver.co.kr/sitemap.xml`
 4. Request collection for:
    - `https://dliver.co.kr/`
-   - `https://dliver.co.kr/review`
+   - `https://everyonepr.com/review`
 
 ## 5) Post-submission monitoring
 - Re-check index status after 24h and 72h

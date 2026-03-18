@@ -25,7 +25,7 @@ PY
 
 echo "[PREVIEW] 검증 경로"
 echo "[PREVIEW] 운영 루트(셀프오더): https://dliver.co.kr/"
-echo "[PREVIEW] 운영 검수 URL: https://dliver.co.kr/review"
+echo "[PREVIEW] 운영 검수 URL: https://everyonepr.com/review"
 echo "[PREVIEW] 운영 관리자 URL: https://admin.dliver.co.kr/"
 echo "[PREVIEW] 운영 API URL: https://api.dliver.co.kr/"
 echo "[PREVIEW] 스테이징 URL: https://staging.dliver.co.kr/"

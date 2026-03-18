@@ -142,7 +142,7 @@ try {
         else {
             $requiredPatterns = @(
                 'https://www\.everyonepr\.com/\* https://everyonepr\.com/:splat 301!',
-                'https://everyonepr\.com/review https://dliver\.co\.kr/review 302!',
+                'https://dliver\.co\.kr/review https://everyonepr\.com/review 301!',
                 'https://www\.xn--hu1b83js0j45b952a\.com/\* https://everyonepr\.com/:splat 301!',
                 'https://xn--hu1b83js0j45b952a\.com/\* https://everyonepr\.com/:splat 301!',
                 'https://www\.dliver\.co\.kr/\* https://everyonepr\.com/:splat 301!'

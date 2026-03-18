@@ -48,7 +48,6 @@ const LEGACY_PUBLIC_HOSTS = new Set([
 ]);
 const NEW_PUBLIC_HOSTS = new Set([PUBLIC_CANONICAL_HOST, PUBLIC_CANONICAL_WWW_HOST]);
 const LEGACY_MEMBER_ENTRY_URL = "https://dliver.co.kr/member/";
-const LEGACY_REVIEW_URL = "https://dliver.co.kr/review";
 const LEGACY_ADMIN_ENTRY_URL = "https://dliver.co.kr/admin/";
 const LEGACY_LOGIN_ENTRY_URL = "https://dliver.co.kr/login";
 const LEGACY_SIGNUP_ENTRY_URL = "https://dliver.co.kr/signup";
@@ -195,8 +194,6 @@ function isLegacySensitivePath(pathname) {
     value === "/login/" ||
     value === "/signup" ||
     value === "/signup/" ||
-    value === "/review" ||
-    value === "/review/" ||
     value.startsWith("/member") ||
     value.startsWith("/admin") ||
     value.startsWith("/01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%ED%9A%8C%EC%9B%90%EC%A0%84%EC%9A%A9%ED%8E%98%EC%9D%B4%EC%A7%80-MemberPortal/") ||
@@ -211,9 +208,6 @@ function getLegacyDestinationForPath(pathname) {
   }
   if (value === "/signup" || value === "/signup/") {
     return LEGACY_SIGNUP_ENTRY_URL;
-  }
-  if (value === "/review" || value === "/review/" || value === "/index.html") {
-    return LEGACY_REVIEW_URL;
   }
   if (
     value === "/member" ||
@@ -342,7 +336,7 @@ export async function onRequest(context) {
       nextInput = ROOT_LANDING_REWRITE_PATH;
     } else if (pathname === "/signup" && isLegacyPublicHost(hostname)) {
       nextInput = ROOT_LANDING_REWRITE_PATH;
-    } else if (pathname === "/review" && isLegacyPublicHost(hostname)) {
+    } else if (pathname === "/review" && shouldServeRootLanding(hostname)) {
       nextInput = REVIEW_REWRITE_PATH;
     } else if (pathname === "/" && shouldServeRootLanding(hostname)) {
       nextInput = ROOT_LANDING_REWRITE_PATH;
