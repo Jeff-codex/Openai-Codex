@@ -50,7 +50,7 @@ Git history is not available in this checkout, so use a consistent standard:
 Do not modify or delete existing signed system binaries unless explicitly required and approved. Never commit secrets, host-specific credentials, or machine identifiers in scripts or docs.
 
 ## Session Shortcut
-- If the user message is exactly 딜리버, immediately run the Windows restart checklist script:
+- If the user message is exactly `딜리버` or `모두의피알`, immediately run the Windows restart checklist script:
   - powershell -NoProfile -ExecutionPolicy Bypass -File .\07_자동화스크립트-AutomationScripts\restart-checklist-win.ps1
 - Return a concise readiness summary including:
   - project root checks
