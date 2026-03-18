@@ -53,7 +53,7 @@ const LEGACY_PUBLIC_HOSTS = new Set([
   "www.xn--hu1b83js0j45b952a.com",
 ]);
 const NEW_PUBLIC_HOSTS = new Set([PUBLIC_CANONICAL_HOST, PUBLIC_CANONICAL_WWW_HOST]);
-const LEGACY_ADMIN_ENTRY_URL = "https://admin.dliver.co.kr/";
+const LEGACY_ADMIN_ENTRY_URL = "https://admin.everyonepr.com/";
 
 const BLOCKED_STATIC_PATH_PATTERN = /(^|\/)\.(env|git|npmrc)(?:$|[._-])/i;
 
@@ -300,6 +300,13 @@ export async function onRequest(context) {
   if (!isApiRequest && SAFE_METHODS.has(method)) {
     const authEntryMode = getPublicAuthEntryMode(requestUrl);
     const isLegacyRootAuthEntry = isLegacyPublicHost(hostname) && authEntryMode && pathname === "/";
+    if (isLegacyAdminHost(hostname) && isAdminPagePath(pathname)) {
+      requestUrl.hostname = ADMIN_CANONICAL_HOST;
+      if (pathname.startsWith(ADMIN_PAGE_PREFIX)) {
+        requestUrl.pathname = "/";
+      }
+      return Response.redirect(requestUrl.toString(), 301);
+    }
     if (isNewPublicHost(hostname) && authEntryMode) {
       if (pathname === "/" || pathname === "/login" || pathname === "/signup") {
         nextInput = ROOT_LANDING_REWRITE_PATH;

@@ -10,7 +10,7 @@
 
 ## 2) 필수 식별자
 - Public Host: `https://everyonepr.com`
-- Legacy Holdout: `https://admin.dliver.co.kr/`, `https://api.dliver.co.kr/`
+- Legacy Holdout: `https://api.dliver.co.kr/`
 - Account ID: `9970b838c7747b87db3fd2c268b533b6`
 - Pages Project: `dliver`
 - D1 DB: `dliver-prod-db` (`9b95eaf5-2246-43fe-b055-4417f2e07e8d`)
@@ -54,7 +54,7 @@
   - `OPS_ALERT_TELEGRAM_BOT_TOKEN` (텔레그램 봇 토큰)
   - `OPS_ALERT_TELEGRAM_CHAT_ID` (알림 수신 chat id)
   - `OPS_ALERT_TIMEOUT_MS` (기본 `2500`)
-  - `ADMIN_PORTAL_URL` (기본 `https://admin.dliver.co.kr/`)
+- `ADMIN_PORTAL_URL` (기본 `https://admin.everyonepr.com/`)
 
 ## 4) D1 스키마 적용
 ```bash

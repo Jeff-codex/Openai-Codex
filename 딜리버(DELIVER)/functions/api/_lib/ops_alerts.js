@@ -1,5 +1,5 @@
 const TELEGRAM_API_BASE = "https://api.telegram.org";
-const DEFAULT_ADMIN_PORTAL_URL = "https://admin.dliver.co.kr/";
+const DEFAULT_ADMIN_PORTAL_URL = "https://admin.everyonepr.com/";
 const DEFAULT_TIMEOUT_MS = 2500;
 
 const KRW_FORMATTER = new Intl.NumberFormat("ko-KR");

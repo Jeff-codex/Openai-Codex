@@ -21,7 +21,7 @@
 - Preview KV Binding: `SESSION_KV` (`dliver-session-kv-preview`)
 - Preview R2 Binding: `FILES_BUCKET` (`dliver-preview-files`)
 - Public Host: `https://everyonepr.com`
-- Legacy Holdout: `https://admin.dliver.co.kr/`, `https://api.dliver.co.kr/`
+- Legacy Holdout: `https://api.dliver.co.kr/`
 
 ## 4. 설치 (Windows)
 1. Node.js 20+

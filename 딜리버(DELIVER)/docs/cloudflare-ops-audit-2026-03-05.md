@@ -12,7 +12,7 @@
 | KV | `dliver-session-kv-prod` / `SESSION_KV` | `functions/_middleware.js`, `cloudflare_store.js` | 사용 중 |
 | R2 | `dliver-prod-files` / `FILES_BUCKET` | `functions/api/review/analyze.js`, `cloudflare_store.js` | 선택 사용 |
 | Secrets/Vars | `.env.cloudflare.example` 키 목록 | `functions/api/**`, `07_자동화스크립트-AutomationScripts/**` | 사용 중 |
-| DNS/Routes | `everyonepr.com`, `admin.dliver.co.kr`, `api.dliver.co.kr` 등 | `_redirects`, README, Cloudflare 가이드 | 사용 중 |
+| DNS/Routes | `everyonepr.com`, `admin.everyonepr.com`, `api.dliver.co.kr` 등 | `_redirects`, README, Cloudflare 가이드 | 사용 중 |
 
 ## 코드-리소스 매핑
 
