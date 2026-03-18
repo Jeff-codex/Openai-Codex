@@ -2001,7 +2001,7 @@ body.modal-open {
           </div>
           <div class="input-row">
             <label for="signup-company">회사명</label>
-            <input id="signup-company" name="company" type="text" placeholder="딜리버 COMPANY (선택)" />
+          <input id="signup-company" name="company" type="text" placeholder="회사명 (선택)" />
           </div>
           <div class="input-row">
             <label for="signup-password">비밀번호</label>
@@ -2158,6 +2158,7 @@ body.modal-open {
       const loginForm = document.getElementById("login-form");
       const loginMessage = document.getElementById("login-message");
       const loginOpenButtons = document.querySelectorAll("[data-open-login]");
+      const topLoginButton = document.getElementById("top-login-button");
       const loginCloseButton = document.querySelector("[data-close-login]");
       const signupModal = document.getElementById("signup-modal");
       const signupForm = document.getElementById("signup-form");
@@ -2166,6 +2167,7 @@ body.modal-open {
       const navLoginState = document.getElementById("nav-login-state");
       const logoutButton = document.getElementById("logout-button");
       const signupOpenButtons = document.querySelectorAll("[data-open-signup]");
+      const topSignupButton = document.getElementById("top-signup-button");
       const signupCloseButton = document.querySelector("[data-close-signup]");
       const signupPrivacyToggleButton = document.querySelector("[data-toggle-signup-privacy]");
       const signupPrivacyPanel = document.getElementById("signup-privacy-panel");
@@ -2411,6 +2413,12 @@ body.modal-open {
       function setAuthButtonsVisibility(isLoggedIn) {
         loginOpenButtons.forEach((button) => button.classList.toggle("is-hidden", isLoggedIn));
         signupOpenButtons.forEach((button) => button.classList.toggle("is-hidden", isLoggedIn));
+        if (topLoginButton) {
+          topLoginButton.classList.toggle("is-hidden", isLoggedIn);
+        }
+        if (topSignupButton) {
+          topSignupButton.classList.toggle("is-hidden", isLoggedIn);
+        }
       }
 
       function updateAuthUI(member) {
