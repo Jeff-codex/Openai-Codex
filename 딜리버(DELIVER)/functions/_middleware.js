@@ -50,8 +50,8 @@ const NEW_PUBLIC_HOSTS = new Set([PUBLIC_CANONICAL_HOST, PUBLIC_CANONICAL_WWW_HO
 const LEGACY_MEMBER_ENTRY_URL = "https://dliver.co.kr/member/";
 const LEGACY_REVIEW_URL = "https://dliver.co.kr/review";
 const LEGACY_ADMIN_ENTRY_URL = "https://dliver.co.kr/admin/";
-const LEGACY_LOGIN_ENTRY_URL = "https://dliver.co.kr/#login";
-const LEGACY_SIGNUP_ENTRY_URL = "https://dliver.co.kr/#signup";
+const LEGACY_LOGIN_ENTRY_URL = "https://dliver.co.kr/login";
+const LEGACY_SIGNUP_ENTRY_URL = "https://dliver.co.kr/signup";
 
 const BLOCKED_STATIC_PATH_PATTERN = /(^|\/)\.(env|git|npmrc)(?:$|[._-])/i;
 
@@ -191,6 +191,10 @@ function isLegacySensitivePath(pathname) {
   const value = String(pathname || "");
   return (
     value === "/index.html" ||
+    value === "/login" ||
+    value === "/login/" ||
+    value === "/signup" ||
+    value === "/signup/" ||
     value === "/review" ||
     value === "/review/" ||
     value.startsWith("/member") ||
@@ -202,6 +206,12 @@ function isLegacySensitivePath(pathname) {
 
 function getLegacyDestinationForPath(pathname) {
   const value = String(pathname || "");
+  if (value === "/login" || value === "/login/") {
+    return LEGACY_LOGIN_ENTRY_URL;
+  }
+  if (value === "/signup" || value === "/signup/") {
+    return LEGACY_SIGNUP_ENTRY_URL;
+  }
   if (value === "/review" || value === "/review/" || value === "/index.html") {
     return LEGACY_REVIEW_URL;
   }
@@ -312,6 +322,14 @@ export async function onRequest(context) {
       requestUrl.pathname = "/";
       return Response.redirect(requestUrl.toString(), 301);
     }
+    if (pathname === "/login/") {
+      requestUrl.pathname = "/login";
+      return Response.redirect(requestUrl.toString(), 301);
+    }
+    if (pathname === "/signup/") {
+      requestUrl.pathname = "/signup";
+      return Response.redirect(requestUrl.toString(), 301);
+    }
     if (pathname === "/index.html") {
       requestUrl.pathname = "/review";
       return Response.redirect(requestUrl.toString(), 301);
@@ -320,7 +338,11 @@ export async function onRequest(context) {
       requestUrl.pathname = "/review";
       return Response.redirect(requestUrl.toString(), 301);
     }
-    if (pathname === "/review" && isLegacyPublicHost(hostname)) {
+    if (pathname === "/login" && isLegacyPublicHost(hostname)) {
+      nextInput = ROOT_LANDING_REWRITE_PATH;
+    } else if (pathname === "/signup" && isLegacyPublicHost(hostname)) {
+      nextInput = ROOT_LANDING_REWRITE_PATH;
+    } else if (pathname === "/review" && isLegacyPublicHost(hostname)) {
       nextInput = REVIEW_REWRITE_PATH;
     } else if (pathname === "/" && shouldServeRootLanding(hostname)) {
       nextInput = ROOT_LANDING_REWRITE_PATH;
