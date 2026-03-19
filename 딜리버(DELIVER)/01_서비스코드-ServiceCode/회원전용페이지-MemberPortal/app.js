@@ -802,39 +802,54 @@ function renderHeroSummary() {
   if (nextActionCopy) nextActionCopy.textContent = nextCopy;
 
   if (selectedSummary) {
-    selectedSummary.textContent = selectedMedia ? `${selectedMedia.name}` : "아직 선택 없음";
+    selectedSummary.textContent = selectedMedia
+      ? `${selectedMedia.name}`
+      : pendingOrders > 0 || publishedOrders > 0
+        ? "주문 현황 확인 가능"
+        : "아직 선택 없음";
   }
   if (selectedSummaryCopy) {
     selectedSummaryCopy.textContent = selectedMedia
       ? `${selectedMedia.category || "기본"} · ${formatCurrency(selectedMedia.salePrice || selectedMedia.unitPrice || 0)} · ${selectedMedia.channel || "노출채널 미정"}`
-      : "선택한 매체명과 판매가가 여기에 바로 표시됩니다.";
+      : pendingOrders > 0 || publishedOrders > 0
+        ? "아래 주문 현황에서 진행 상태와 결제 내역을 바로 확인할 수 있습니다."
+        : "선택한 매체명과 판매가가 여기에 바로 표시됩니다.";
   }
 
   if (paymentSummary) {
     paymentSummary.textContent = paymentIntent?.intentId
-      ? `${formatCurrency(paymentTotal)} 확인 필요`
-      : pendingOrders > 0
-        ? `진행 중 ${pendingOrders}건`
-        : "주문 등록 대기";
+      ? `${formatCurrency(paymentTotal)} 결제 확인`
+      : selectedMedia && (draft.title || draft.notes || draft.hasFile)
+        ? "주문 입력 진행 중"
+        : selectedMedia
+          ? "매체 선택 완료"
+          : pendingOrders > 0
+            ? `진행 중 ${pendingOrders}건`
+            : publishedOrders > 0
+              ? `송출 완료 ${publishedOrders}건`
+              : "주문 등록 대기";
   }
   if (paymentSummaryCopy) {
     paymentSummaryCopy.textContent = paymentIntent?.intentId
       ? "주문명과 금액을 다시 확인한 뒤 결제를 진행해 주세요."
-      : pendingOrders > 0
-        ? "이미 등록한 주문은 아래 주문 현황에서 상태를 계속 확인할 수 있습니다."
-        : "주문을 등록하면 결제 전 확인 단계가 바로 열립니다.";
+      : selectedMedia && (draft.title || draft.notes || draft.hasFile)
+        ? "주문명, 요청사항, 첨부 파일을 확인한 뒤 주문 등록으로 넘어가면 됩니다."
+        : selectedMedia
+          ? "이제 주문 정보를 입력하면 바로 결제 전 확인 단계로 이어집니다."
+          : pendingOrders > 0
+            ? "이미 등록한 주문은 아래 주문 현황에서 상태를 계속 확인할 수 있습니다."
+            : publishedOrders > 0
+              ? "완료된 주문은 아래 주문 현황에서 날짜와 결제 내역까지 다시 확인할 수 있습니다."
+              : "주문을 등록하면 결제 전 확인 단계가 바로 열립니다.";
   }
 
   setTaskState(document.getElementById("flow-step-media"), selectedMedia ? "complete" : "active");
+  setTaskState(document.getElementById("flow-step-order"), paymentIntent?.intentId ? "complete" : selectedMedia ? "active" : "");
+  setTaskState(document.getElementById("flow-step-payment"), paymentIntent?.intentId ? "active" : "");
   setTaskState(
-    document.getElementById("flow-step-order"),
-    paymentIntent?.intentId || pendingOrders > 0 || publishedOrders > 0 ? "complete" : selectedMedia ? "active" : ""
+    document.getElementById("flow-step-orders"),
+    publishedOrders > 0 ? "complete" : pendingOrders > 0 ? "active" : ""
   );
-  setTaskState(
-    document.getElementById("flow-step-payment"),
-    paymentIntent?.intentId ? "active" : pendingOrders > 0 || publishedOrders > 0 ? "complete" : ""
-  );
-  setTaskState(document.getElementById("flow-step-orders"), pendingOrders > 0 || publishedOrders > 0 ? "complete" : "");
 }
 
 function renderStats() {
