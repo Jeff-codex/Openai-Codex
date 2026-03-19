@@ -1576,8 +1576,9 @@ tbody tr.selected {
   html,
   body {
     width: 100%;
-    max-width: 100%;
+    max-width: 100dvw;
     overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .bg-shape {
@@ -1589,9 +1590,13 @@ tbody tr.selected {
     align-items: stretch;
     flex-direction: column;
     width: 100%;
+    max-width: 100dvw;
     gap: 0.78rem;
     padding-top: 0.92rem;
+    padding-left: calc(env(safe-area-inset-left) + 0.75rem);
+    padding-right: calc(env(safe-area-inset-right) + 0.75rem);
     padding-bottom: 1rem;
+    overflow-x: clip;
   }
 
   .brand-wrap {
@@ -1629,10 +1634,15 @@ tbody tr.selected {
 
   .layout {
     min-width: 0;
-    width: 100%;
-    margin: 0.7rem 0 0;
-    padding: 0 0.5rem;
+    width: min(100%, 100dvw);
+    max-width: 100dvw;
+    margin: 0.7rem auto 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: calc(env(safe-area-inset-left) + 0.5rem);
+    padding-right: calc(env(safe-area-inset-right) + 0.5rem);
     overflow-x: hidden;
+    overflow-x: clip;
   }
 
   .layout > *,
@@ -1644,16 +1654,27 @@ tbody tr.selected {
   .media-search-shell,
   .media-search-box,
   .media-group-nav,
+  .media-group-list,
+  .hero-actions,
+  .selected-media,
+  .stats-grid,
+  .stat-box,
   .table-wrap {
     width: 100%;
     max-width: 100%;
     min-width: 0;
+    overflow-x: clip;
   }
 
   .site-footer {
-    width: 100%;
-    margin: 0 0 1rem;
-    padding: 0 0.5rem;
+    width: min(100%, 100dvw);
+    max-width: 100dvw;
+    margin: 0 auto 1rem;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: calc(env(safe-area-inset-left) + 0.5rem);
+    padding-right: calc(env(safe-area-inset-right) + 0.5rem);
+    overflow-x: clip;
   }
 
   .portal-grid > * {
@@ -1741,6 +1762,9 @@ tbody tr.selected {
   }
 
   .media-search-box {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     grid-template-columns: auto 1fr auto;
     gap: 0.48rem;
     padding: 0.18rem 0.2rem 0.18rem 0.72rem;
@@ -1753,13 +1777,14 @@ tbody tr.selected {
 
   .media-search-label {
     border-right: 1px solid #d8e4f7;
-    padding-right: 0.52rem;
-    font-size: 0.78rem;
+    padding-right: 0.44rem;
+    font-size: 0.74rem;
   }
 
   .media-search-box input {
     padding: 0.52rem 0;
     font-size: 0.9rem;
+    min-width: 0;
   }
 
   .media-search-icon {
@@ -1922,17 +1947,30 @@ tbody tr.selected {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
+    contain: inline-size;
+    padding-bottom: 0.08rem;
   }
 
   table {
-    min-width: 640px;
-    table-layout: auto;
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
   }
 
   th,
   td {
     padding: 0.62rem 0.48rem;
     font-size: 0.84rem;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  th:nth-child(1),
+  td:nth-child(1),
+  th:nth-child(6),
+  td:nth-child(6) {
+    display: none;
   }
 }
 
@@ -1981,6 +2019,6 @@ tbody tr.selected {
   }
 
   table {
-    min-width: 600px;
+    min-width: 100%;
   }
 }
