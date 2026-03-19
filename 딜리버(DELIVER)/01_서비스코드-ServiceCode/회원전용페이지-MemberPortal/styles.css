@@ -25,6 +25,7 @@ html {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -33,6 +34,7 @@ body {
   max-width: 100%;
   min-height: 100vh;
   overflow-x: hidden;
+  overscroll-behavior-x: none;
   color: var(--text);
   font-family: "Noto Sans KR", sans-serif;
   background: radial-gradient(circle at 86% -6%, rgba(19, 132, 231, 0.17), transparent 44%),
@@ -1637,6 +1639,7 @@ tbody tr.selected {
     padding: 0 0.5rem;
     overflow-x: hidden;
     overflow-x: clip;
+    touch-action: pan-y;
   }
 
   .layout > *,

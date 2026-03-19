@@ -87,6 +87,54 @@ function syncTopbarOffset() {
   document.documentElement.style.setProperty("--topbar-offset", `${Math.max(62, height)}px`);
 }
 
+function initHorizontalPanGuard() {
+  const isCoarsePointer = typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;
+  if (!isCoarsePointer) return;
+
+  let startX = null;
+  let startY = null;
+
+  function resetTouch() {
+    startX = null;
+    startY = null;
+  }
+
+  function canScrollHorizontally(target) {
+    if (!(target instanceof Element)) return false;
+    const scrollHost = target.closest(".table-wrap");
+    return scrollHost instanceof HTMLElement && scrollHost.scrollWidth > scrollHost.clientWidth + 1;
+  }
+
+  document.addEventListener(
+    "touchstart",
+    (event) => {
+      if (event.touches.length !== 1) {
+        resetTouch();
+        return;
+      }
+      startX = event.touches[0].clientX;
+      startY = event.touches[0].clientY;
+    },
+    { passive: true },
+  );
+
+  document.addEventListener(
+    "touchmove",
+    (event) => {
+      if (event.touches.length !== 1 || startX === null || startY === null) return;
+      const deltaX = event.touches[0].clientX - startX;
+      const deltaY = event.touches[0].clientY - startY;
+      if (Math.abs(deltaX) <= Math.abs(deltaY) + 6) return;
+      if (canScrollHorizontally(event.target)) return;
+      event.preventDefault();
+    },
+    { passive: false },
+  );
+
+  document.addEventListener("touchend", resetTouch, { passive: true });
+  document.addEventListener("touchcancel", resetTouch, { passive: true });
+}
+
 function formatCurrency(value) {
   const n = Number(value || 0);
   if (!Number.isFinite(n)) return "0원";
@@ -1189,6 +1237,7 @@ async function init() {
   clearLegacyTokenStorage();
   setAuthReady(false);
   syncTopbarOffset();
+  initHorizontalPanGuard();
   initChannelTalk();
   bindEvents();
   window.addEventListener("resize", () => {
