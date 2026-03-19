@@ -648,6 +648,7 @@ body.auth-loading .auth-gate {
 .media-explorer-shell {
   display: grid;
   gap: 0.68rem;
+  margin-top: 0.56rem;
   width: min(860px, 100%);
 }
 
@@ -1729,6 +1730,10 @@ tbody tr.selected {
     gap: 0.48rem;
     padding: 0.18rem 0.2rem 0.18rem 0.72rem;
     border-radius: 18px;
+  }
+
+  .media-explorer-shell {
+    margin-top: 0.38rem;
   }
 
   .media-search-label {
