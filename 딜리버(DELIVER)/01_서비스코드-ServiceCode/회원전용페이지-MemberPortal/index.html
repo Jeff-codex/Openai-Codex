@@ -42,9 +42,9 @@
     </div>
 
     <main class="layout">
-      <section class="flow-panel card panel" aria-label="회원전용 첫 화면 흐름">
+      <section class="flow-panel card panel" id="member-media-panel" aria-label="회원전용 첫 화면 흐름">
         <div class="flow-tabs" aria-label="주문 단계">
-          <a class="flow-tab" id="flow-step-media" href="#member-media-panel">
+          <a class="flow-tab" id="flow-step-media" href="#member-media-explorer">
             <span class="flow-tab-step">1</span>
             <strong>매체 선택</strong>
           </a>
@@ -52,7 +52,7 @@
             <span class="flow-tab-step">2</span>
             <strong>주문 정보 입력</strong>
           </a>
-          <a class="flow-tab" id="flow-step-payment" href="#order-payment-modal">
+          <a class="flow-tab" id="flow-step-payment" href="#member-order-panel">
             <span class="flow-tab-step">3</span>
             <strong>결제 전 확인</strong>
           </a>
@@ -61,49 +61,56 @@
             <strong>주문 현황</strong>
           </a>
         </div>
-        <div class="flow-summary">
-          <div class="flow-next">
-            <span class="eyebrow">지금 해야 할 일</span>
-            <h1 class="page-title" id="member-next-action-title">먼저 매체를 선택하세요</h1>
-            <p class="lede" id="member-next-action-copy">카테고리와 검색으로 주문할 매체를 고른 뒤 아래에서 주문 정보를 이어서 입력하면 됩니다.</p>
-            <div class="hero-actions">
-              <a class="btn btn-primary" id="member-primary-action" href="#member-media-panel">매체 선택하기</a>
-              <a class="btn btn-light" id="member-secondary-action" href="#member-orders-panel">주문 현황 보기</a>
-            </div>
+        <div class="flow-stage">
+          <div class="flow-stage-head">
+            <span class="eyebrow">원고 송출</span>
+            <h1 class="page-title" id="member-next-action-title">원하는 매체를 먼저 찾아보세요</h1>
+            <p class="lede" id="member-next-action-copy">검색이나 카테고리로 맞는 매체를 고른 뒤 주문 입력으로 이어가면 됩니다.</p>
           </div>
-          <div class="flow-meta">
-            <article class="summary-card summary-card-selected">
+          <div class="media-explorer-shell" id="member-media-explorer">
+            <div class="media-search-shell">
+              <label class="media-search-box" for="media-search">
+                <span class="media-search-label">통합검색</span>
+                <input id="media-search" type="text" placeholder="매체명, 카테고리, 노출채널 검색" />
+                <span class="media-search-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true">
+                    <circle cx="11" cy="11" r="6.5"></circle>
+                    <path d="M16 16L21 21"></path>
+                  </svg>
+                </span>
+              </label>
+            </div>
+            <div class="media-tools">
+              <div class="media-summary" id="media-summary"></div>
+            </div>
+            <div class="media-group-nav" id="media-group-nav"></div>
+          </div>
+          <div class="hero-actions">
+            <a class="btn btn-primary" id="member-primary-action" href="#member-media-explorer">매체 찾기</a>
+            <a class="hero-text-link" id="member-secondary-action" href="#member-orders-panel">내 주문 보기</a>
+          </div>
+          <div class="flow-inline-meta" aria-live="polite">
+            <article class="summary-card summary-card-inline summary-card-selected">
               <span class="summary-card-label">선택 매체</span>
-              <strong class="summary-card-value" id="member-selected-summary">아직 선택 없음</strong>
-              <p class="summary-card-copy" id="member-selected-summary-copy">선택한 매체명과 판매가가 여기에 바로 표시됩니다.</p>
+              <strong class="summary-card-value" id="member-selected-summary">선택 없음</strong>
             </article>
-            <article class="summary-card summary-card-payment">
-              <span class="summary-card-label">현재 진행 상태</span>
-              <strong class="summary-card-value" id="member-payment-summary">주문 등록 대기</strong>
-              <p class="summary-card-copy" id="member-payment-summary-copy">주문을 등록하면 결제 전 확인 단계가 바로 이어집니다.</p>
+            <article class="summary-card summary-card-inline summary-card-payment">
+              <span class="summary-card-label">진행 상태</span>
+              <strong class="summary-card-value" id="member-payment-summary">매체를 선택해 주세요</strong>
             </article>
           </div>
         </div>
       </section>
 
       <section class="portal-grid">
-        <article class="card panel" id="member-media-panel">
-          <div class="media-explorer-head">
-            <span class="eyebrow">1. 매체 선택</span>
-            <h2>송출이 필요할 때 매체를 빠르게 찾아보세요</h2>
-            <p class="sub">카테고리와 검색으로 후보를 빠르게 좁히고, 선택한 매체 기준으로 주문 입력까지 이어가면 됩니다.</p>
+        <article class="card panel media-results-panel">
+          <div class="section-head media-results-head">
+            <div>
+              <span class="eyebrow">매체 목록</span>
+              <h2>카테고리에 맞는 매체를 확인하세요</h2>
+            </div>
+            <p class="sub">선택 버튼을 누르면 주문 정보 입력으로 바로 이어집니다.</p>
           </div>
-          <div class="media-search-shell">
-            <label class="media-search-box" for="media-search">
-              <span class="media-search-label">통합검색</span>
-              <input id="media-search" type="text" placeholder="매체명, 카테고리, 노출채널 검색" />
-              <span class="media-search-icon" aria-hidden="true">⌕</span>
-            </label>
-          </div>
-          <div class="media-tools">
-            <div class="media-summary" id="media-summary"></div>
-          </div>
-          <div class="media-group-nav" id="media-group-nav"></div>
           <div class="media-group-list" id="media-group-list"></div>
         </article>
 
