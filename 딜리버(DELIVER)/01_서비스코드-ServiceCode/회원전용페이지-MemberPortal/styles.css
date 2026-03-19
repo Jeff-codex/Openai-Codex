@@ -1635,6 +1635,21 @@ tbody tr.selected {
     overflow-x: hidden;
   }
 
+  .layout > *,
+  .portal-grid,
+  .portal-grid > *,
+  .flow-panel,
+  .card.panel,
+  .media-explorer-shell,
+  .media-search-shell,
+  .media-search-box,
+  .media-group-nav,
+  .table-wrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
   .site-footer {
     width: 100%;
     margin: 0 0 1rem;
@@ -1906,10 +1921,11 @@ tbody tr.selected {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
   }
 
   table {
-    min-width: 720px;
+    min-width: 640px;
     table-layout: auto;
   }
 
@@ -1965,6 +1981,6 @@ tbody tr.selected {
   }
 
   table {
-    min-width: 680px;
+    min-width: 600px;
   }
 }
