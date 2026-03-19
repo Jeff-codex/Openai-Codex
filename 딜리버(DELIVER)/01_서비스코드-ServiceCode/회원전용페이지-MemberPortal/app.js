@@ -796,18 +796,9 @@ function getCurrentOrderDraft() {
   return { title, note, hasFile };
 }
 
-function setTaskState(element, stateName) {
-  if (!(element instanceof HTMLElement)) return;
-  element.classList.remove("is-active", "is-complete");
-  if (stateName === "active") element.classList.add("is-active");
-  if (stateName === "complete") element.classList.add("is-complete");
-}
-
 function renderHeroSummary() {
   const primaryAction = document.getElementById("member-primary-action");
   const selectedSummary = document.getElementById("member-selected-summary");
-  const ordersLink = document.getElementById("flow-step-orders");
-  const ordersMeta = document.getElementById("flow-orders-meta");
   const selectedMedia = getSelectedMedia();
   const pendingOrders = getPendingOrdersCount();
   const publishedOrders = getPublishedOrdersCount();
@@ -846,22 +837,6 @@ function renderHeroSummary() {
       ? `${selectedMedia.name} · ${formatCurrency(selectedMedia.salePrice || selectedMedia.unitPrice || 0)}`
       : "아직 선택 없음";
   }
-
-  if (ordersMeta) {
-    ordersMeta.textContent = pendingOrders > 0
-      ? `진행 ${pendingOrders}건`
-      : publishedOrders > 0
-        ? `완료 ${publishedOrders}건`
-        : "바로 확인";
-  }
-
-  if (ordersLink instanceof HTMLElement) {
-    ordersLink.classList.remove("is-active", "is-complete");
-  }
-
-  setTaskState(document.getElementById("flow-step-media"), selectedMedia ? "complete" : "active");
-  setTaskState(document.getElementById("flow-step-order"), paymentIntent?.intentId ? "complete" : selectedMedia ? "active" : "");
-  setTaskState(document.getElementById("flow-step-payment"), paymentIntent?.intentId ? "active" : "");
 }
 
 function renderStats() {

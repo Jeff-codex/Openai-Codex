@@ -261,6 +261,9 @@ body.auth-loading .auth-gate {
 .eyebrow {
   display: inline-flex;
   align-items: center;
+  justify-self: start;
+  width: fit-content;
+  max-width: 100%;
   padding: 0.28rem 0.66rem;
   border-radius: 999px;
   border: 1px solid #d3e1f6;
