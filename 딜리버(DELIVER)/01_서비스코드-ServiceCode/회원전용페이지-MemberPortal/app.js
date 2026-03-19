@@ -25,10 +25,10 @@ const ALL_MEDIA_GROUP = "__all__";
 const MEDIA_CATEGORY_META = {
   [ALL_MEDIA_GROUP]: { label: "전체", iconKey: "grid", tone: "all" },
   일반: { label: "일반", iconKey: "article", tone: "general" },
-  의료: { label: "의료", iconKey: "medical", tone: "medical" },
+  의료: { label: "의료", iconKey: "stethoscope", tone: "medical" },
   비즈니스: { label: "비즈니스", iconKey: "briefcase", tone: "business" },
-  뷰티: { label: "뷰티", iconKey: "sparkle", tone: "beauty" },
-  금융: { label: "금융", iconKey: "coin", tone: "finance" },
+  뷰티: { label: "뷰티", iconKey: "compact", tone: "beauty" },
+  금융: { label: "금융", iconKey: "banknote", tone: "finance" },
   법률: { label: "법률", iconKey: "scale", tone: "law" },
   부동산: { label: "부동산", iconKey: "home", tone: "realestate" },
   특수: { label: "특수", iconKey: "edit", tone: "special" },
@@ -740,14 +740,14 @@ function renderCategoryIcon(iconKey) {
       '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.5"></rect><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.5"></rect><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.5"></rect><rect x="14" y="14" width="6.5" height="6.5" rx="1.5"></rect></svg>',
     article:
       '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="M7.5 9h9"></path><path d="M7.5 12h4"></path><path d="M13 12h3.5"></path><path d="M7.5 15h9"></path></svg>',
-    medical:
-      '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path><circle cx="12" cy="12" r="8"></circle></svg>',
+    stethoscope:
+      '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M9 4v4a3 3 0 0 0 6 0V4"></path><path d="M9 6H7.5a1.5 1.5 0 0 0 0 3H9"></path><path d="M15 6h1.5a1.5 1.5 0 0 1 0 3H15"></path><path d="M12 11v2.5a4.5 4.5 0 0 0 9 0"></path><circle cx="19.5" cy="13.5" r="1.5"></circle></svg>',
     briefcase:
       '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M7 20V8.5L12 5l5 3.5V20"></path><path d="M4 20h16"></path><path d="M10 11h1"></path><path d="M13 11h1"></path><path d="M10 14.5h1"></path><path d="M13 14.5h1"></path></svg>',
-    sparkle:
-      '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M12 4l1.6 4.4L18 10l-4.4 1.6L12 16l-1.6-4.4L6 10l4.4-1.6z"></path><path d="M18.5 4.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"></path></svg>',
-    coin:
-      '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M9 9.5c.5-1 1.5-1.5 3-1.5 1.9 0 3 .9 3 2.2 0 1.2-.8 1.8-2.4 2.2-1.7.5-2.4 1-2.4 2.1 0 1.2 1 2 2.8 2 1.4 0 2.4-.5 3-1.5"></path></svg>',
+    compact:
+      '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M9 8.5a3 3 0 0 1 6 0"></path><path d="M8 9.5h8"></path><circle cx="12" cy="14" r="5"></circle><path d="M10 14h4"></path></svg>',
+    banknote:
+      '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><rect x="4" y="6.5" width="16" height="11" rx="2"></rect><path d="M7 10h4"></path><path d="M7 13h3"></path><circle cx="16" cy="12" r="1.7"></circle></svg>',
     scale:
       '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M12 5v14"></path><path d="M7 8h10"></path><path d="M6 8l-2.5 4.5h5z"></path><path d="M18 8l-2.5 4.5h5z"></path><path d="M9 19h6"></path></svg>',
     home:
@@ -805,8 +805,6 @@ function setTaskState(element, stateName) {
 
 function renderHeroSummary() {
   const primaryAction = document.getElementById("member-primary-action");
-  const nextActionTitle = document.getElementById("member-next-action-title");
-  const nextActionCopy = document.getElementById("member-next-action-copy");
   const selectedSummary = document.getElementById("member-selected-summary");
   const ordersLink = document.getElementById("flow-step-orders");
   const ordersMeta = document.getElementById("flow-orders-meta");
@@ -816,35 +814,26 @@ function renderHeroSummary() {
   const draft = getCurrentOrderDraft();
   const paymentIntent = state.paymentIntent;
 
-  let nextTitle = "먼저 매체를 선택해 주세요";
-  let nextCopy = "검색하거나 카테고리를 눌러 이번 주문에 맞는 매체를 찾으면 됩니다.";
   let primaryActionLabel = "매체 찾기";
   let primaryActionHref = "#member-media-explorer";
   let showPrimaryAction = false;
 
   if (paymentIntent?.intentId) {
-    nextTitle = "결제 전 확인만 남았습니다";
-    nextCopy = "최종 금액과 확인 항목을 보고 결제를 진행해 주세요.";
     primaryActionLabel = "결제 확인하기";
     primaryActionHref = "#member-order-panel";
     showPrimaryAction = true;
   } else if (selectedMedia && draft.title && draft.hasFile) {
-    nextTitle = "주문 등록을 진행해 주세요";
-    nextCopy = "입력한 정보로 주문을 등록하면 결제 전 확인으로 바로 이어집니다.";
     primaryActionLabel = "주문 등록하기";
     primaryActionHref = "#member-order-panel";
     showPrimaryAction = true;
   } else if (selectedMedia) {
-    nextTitle = "주문 정보를 입력해 주세요";
-    nextCopy = `${selectedMedia.name}을(를) 선택했습니다. 주문명과 원고 파일을 입력하면 됩니다.`;
     primaryActionLabel = "주문 정보 입력하기";
     primaryActionHref = "#member-order-panel";
     showPrimaryAction = true;
   } else if (pendingOrders > 0 || publishedOrders > 0) {
-    nextTitle = "새 주문을 다시 시작해 보세요";
-    nextCopy = "기존 주문은 오른쪽 주문 현황에서 확인할 수 있습니다.";
     primaryActionLabel = "새 주문 시작하기";
     primaryActionHref = "#member-media-explorer";
+    showPrimaryAction = true;
   }
 
   if (primaryAction instanceof HTMLAnchorElement) {
@@ -852,9 +841,6 @@ function renderHeroSummary() {
     primaryAction.href = primaryActionHref;
     primaryAction.classList.toggle("is-hidden", !showPrimaryAction);
   }
-  if (nextActionTitle) nextActionTitle.textContent = nextTitle;
-  if (nextActionCopy) nextActionCopy.textContent = nextCopy;
-
   if (selectedSummary) {
     selectedSummary.textContent = selectedMedia
       ? `${selectedMedia.name} · ${formatCurrency(selectedMedia.salePrice || selectedMedia.unitPrice || 0)}`
