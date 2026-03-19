@@ -43,29 +43,31 @@
 
     <main class="layout">
       <section class="flow-panel card panel" id="member-media-panel" aria-label="회원전용 첫 화면 흐름">
-        <div class="flow-tabs" aria-label="주문 단계">
-          <a class="flow-tab" id="flow-step-media" href="#member-media-explorer">
-            <span class="flow-tab-step">1</span>
-            <strong>매체 선택</strong>
-          </a>
-          <a class="flow-tab" id="flow-step-order" href="#member-order-panel">
-            <span class="flow-tab-step">2</span>
-            <strong>주문 정보 입력</strong>
-          </a>
-          <a class="flow-tab" id="flow-step-payment" href="#member-order-panel">
-            <span class="flow-tab-step">3</span>
-            <strong>결제 전 확인</strong>
-          </a>
-          <a class="flow-tab" id="flow-step-orders" href="#member-orders-panel">
-            <span class="flow-tab-step">4</span>
+        <div class="flow-topbar">
+          <div class="flow-tabs" aria-label="새 주문 단계">
+            <a class="flow-tab" id="flow-step-media" href="#member-media-explorer">
+              <span class="flow-tab-step">1</span>
+              <strong>매체 선택</strong>
+            </a>
+            <a class="flow-tab" id="flow-step-order" href="#member-order-panel">
+              <span class="flow-tab-step">2</span>
+              <strong>주문 정보 입력</strong>
+            </a>
+            <a class="flow-tab" id="flow-step-payment" href="#member-order-panel">
+              <span class="flow-tab-step">3</span>
+              <strong>결제 전 확인</strong>
+            </a>
+          </div>
+          <a class="flow-orders-link" id="flow-step-orders" href="#member-orders-panel">
             <strong>주문 현황</strong>
+            <span id="flow-orders-meta">바로 확인</span>
           </a>
         </div>
         <div class="flow-stage">
           <div class="flow-stage-head">
-            <span class="eyebrow">원고 송출</span>
-            <h1 class="page-title" id="member-next-action-title">원하는 매체를 먼저 찾아보세요</h1>
-            <p class="lede" id="member-next-action-copy">검색이나 카테고리로 맞는 매체를 고른 뒤 주문 입력으로 이어가면 됩니다.</p>
+            <span class="eyebrow">지금 해야 할 일</span>
+            <h1 class="page-title" id="member-next-action-title">먼저 매체를 선택해 주세요</h1>
+            <p class="lede" id="member-next-action-copy">검색하거나 카테고리를 눌러 이번 주문에 맞는 매체를 찾으면 됩니다.</p>
           </div>
           <div class="media-explorer-shell" id="member-media-explorer">
             <div class="media-search-shell">
@@ -87,17 +89,16 @@
           </div>
           <div class="hero-actions">
             <a class="btn btn-primary" id="member-primary-action" href="#member-media-explorer">매체 찾기</a>
-            <a class="hero-text-link" id="member-secondary-action" href="#member-orders-panel">내 주문 보기</a>
           </div>
           <div class="flow-inline-meta" aria-live="polite">
-            <article class="summary-card summary-card-inline summary-card-selected">
-              <span class="summary-card-label">선택 매체</span>
-              <strong class="summary-card-value" id="member-selected-summary">선택 없음</strong>
-            </article>
-            <article class="summary-card summary-card-inline summary-card-payment">
-              <span class="summary-card-label">진행 상태</span>
-              <strong class="summary-card-value" id="member-payment-summary">매체를 선택해 주세요</strong>
-            </article>
+            <div class="flow-inline-pill">
+              <span class="flow-inline-label">선택 매체</span>
+              <strong id="member-selected-summary">선택 없음</strong>
+            </div>
+            <div class="flow-inline-pill flow-inline-pill-muted">
+              <span class="flow-inline-label">현재 단계</span>
+              <strong id="member-payment-summary">매체를 선택해 주세요</strong>
+            </div>
           </div>
         </div>
       </section>

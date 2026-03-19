@@ -739,11 +739,11 @@ function renderCategoryIcon(iconKey) {
     grid:
       '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.5"></rect><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.5"></rect><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.5"></rect><rect x="14" y="14" width="6.5" height="6.5" rx="1.5"></rect></svg>',
     article:
-      '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M7 4.5h7l3 3v12H7z"></path><path d="M14 4.5v3h3"></path><path d="M10 12h4"></path><path d="M10 16h4"></path></svg>',
+      '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="M7.5 9h9"></path><path d="M7.5 12h4"></path><path d="M13 12h3.5"></path><path d="M7.5 15h9"></path></svg>',
     medical:
       '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path><circle cx="12" cy="12" r="8"></circle></svg>',
     briefcase:
-      '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M8 7V5.5A1.5 1.5 0 0 1 9.5 4h5A1.5 1.5 0 0 1 16 5.5V7"></path><rect x="4" y="7" width="16" height="11" rx="2"></rect><path d="M4 11h16"></path></svg>',
+      '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M7 20V8.5L12 5l5 3.5V20"></path><path d="M4 20h16"></path><path d="M10 11h1"></path><path d="M13 11h1"></path><path d="M10 14.5h1"></path><path d="M13 14.5h1"></path></svg>',
     sparkle:
       '<svg viewBox="0 0 24 24" role="img" focusable="false" aria-hidden="true"><path d="M12 4l1.6 4.4L18 10l-4.4 1.6L12 16l-1.6-4.4L6 10l4.4-1.6z"></path><path d="M18.5 4.5l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z"></path></svg>',
     coin:
@@ -809,36 +809,40 @@ function renderHeroSummary() {
   const nextActionCopy = document.getElementById("member-next-action-copy");
   const selectedSummary = document.getElementById("member-selected-summary");
   const paymentSummary = document.getElementById("member-payment-summary");
+  const ordersMeta = document.getElementById("flow-orders-meta");
   const selectedMedia = getSelectedMedia();
   const pendingOrders = getPendingOrdersCount();
   const publishedOrders = getPublishedOrdersCount();
   const draft = getCurrentOrderDraft();
   const paymentIntent = state.paymentIntent;
-  const paymentTotal = normalizeAmount(paymentIntent?.amount || paymentIntent?.payment?.totalAmount || 0);
 
-  let nextTitle = "원하는 매체를 먼저 찾아보세요";
-  let nextCopy = "검색이나 카테고리로 맞는 매체를 고른 뒤 주문 입력으로 이어가면 됩니다.";
+  let nextTitle = "먼저 매체를 선택해 주세요";
+  let nextCopy = "검색하거나 카테고리를 눌러 이번 주문에 맞는 매체를 찾으면 됩니다.";
   let primaryActionLabel = "매체 찾기";
   let primaryActionHref = "#member-media-explorer";
+  let showPrimaryAction = false;
 
   if (paymentIntent?.intentId) {
-    nextTitle = "결제 전 확인을 진행하세요";
-    nextCopy = "주문 정보가 준비됐습니다. 금액과 확인 항목만 검토하면 됩니다.";
+    nextTitle = "결제 전 확인만 남았습니다";
+    nextCopy = "최종 금액과 확인 항목을 보고 결제를 진행해 주세요.";
     primaryActionLabel = "결제 확인하기";
     primaryActionHref = "#member-order-panel";
+    showPrimaryAction = true;
   } else if (selectedMedia && draft.title && draft.hasFile) {
-    nextTitle = "주문 등록을 진행하세요";
-    nextCopy = "주문명과 원고 파일이 준비됐습니다. 주문 등록 후 결제 전 확인으로 이어집니다.";
+    nextTitle = "주문 등록을 진행해 주세요";
+    nextCopy = "입력한 정보로 주문을 등록하면 결제 전 확인으로 바로 이어집니다.";
     primaryActionLabel = "주문 등록하기";
     primaryActionHref = "#member-order-panel";
+    showPrimaryAction = true;
   } else if (selectedMedia) {
-    nextTitle = `${selectedMedia.name} 주문을 준비해 주세요`;
-    nextCopy = "이제 주문명과 원고 파일만 입력하면 다음 단계로 넘어갈 수 있습니다.";
+    nextTitle = "주문 정보를 입력해 주세요";
+    nextCopy = `${selectedMedia.name}을(를) 선택했습니다. 주문명과 원고 파일을 입력하면 됩니다.`;
     primaryActionLabel = "주문 정보 입력하기";
     primaryActionHref = "#member-order-panel";
+    showPrimaryAction = true;
   } else if (pendingOrders > 0 || publishedOrders > 0) {
-    nextTitle = pendingOrders > 0 ? `진행 중 주문 ${pendingOrders}건을 확인해 주세요` : `송출 완료 주문 ${publishedOrders}건이 있습니다`;
-    nextCopy = "기존 주문을 확인하거나 새 주문을 바로 시작할 수 있습니다.";
+    nextTitle = "새 주문을 다시 시작해 보세요";
+    nextCopy = "기존 주문은 오른쪽 주문 현황에서 확인할 수 있습니다.";
     primaryActionLabel = "새 주문 시작하기";
     primaryActionHref = "#member-media-explorer";
   }
@@ -846,6 +850,7 @@ function renderHeroSummary() {
   if (primaryAction instanceof HTMLAnchorElement) {
     primaryAction.textContent = primaryActionLabel;
     primaryAction.href = primaryActionHref;
+    primaryAction.classList.toggle("is-hidden", !showPrimaryAction);
   }
   if (nextActionTitle) nextActionTitle.textContent = nextTitle;
   if (nextActionCopy) nextActionCopy.textContent = nextCopy;
@@ -853,23 +858,25 @@ function renderHeroSummary() {
   if (selectedSummary) {
     selectedSummary.textContent = selectedMedia
       ? `${selectedMedia.name} · ${formatCurrency(selectedMedia.salePrice || selectedMedia.unitPrice || 0)}`
-      : pendingOrders > 0 || publishedOrders > 0
-        ? "주문 현황 확인 가능"
-        : "아직 선택 없음";
+      : "아직 선택 없음";
   }
 
   if (paymentSummary) {
     paymentSummary.textContent = paymentIntent?.intentId
-      ? `${formatCurrency(paymentTotal)} 결제 확인`
+      ? "결제 전 확인"
       : selectedMedia && (draft.title || draft.note || draft.hasFile)
         ? "주문 정보 입력 중"
         : selectedMedia
-          ? "주문 정보 입력 대기"
-          : pendingOrders > 0
-            ? `진행 중 ${pendingOrders}건`
-            : publishedOrders > 0
-              ? `송출 완료 ${publishedOrders}건`
-              : "매체를 선택해 주세요";
+          ? "주문 정보 입력"
+          : "매체 선택";
+  }
+
+  if (ordersMeta) {
+    ordersMeta.textContent = pendingOrders > 0
+      ? `진행 ${pendingOrders}건`
+      : publishedOrders > 0
+        ? `완료 ${publishedOrders}건`
+        : "바로 확인";
   }
 
   setTaskState(document.getElementById("flow-step-media"), selectedMedia ? "complete" : "active");
