@@ -20,6 +20,25 @@ const MEDIA_CATEGORY_ORDER = {
   금융: 5,
 };
 
+const ALL_MEDIA_GROUP = "__all__";
+
+const MEDIA_CATEGORY_META = {
+  [ALL_MEDIA_GROUP]: { label: "전체", icon: "▦", tone: "all" },
+  일반: { label: "일반", icon: "📰", tone: "general" },
+  의료: { label: "의료", icon: "🩺", tone: "medical" },
+  비즈니스: { label: "비즈니스", icon: "💼", tone: "business" },
+  뷰티: { label: "뷰티", icon: "💄", tone: "beauty" },
+  금융: { label: "금융", icon: "₩", tone: "finance" },
+  법률: { label: "법률", icon: "⚖", tone: "law" },
+  부동산: { label: "부동산", icon: "⌂", tone: "realestate" },
+  특수: { label: "특수", icon: "✎", tone: "special" },
+  배너: { label: "배너", icon: "🖵", tone: "special" },
+  창업: { label: "창업", icon: "🚀", tone: "business" },
+  인터뷰: { label: "인터뷰", icon: "🎙", tone: "special" },
+  맛집: { label: "맛집", icon: "🍜", tone: "beauty" },
+  건기식: { label: "건기식", icon: "💊", tone: "medical" },
+};
+
 const state = {
   member: null,
   media: [],
@@ -694,6 +713,10 @@ function getMediaGroups(mediaItems) {
   });
 }
 
+function getMediaCategoryMeta(group) {
+  return MEDIA_CATEGORY_META[group] || { label: String(group || "기타"), icon: "◌", tone: "special" };
+}
+
 function renderMemberState() {
   const element = document.getElementById("member-state");
   const logoutButton = document.getElementById("member-logout-button");
@@ -730,8 +753,7 @@ function setTaskState(element, stateName) {
 }
 
 function renderHeroSummary() {
-  const welcomeTitle = document.getElementById("member-welcome-title");
-  const welcomeCopy = document.getElementById("member-welcome-copy");
+  const primaryAction = document.getElementById("member-primary-action");
   const nextActionTitle = document.getElementById("member-next-action-title");
   const nextActionCopy = document.getElementById("member-next-action-copy");
   const selectedSummary = document.getElementById("member-selected-summary");
@@ -745,33 +767,37 @@ function renderHeroSummary() {
   const paymentIntent = state.paymentIntent;
   const paymentTotal = normalizeAmount(paymentIntent?.amount || paymentIntent?.payment?.totalAmount || 0);
 
-  let heroTitle = "첫 주문을 바로 시작할 수 있습니다";
-  let heroCopy = "매체를 고른 뒤 원고를 첨부하고 결제까지 이어서 진행할 수 있게 주문 흐름을 한 화면에 정리했습니다.";
-  let nextTitle = "매체를 선택해 주세요";
-  let nextCopy = "카테고리와 단가를 비교한 뒤 이번 주문에 맞는 매체를 먼저 고르면 됩니다.";
+  let nextTitle = "먼저 매체를 선택하세요";
+  let nextCopy = "카테고리와 검색으로 주문할 매체를 고른 뒤 아래에서 주문 정보를 이어서 입력하면 됩니다.";
+  let primaryActionLabel = "매체 선택하기";
+  let primaryActionHref = "#member-media-panel";
 
   if (paymentIntent?.intentId) {
-    heroTitle = "결제 전 최종 확인 단계입니다";
-    heroCopy = "주문 정보와 금액을 확인한 뒤 결제를 진행하면 주문 현황에서 상태를 바로 추적할 수 있습니다.";
-    nextTitle = "결제 확인을 진행해 주세요";
-    nextCopy = "주문명과 금액을 확인하고 결제하기 버튼을 눌러 주문을 마무리하면 됩니다.";
+    nextTitle = "결제 확인만 남았습니다";
+    nextCopy = "주문명과 금액을 마지막으로 확인한 뒤 결제를 진행하면 됩니다.";
+    primaryActionLabel = "주문 정보 확인하기";
+    primaryActionHref = "#member-order-panel";
   } else if (selectedMedia && draft.title && draft.hasFile) {
-    heroTitle = "주문 등록 후 결제 확인까지 이어가세요";
-    heroCopy = "선택한 매체와 첨부한 원고가 준비되어 있으면 주문 등록 후 결제 전 확인으로 자연스럽게 이어집니다.";
-    nextTitle = "주문 등록을 진행해 주세요";
-    nextCopy = "입력한 주문 정보를 확인한 뒤 주문 등록 버튼을 누르면 결제 전 확인 단계가 열립니다.";
+    nextTitle = "주문 등록만 하면 됩니다";
+    nextCopy = "입력한 정보가 준비되었습니다. 주문 등록 후 결제 전 확인 단계로 바로 이어집니다.";
+    primaryActionLabel = "주문 입력으로 이동";
+    primaryActionHref = "#member-order-panel";
   } else if (selectedMedia) {
-    heroTitle = `${selectedMedia.name} 주문을 준비하고 있습니다`;
-    heroCopy = "선택한 매체를 기준으로 주문명과 요청사항, 원고 파일을 입력하면 결제 준비까지 바로 이어집니다.";
-    nextTitle = "주문 정보를 입력해 주세요";
-    nextCopy = "주문명, 요청사항, 원고 파일을 순서대로 입력하면 다음 단계가 훨씬 빠르게 진행됩니다.";
+    nextTitle = "주문 정보 입력을 이어가세요";
+    nextCopy = `${selectedMedia.name} 선택이 끝났습니다. 이제 주문명, 요청사항, 원고 파일만 입력하면 됩니다.`;
+    primaryActionLabel = "주문 정보 입력하기";
+    primaryActionHref = "#member-order-panel";
   } else if (pendingOrders > 0 || publishedOrders > 0) {
-    heroTitle = "주문 현황을 확인하고 다음 주문을 이어가세요";
-    heroCopy = "진행 중 주문과 송출 완료 주문을 함께 확인하면서 다음 주문도 바로 시작할 수 있도록 구성했습니다.";
+    nextTitle = "주문 현황을 확인하고 다음 주문을 이어가세요";
+    nextCopy = "진행 중 주문을 확인하면서 다음 주문도 바로 시작할 수 있습니다.";
+    primaryActionLabel = "새 주문 시작하기";
+    primaryActionHref = "#member-media-panel";
   }
 
-  if (welcomeTitle) welcomeTitle.textContent = heroTitle;
-  if (welcomeCopy) welcomeCopy.textContent = heroCopy;
+  if (primaryAction instanceof HTMLAnchorElement) {
+    primaryAction.textContent = primaryActionLabel;
+    primaryAction.href = primaryActionHref;
+  }
   if (nextActionTitle) nextActionTitle.textContent = nextTitle;
   if (nextActionCopy) nextActionCopy.textContent = nextCopy;
 
@@ -781,7 +807,7 @@ function renderHeroSummary() {
   if (selectedSummaryCopy) {
     selectedSummaryCopy.textContent = selectedMedia
       ? `${selectedMedia.category || "기본"} · ${formatCurrency(selectedMedia.salePrice || selectedMedia.unitPrice || 0)} · ${selectedMedia.channel || "노출채널 미정"}`
-      : "카테고리와 단가를 비교한 뒤 주문할 매체를 먼저 선택해 주세요.";
+      : "선택한 매체명과 판매가가 여기에 바로 표시됩니다.";
   }
 
   if (paymentSummary) {
@@ -793,18 +819,22 @@ function renderHeroSummary() {
   }
   if (paymentSummaryCopy) {
     paymentSummaryCopy.textContent = paymentIntent?.intentId
-      ? "결제 전 확인 단계에서 주문명, 매체, 금액을 마지막으로 다시 검토해 주세요."
+      ? "주문명과 금액을 다시 확인한 뒤 결제를 진행해 주세요."
       : pendingOrders > 0
         ? "이미 등록한 주문은 아래 주문 현황에서 상태를 계속 확인할 수 있습니다."
-        : "주문을 등록하면 최종 금액과 결제 전 확인 항목을 먼저 보여드립니다.";
+        : "주문을 등록하면 결제 전 확인 단계가 바로 열립니다.";
   }
 
-  setTaskState(document.getElementById("task-step-media"), selectedMedia ? "complete" : "active");
+  setTaskState(document.getElementById("flow-step-media"), selectedMedia ? "complete" : "active");
   setTaskState(
-    document.getElementById("task-step-order"),
-    paymentIntent?.intentId ? "complete" : selectedMedia ? "active" : ""
+    document.getElementById("flow-step-order"),
+    paymentIntent?.intentId || pendingOrders > 0 || publishedOrders > 0 ? "complete" : selectedMedia ? "active" : ""
   );
-  setTaskState(document.getElementById("task-step-payment"), paymentIntent?.intentId ? "active" : "");
+  setTaskState(
+    document.getElementById("flow-step-payment"),
+    paymentIntent?.intentId ? "active" : pendingOrders > 0 || publishedOrders > 0 ? "complete" : ""
+  );
+  setTaskState(document.getElementById("flow-step-orders"), pendingOrders > 0 || publishedOrders > 0 ? "complete" : "");
 }
 
 function renderStats() {
@@ -1132,4 +1162,3 @@ window.addEventListener("beforeunload", () => {
 });
 
 init();
-
