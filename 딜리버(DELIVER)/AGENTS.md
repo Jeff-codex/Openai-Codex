@@ -49,6 +49,16 @@ Git history is not available in this checkout, so use a consistent standard:
 ## Security & Configuration Tips
 Do not modify or delete existing signed system binaries unless explicitly required and approved. Never commit secrets, host-specific credentials, or machine identifiers in scripts or docs.
 
+## EveryonePR Agent Kit
+- Internal EveryonePR strategy and agent-kit documents live under `docs/agent-kit/`.
+- When the task is strategic planning, phased execution design, weekly prioritization, or agent-role setup, read:
+  - `docs/agent-kit/MASTER_OPERATING_RULES.md`
+  - `docs/agent-kit/everyonepr/NORTH_STAR.md`
+  - `docs/agent-kit/everyonepr/WEEKLY_BRIEF.md`
+  - `docs/agent-kit/everyonepr/BUILD_QUEUE.md`
+  - `docs/agent-kit/everyonepr/agents/*.md`
+- Do not let the agent kit override explicit user approvals or repo safety rules.
+
 ## Session Shortcut
 - If the user message is exactly `딜리버` or `모두의피알`, immediately run the Windows restart checklist script:
   - powershell -NoProfile -ExecutionPolicy Bypass -File .\07_자동화스크립트-AutomationScripts\restart-checklist-win.ps1
