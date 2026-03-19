@@ -1576,9 +1576,8 @@ tbody tr.selected {
   html,
   body {
     width: 100%;
-    max-width: 100dvw;
+    max-width: 100%;
     overflow-x: hidden;
-    overflow-x: clip;
   }
 
   .bg-shape {
@@ -1590,13 +1589,11 @@ tbody tr.selected {
     align-items: stretch;
     flex-direction: column;
     width: 100%;
-    max-width: 100dvw;
     gap: 0.78rem;
     padding-top: 0.92rem;
-    padding-left: calc(env(safe-area-inset-left) + 0.75rem);
-    padding-right: calc(env(safe-area-inset-right) + 0.75rem);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
     padding-bottom: 1rem;
-    overflow-x: clip;
   }
 
   .brand-wrap {
@@ -1634,13 +1631,10 @@ tbody tr.selected {
 
   .layout {
     min-width: 0;
-    width: min(100%, 100dvw);
-    max-width: 100dvw;
-    margin: 0.7rem auto 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-left: calc(env(safe-area-inset-left) + 0.5rem);
-    padding-right: calc(env(safe-area-inset-right) + 0.5rem);
+    width: 100%;
+    max-width: 100%;
+    margin: 0.7rem 0 0;
+    padding: 0 0.5rem;
     overflow-x: hidden;
     overflow-x: clip;
   }
@@ -1667,14 +1661,10 @@ tbody tr.selected {
   }
 
   .site-footer {
-    width: min(100%, 100dvw);
-    max-width: 100dvw;
-    margin: 0 auto 1rem;
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-left: calc(env(safe-area-inset-left) + 0.5rem);
-    padding-right: calc(env(safe-area-inset-right) + 0.5rem);
-    overflow-x: clip;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 1rem;
+    padding: 0 0.5rem;
   }
 
   .portal-grid > * {
