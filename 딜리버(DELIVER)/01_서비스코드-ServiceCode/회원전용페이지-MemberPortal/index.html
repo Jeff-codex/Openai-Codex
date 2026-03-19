@@ -42,22 +42,88 @@
     </div>
 
     <main class="layout">
-      <section class="dashboard-shell" aria-label="실시간 운영 대시보드">
-        <details class="dashboard-disclosure" id="dashboard-disclosure">
-          <summary class="btn btn-light dashboard-trigger" id="dashboard-trigger">
-            <span>실시간 운영 대시보드</span>
-            <span class="dashboard-trigger-icon" aria-hidden="true"></span>
-          </summary>
-          <div class="card panel dashboard-panel" id="dashboard-panel">
-            <p class="sub">주문 상태와 결제 현황을 한 화면에서 확인합니다.</p>
-            <div class="stats-grid">
+      <section class="member-hero card panel" aria-label="회원전용 첫 화면 요약">
+        <div class="member-hero-main">
+          <span class="eyebrow">오늘의 상태 요약</span>
+          <h1 class="page-title" id="member-welcome-title">첫 주문을 바로 시작할 수 있습니다</h1>
+          <p class="lede" id="member-welcome-copy">
+            매체를 고른 뒤 원고를 첨부하고 결제까지 이어서 진행할 수 있게 주문 흐름을 한 화면에 정리했습니다.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#member-media-panel">매체 선택하기</a>
+            <a class="btn btn-light" href="#member-orders-panel">내 주문 보기</a>
+          </div>
+        </div>
+        <div class="member-hero-side">
+          <article class="summary-card summary-card-next">
+            <span class="summary-card-label">지금 해야 할 일</span>
+            <strong class="summary-card-value" id="member-next-action-title">매체를 선택해 주세요</strong>
+            <p class="summary-card-copy" id="member-next-action-copy">
+              원하는 매체를 먼저 고르면 주문명 입력과 결제 준비가 바로 이어집니다.
+            </p>
+          </article>
+          <article class="summary-card summary-card-selected">
+            <span class="summary-card-label">현재 선택 매체</span>
+            <strong class="summary-card-value" id="member-selected-summary">아직 선택 없음</strong>
+            <p class="summary-card-copy" id="member-selected-summary-copy">카테고리와 단가를 비교한 뒤 바로 주문으로 이어갈 수 있습니다.</p>
+          </article>
+          <article class="summary-card summary-card-payment">
+            <span class="summary-card-label">결제 상태</span>
+            <strong class="summary-card-value" id="member-payment-summary">주문 등록 대기</strong>
+            <p class="summary-card-copy" id="member-payment-summary-copy">주문을 등록하면 결제 전 최종 금액과 확인 항목을 먼저 보여드립니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="card panel task-panel" aria-label="주문 진행 단계">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">주문 진행 순서</span>
+            <h2>무엇을 먼저 해야 하는지 바로 보이게 정리했습니다</h2>
+          </div>
+          <p class="sub">매체 선택부터 결제 전 확인까지 한 단계씩 이어서 진행하면 됩니다.</p>
+        </div>
+        <div class="task-grid">
+          <article class="task-card" id="task-step-media">
+            <span class="task-step">1</span>
+            <div>
+              <strong>매체 선택</strong>
+              <p>카테고리와 단가를 보고 이번 주문에 맞는 매체를 고릅니다.</p>
+            </div>
+          </article>
+          <article class="task-card" id="task-step-order">
+            <span class="task-step">2</span>
+            <div>
+              <strong>주문 정보 입력</strong>
+              <p>주문명과 요청사항, 원고 파일을 입력해 주문 준비를 끝냅니다.</p>
+            </div>
+          </article>
+          <article class="task-card" id="task-step-payment">
+            <span class="task-step">3</span>
+            <div>
+              <strong>결제 전 확인</strong>
+              <p>최종 금액과 확인 항목을 보고 결제를 진행합니다.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card panel dashboard-panel" id="dashboard-panel" aria-label="주문 대시보드 요약">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">실시간 운영 대시보드</span>
+            <h2>주문과 결제 현황을 한 번에 확인하세요</h2>
+          </div>
+          <p class="sub">누적 결제금액과 현재 진행 상황을 바로 확인할 수 있습니다.</p>
+        </div>
+        <div class="stats-grid">
           <article class="stat-box">
             <strong id="stat-payments-total">0원</strong>
             <span>누적 결제금액</span>
           </article>
           <article class="stat-box">
             <strong id="stat-orders-total">0</strong>
-            <span>내 총 주문</span>
+            <span>총 주문 수</span>
           </article>
           <article class="stat-box">
             <strong id="stat-orders-pending">0</strong>
@@ -67,15 +133,16 @@
             <strong id="stat-orders-published">0</strong>
             <span>송출 완료</span>
           </article>
-            </div>
-          </div>
-        </details>
+        </div>
       </section>
 
       <section class="portal-grid">
-        <article class="card panel">
+        <article class="card panel" id="member-media-panel">
           <div class="panel-head">
-            <h2>매체 선택</h2>
+            <div>
+              <h2>1. 매체 선택</h2>
+              <p class="sub">카테고리와 노출 채널, 판매가를 보고 이번 주문에 맞는 매체를 먼저 선택하세요.</p>
+            </div>
             <input id="media-search" type="text" placeholder="매체명/등급/노출채널 검색" />
           </div>
           <div class="media-tools">
@@ -85,9 +152,14 @@
           <div class="media-group-list" id="media-group-list"></div>
         </article>
 
-        <article class="card panel">
-          <h2>송출 주문 등록</h2>
-          <p class="sub">주문등록 후 결제 최종확인 단계를 거쳐 결제창으로 이동합니다.</p>
+        <article class="card panel" id="member-order-panel">
+          <div class="section-head order-head">
+            <div>
+              <span class="eyebrow">주문 등록</span>
+              <h2>2. 주문 정보 입력</h2>
+            </div>
+            <p class="sub">선택한 매체를 확인한 뒤 주문명, 요청사항, 원고 파일을 순서대로 입력하세요.</p>
+          </div>
 
           <div class="selected-media" id="selected-media-card">
             <h3 id="selected-media-name">매체를 선택해 주세요</h3>
@@ -122,10 +194,10 @@
                 accept=".txt,.doc,.docx,.hwp,.hwpx,.pdf,.rtf,.md,.odt"
               />
               <div class="file-row">
-                <button class="btn btn-light" id="order-file-button" type="button">원고파일첨부</button>
+                <button class="btn btn-light" id="order-file-button" type="button">원고 파일 선택</button>
                 <span id="order-file-name">선택된 파일 없음</span>
               </div>
-              <small class="field-hint">주문등록 후 최종 금액/환불규정을 확인하고 결제하기 버튼을 눌러 결제를 진행합니다.</small>
+              <small class="field-hint">주문을 등록하면 최종 금액과 확인 항목을 먼저 보여드린 뒤 결제로 이어집니다.</small>
             </div>
             <p class="form-message" id="order-message" aria-live="polite"></p>
             <button class="btn btn-primary" type="submit">주문 등록</button>
@@ -133,9 +205,14 @@
         </article>
       </section>
 
-      <section class="card panel">
-        <h2>내 주문 현황</h2>
-        <p class="sub">상태는 관리자 처리에 따라 실시간으로 반영됩니다.</p>
+      <section class="card panel" id="member-orders-panel">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">주문 현황</span>
+            <h2>내 주문 현황</h2>
+          </div>
+          <p class="sub">접수부터 송출 완료까지 상태가 실시간으로 반영됩니다.</p>
+        </div>
         <div class="table-wrap">
           <table>
             <thead>
@@ -171,7 +248,7 @@
           <h3 id="order-payment-title">최종 결제 확인</h3>
           <button class="btn btn-light small" type="button" id="order-payment-close">닫기</button>
         </div>
-        <p class="sub">아래 주문 정보를 확인해 주세요. 결제 연동 오픈 전에는 결제가 진행되지 않습니다.</p>
+        <p class="sub">아래 주문 정보와 결제 전 확인 항목을 검토한 뒤 결제를 진행하세요.</p>
         <div class="payment-summary-box">
           <div class="payment-kv-grid">
             <div class="payment-kv-item full">
@@ -206,17 +283,25 @@
             <div id="payment-widget-agreement"></div>
           </div>
           <p class="form-message" id="order-payment-message" aria-live="polite"></p>
+          <div class="payment-checklist">
+            <strong>결제 전 확인</strong>
+            <ul>
+              <li>선택한 매체와 주문명이 맞는지 확인해 주세요.</li>
+              <li>판매가와 부가세를 포함한 최종 금액을 다시 확인해 주세요.</li>
+              <li>주문 완료 후에는 관리자 검수 상태에 따라 진행 현황이 갱신됩니다.</li>
+            </ul>
+          </div>
           <div class="modal-actions">
             <button class="btn btn-light" type="button" id="order-payment-cancel">취소</button>
             <button class="btn btn-primary" type="submit">결제하기</button>
           </div>
         </form>
-        <details class="refund-policy" id="order-refund-policy" open>
+        <details class="refund-policy" id="order-refund-policy">
           <summary>환불 규정</summary>
           <div class="refund-policy-body">
             <div id="order-refund-policy-content">
-              <h4>주문 결제 환불 규정(임시 안내문)</h4>
-              <p>최종 환불 규정 문구는 운영 정책 확정본으로 교체됩니다.</p>
+              <h4>주문 결제 환불 규정</h4>
+              <p>결제 전에는 환불 기준을 짧게 확인하고, 상세 운영 기준은 펼쳐서 볼 수 있습니다.</p>
             </div>
           </div>
         </details>

@@ -68,12 +68,6 @@ function syncTopbarOffset() {
   document.documentElement.style.setProperty("--topbar-offset", `${Math.max(62, height)}px`);
 }
 
-function syncDashboardDisclosure() {
-  const dashboardDisclosure = document.getElementById("dashboard-disclosure");
-  if (!(dashboardDisclosure instanceof HTMLDetailsElement)) return;
-  dashboardDisclosure.open = !window.matchMedia("(max-width: 760px)").matches;
-}
-
 function formatCurrency(value) {
   const n = Number(value || 0);
   if (!Number.isFinite(n)) return "0원";
@@ -704,15 +698,118 @@ function renderMemberState() {
   const element = document.getElementById("member-state");
   const logoutButton = document.getElementById("member-logout-button");
   if (!element) return;
-  element.textContent = state.member ? `${state.member.name} (${state.member.loginId})` : "로그인 필요";
+  element.textContent = state.member ? `${state.member.name}님 주문 준비 완료` : "로그인 확인 필요";
   if (logoutButton instanceof HTMLElement) {
     logoutButton.classList.toggle("is-hidden", !state.member);
   }
 }
 
+function getPendingOrdersCount() {
+  return state.orders.filter((order) => !["published", "rejected"].includes(String(order.status || ""))).length;
+}
+
+function getPublishedOrdersCount() {
+  return state.orders.filter((order) => String(order.status || "") === "published").length;
+}
+
+function getCurrentOrderDraft() {
+  const titleInput = document.getElementById("order-title");
+  const noteInput = document.getElementById("order-note");
+  const fileInput = document.getElementById("order-file-input");
+  const title = titleInput instanceof HTMLInputElement ? String(titleInput.value || "").trim() : "";
+  const note = noteInput instanceof HTMLTextAreaElement ? String(noteInput.value || "").trim() : "";
+  const hasFile = fileInput instanceof HTMLInputElement ? Number(fileInput.files?.length || 0) > 0 : false;
+  return { title, note, hasFile };
+}
+
+function setTaskState(element, stateName) {
+  if (!(element instanceof HTMLElement)) return;
+  element.classList.remove("is-active", "is-complete");
+  if (stateName === "active") element.classList.add("is-active");
+  if (stateName === "complete") element.classList.add("is-complete");
+}
+
+function renderHeroSummary() {
+  const welcomeTitle = document.getElementById("member-welcome-title");
+  const welcomeCopy = document.getElementById("member-welcome-copy");
+  const nextActionTitle = document.getElementById("member-next-action-title");
+  const nextActionCopy = document.getElementById("member-next-action-copy");
+  const selectedSummary = document.getElementById("member-selected-summary");
+  const selectedSummaryCopy = document.getElementById("member-selected-summary-copy");
+  const paymentSummary = document.getElementById("member-payment-summary");
+  const paymentSummaryCopy = document.getElementById("member-payment-summary-copy");
+  const selectedMedia = getSelectedMedia();
+  const pendingOrders = getPendingOrdersCount();
+  const publishedOrders = getPublishedOrdersCount();
+  const draft = getCurrentOrderDraft();
+  const paymentIntent = state.paymentIntent;
+  const paymentTotal = normalizeAmount(paymentIntent?.amount || paymentIntent?.payment?.totalAmount || 0);
+
+  let heroTitle = "첫 주문을 바로 시작할 수 있습니다";
+  let heroCopy = "매체를 고른 뒤 원고를 첨부하고 결제까지 이어서 진행할 수 있게 주문 흐름을 한 화면에 정리했습니다.";
+  let nextTitle = "매체를 선택해 주세요";
+  let nextCopy = "카테고리와 단가를 비교한 뒤 이번 주문에 맞는 매체를 먼저 고르면 됩니다.";
+
+  if (paymentIntent?.intentId) {
+    heroTitle = "결제 전 최종 확인 단계입니다";
+    heroCopy = "주문 정보와 금액을 확인한 뒤 결제를 진행하면 주문 현황에서 상태를 바로 추적할 수 있습니다.";
+    nextTitle = "결제 확인을 진행해 주세요";
+    nextCopy = "주문명과 금액을 확인하고 결제하기 버튼을 눌러 주문을 마무리하면 됩니다.";
+  } else if (selectedMedia && draft.title && draft.hasFile) {
+    heroTitle = "주문 등록 후 결제 확인까지 이어가세요";
+    heroCopy = "선택한 매체와 첨부한 원고가 준비되어 있으면 주문 등록 후 결제 전 확인으로 자연스럽게 이어집니다.";
+    nextTitle = "주문 등록을 진행해 주세요";
+    nextCopy = "입력한 주문 정보를 확인한 뒤 주문 등록 버튼을 누르면 결제 전 확인 단계가 열립니다.";
+  } else if (selectedMedia) {
+    heroTitle = `${selectedMedia.name} 주문을 준비하고 있습니다`;
+    heroCopy = "선택한 매체를 기준으로 주문명과 요청사항, 원고 파일을 입력하면 결제 준비까지 바로 이어집니다.";
+    nextTitle = "주문 정보를 입력해 주세요";
+    nextCopy = "주문명, 요청사항, 원고 파일을 순서대로 입력하면 다음 단계가 훨씬 빠르게 진행됩니다.";
+  } else if (pendingOrders > 0 || publishedOrders > 0) {
+    heroTitle = "주문 현황을 확인하고 다음 주문을 이어가세요";
+    heroCopy = "진행 중 주문과 송출 완료 주문을 함께 확인하면서 다음 주문도 바로 시작할 수 있도록 구성했습니다.";
+  }
+
+  if (welcomeTitle) welcomeTitle.textContent = heroTitle;
+  if (welcomeCopy) welcomeCopy.textContent = heroCopy;
+  if (nextActionTitle) nextActionTitle.textContent = nextTitle;
+  if (nextActionCopy) nextActionCopy.textContent = nextCopy;
+
+  if (selectedSummary) {
+    selectedSummary.textContent = selectedMedia ? `${selectedMedia.name}` : "아직 선택 없음";
+  }
+  if (selectedSummaryCopy) {
+    selectedSummaryCopy.textContent = selectedMedia
+      ? `${selectedMedia.category || "기본"} · ${formatCurrency(selectedMedia.salePrice || selectedMedia.unitPrice || 0)} · ${selectedMedia.channel || "노출채널 미정"}`
+      : "카테고리와 단가를 비교한 뒤 주문할 매체를 먼저 선택해 주세요.";
+  }
+
+  if (paymentSummary) {
+    paymentSummary.textContent = paymentIntent?.intentId
+      ? `${formatCurrency(paymentTotal)} 확인 필요`
+      : pendingOrders > 0
+        ? `진행 중 ${pendingOrders}건`
+        : "주문 등록 대기";
+  }
+  if (paymentSummaryCopy) {
+    paymentSummaryCopy.textContent = paymentIntent?.intentId
+      ? "결제 전 확인 단계에서 주문명, 매체, 금액을 마지막으로 다시 검토해 주세요."
+      : pendingOrders > 0
+        ? "이미 등록한 주문은 아래 주문 현황에서 상태를 계속 확인할 수 있습니다."
+        : "주문을 등록하면 최종 금액과 결제 전 확인 항목을 먼저 보여드립니다.";
+  }
+
+  setTaskState(document.getElementById("task-step-media"), selectedMedia ? "complete" : "active");
+  setTaskState(
+    document.getElementById("task-step-order"),
+    paymentIntent?.intentId ? "complete" : selectedMedia ? "active" : ""
+  );
+  setTaskState(document.getElementById("task-step-payment"), paymentIntent?.intentId ? "active" : "");
+}
+
 function renderStats() {
-  const pending = state.orders.filter((order) => !["published", "rejected"].includes(String(order.status || ""))).length;
-  const published = state.orders.filter((order) => String(order.status || "") === "published").length;
+  const pending = getPendingOrdersCount();
+  const published = getPublishedOrdersCount();
   const totalPayments = state.orders.reduce((sum, order) => sum + normalizeAmount(order?.payment?.totalAmount || 0), 0);
 
   document.getElementById("stat-payments-total").textContent = formatCurrency(totalPayments);
@@ -820,7 +917,7 @@ function renderOrders() {
   const tbody = document.getElementById("member-orders-body");
   if (!tbody) return;
   if (!state.orders.length) {
-    tbody.innerHTML = `<tr><td colspan="7">등록된 주문이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7">아직 등록된 주문이 없습니다. 위에서 매체를 선택한 뒤 첫 주문을 시작해 주세요.</td></tr>`;
     return;
   }
   tbody.innerHTML = state.orders
@@ -848,6 +945,7 @@ function renderOrders() {
 
 function renderAll() {
   renderMemberState();
+  renderHeroSummary();
   renderStats();
   renderMediaGroups();
   renderSelectedMediaCard();
@@ -991,12 +1089,10 @@ async function init() {
   clearLegacyTokenStorage();
   setAuthReady(false);
   syncTopbarOffset();
-  syncDashboardDisclosure();
   initChannelTalk();
   bindEvents();
   window.addEventListener("resize", () => {
     syncTopbarOffset();
-    syncDashboardDisclosure();
   });
   const topbar = document.querySelector(".topbar");
   if (typeof ResizeObserver === "function" && topbar instanceof HTMLElement) {
@@ -1008,7 +1104,6 @@ async function init() {
     await handleOrderPaymentRedirectResult();
     setAuthReady(true);
     syncTopbarOffset();
-    syncDashboardDisclosure();
   } catch (error) {
     if (Number(error?.status) === 401) {
       redirectToLanding();
@@ -1016,7 +1111,6 @@ async function init() {
     }
     setAuthReady(true);
     syncTopbarOffset();
-    syncDashboardDisclosure();
     setOrderMessage("error", "데이터 로딩이 지연되고 있습니다. 잠시 후 자동으로 다시 동기화됩니다.");
     renderAll();
     return;
