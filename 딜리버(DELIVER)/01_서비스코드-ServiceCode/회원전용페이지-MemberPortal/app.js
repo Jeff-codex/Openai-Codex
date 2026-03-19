@@ -773,23 +773,23 @@ function renderHeroSummary() {
   let primaryActionHref = "#member-media-panel";
 
   if (paymentIntent?.intentId) {
-    nextTitle = "결제 확인만 남았습니다";
-    nextCopy = "주문명과 금액을 마지막으로 확인한 뒤 결제를 진행하면 됩니다.";
-    primaryActionLabel = "주문 정보 확인하기";
+    nextTitle = "결제 전 확인을 진행하세요";
+    nextCopy = "주문 정보와 금액을 다시 확인한 뒤 결제를 마무리하면 됩니다.";
+    primaryActionLabel = "결제 확인하기";
     primaryActionHref = "#member-order-panel";
   } else if (selectedMedia && draft.title && draft.hasFile) {
-    nextTitle = "주문 등록만 하면 됩니다";
-    nextCopy = "입력한 정보가 준비되었습니다. 주문 등록 후 결제 전 확인 단계로 바로 이어집니다.";
-    primaryActionLabel = "주문 입력으로 이동";
+    nextTitle = "주문 등록을 진행하세요";
+    nextCopy = "입력한 주문 정보를 확인한 뒤 주문 등록을 진행하면 결제 전 확인 단계가 열립니다.";
+    primaryActionLabel = "주문 입력 계속하기";
     primaryActionHref = "#member-order-panel";
   } else if (selectedMedia) {
-    nextTitle = "주문 정보 입력을 이어가세요";
-    nextCopy = `${selectedMedia.name} 선택이 끝났습니다. 이제 주문명, 요청사항, 원고 파일만 입력하면 됩니다.`;
+    nextTitle = `${selectedMedia.name} 주문을 준비 중입니다`;
+    nextCopy = "주문명과 원고 파일을 입력하면 결제 전 확인 단계로 넘어갈 수 있습니다.";
     primaryActionLabel = "주문 정보 입력하기";
     primaryActionHref = "#member-order-panel";
   } else if (pendingOrders > 0 || publishedOrders > 0) {
-    nextTitle = "주문 현황을 확인하고 다음 주문을 이어가세요";
-    nextCopy = "진행 중 주문을 확인하면서 다음 주문도 바로 시작할 수 있습니다.";
+    nextTitle = pendingOrders > 0 ? `진행 중 주문 ${pendingOrders}건을 확인해 주세요` : `송출 완료 주문 ${publishedOrders}건이 있습니다`;
+    nextCopy = "기존 주문 현황을 확인하거나 아래에서 새 주문을 다시 시작할 수 있습니다.";
     primaryActionLabel = "새 주문 시작하기";
     primaryActionHref = "#member-media-panel";
   }
@@ -864,14 +864,16 @@ function renderMediaGroups() {
   }
 
   const groupNames = groups.map(([group]) => group);
-  if (!groupNames.includes(state.activeMediaGroup)) {
-    state.activeMediaGroup = groupNames[0];
+  const groupEntries = [[ALL_MEDIA_GROUP, filtered], ...groups];
+  if (![ALL_MEDIA_GROUP, ...groupNames].includes(state.activeMediaGroup)) {
+    state.activeMediaGroup = ALL_MEDIA_GROUP;
   }
-  const activeGroupEntry = groups.find(([group]) => group === state.activeMediaGroup) || groups[0];
+  const activeGroupEntry = groupEntries.find(([group]) => group === state.activeMediaGroup) || groupEntries[0];
   const activeGroup = activeGroupEntry[0];
   const activeItems = activeGroupEntry[1];
   if (summary) {
-    const summarySegments = [`총 ${filtered.length}개`, `카테고리 ${groupNames.length}개`, `선택 ${activeGroup} ${activeItems.length}개`];
+    const activeGroupLabel = activeGroup === ALL_MEDIA_GROUP ? "전체" : activeGroup;
+    const summarySegments = [`총 ${filtered.length}개`, `카테고리 ${groupNames.length}개`, `선택 ${activeGroupLabel} ${activeItems.length}개`];
     summary.innerHTML = summarySegments
       .map((segment, index) => {
         const divider = index < summarySegments.length - 1 ? '<span class="media-summary-divider">·</span>' : "";
@@ -880,17 +882,22 @@ function renderMediaGroups() {
       .join("");
   }
 
-  nav.innerHTML = groups
+  nav.innerHTML = groupEntries
     .map(([group, items]) => {
       const active = group === state.activeMediaGroup;
-      return `<button class="media-nav-btn ${active ? "active" : ""}" type="button" data-group-nav="${escapeHtml(group)}">${escapeHtml(group)} (${items.length})</button>`;
+      const meta = getMediaCategoryMeta(group);
+      return `<button class="media-category-card ${active ? "active" : ""}" type="button" data-group-nav="${escapeHtml(group)}" aria-pressed="${active ? "true" : "false"}">
+        <span class="media-category-icon tone-${escapeHtml(meta.tone)}" aria-hidden="true">${escapeHtml(meta.icon)}</span>
+        <span class="media-category-name">${escapeHtml(meta.label)}</span>
+        <span class="media-category-count">${items.length}개</span>
+      </button>`;
     })
     .join("");
 
-  const rows = activeItems
+  const renderRows = (items, groupLabel) => items
     .map((item) => {
       const selected = item.id === state.selectedMediaId;
-      const categoryLabel = String(item?.category || "").trim() || activeGroup || "미분류";
+      const categoryLabel = String(item?.category || "").trim() || groupLabel || "미분류";
       return `<div class="media-item ${selected ? "selected" : ""}" data-select-media="${escapeHtml(item.id)}">
         <div class="media-item-main">
           <div class="media-item-name-row">
@@ -905,12 +912,26 @@ function renderMediaGroups() {
       </div>`;
     })
     .join("");
+
+  if (activeGroup === ALL_MEDIA_GROUP) {
+    list.innerHTML = groups
+      .map(([group, items]) => `<section class="media-group active" data-group-name="${escapeHtml(group)}">
+        <div class="media-group-head">
+          <strong>${escapeHtml(group)}</strong>
+          <span>${items.length}개</span>
+        </div>
+        <div class="media-items">${renderRows(items, group)}</div>
+      </section>`)
+      .join("");
+    return;
+  }
+
   list.innerHTML = `<section class="media-group active" data-group-name="${escapeHtml(activeGroup)}">
     <div class="media-group-head">
       <strong>${escapeHtml(activeGroup)}</strong>
       <span>${activeItems.length}개</span>
     </div>
-    <div class="media-items">${rows}</div>
+    <div class="media-items">${renderRows(activeItems, activeGroup)}</div>
   </section>`;
 }
 
