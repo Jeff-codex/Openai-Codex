@@ -43,5 +43,3 @@ https://dliver.co.kr/review https://everyonepr.com/review 301!
 /%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/* /01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B4%80%EB%A6%AC%EC%9E%90%ED%8E%98%EC%9D%B4%EC%A7%80-AdminPage/:splat 301
 /%EB%9E%9C%EB%94%A9%ED%8E%98%EC%9D%B4%EC%A7%80-LandingPage/* /01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EB%9E%9C%EB%94%A9%ED%8E%98%EC%9D%B4%EC%A7%80-LandingPage/:splat 301
 /%EA%B3%B5%ED%86%B5%EB%8D%B0%EC%9D%B4%ED%84%B0-SharedData/* /01_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%BD%94%EB%93%9C-ServiceCode/%EA%B3%B5%ED%86%B5%EB%8D%B0%EC%9D%B4%ED%84%B0-SharedData/:splat 200
-
-/favicon.ico /favicon-dliver.png 200
