@@ -290,6 +290,25 @@ a {
   justify-content: flex-end;
 }
 
+.mobile-notice-strip {
+  display: none;
+}
+
+.mobile-notice-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0.56rem 0.94rem;
+  border-radius: 999px;
+  border: 1px solid #d4e0f3;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--primary);
+  font-size: 0.84rem;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(16, 44, 96, 0.06);
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
@@ -1334,7 +1353,9 @@ body.modal-open {
     width: 100%;
     display: flex;
     overflow-x: auto;
+    flex-wrap: nowrap;
     gap: 0.55rem;
+    padding-right: 0.18rem;
     padding-bottom: 0.1rem;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -1347,10 +1368,16 @@ body.modal-open {
   .nav-links a {
     flex: 0 0 auto;
     padding: 0.46rem 0.78rem;
+    white-space: nowrap;
     border-radius: 999px;
     border: 1px solid #d2dff4;
     background: rgba(255, 255, 255, 0.92);
     box-shadow: 0 6px 14px rgba(16, 44, 96, 0.06);
+  }
+
+  .nav-links a[href="#contact"],
+  .nav-links a[href="/#contact"] {
+    display: none;
   }
 
   .nav-inner {
@@ -1398,6 +1425,16 @@ body.modal-open {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.34rem;
+  }
+
+  .mobile-notice-strip {
+    display: block;
+    padding: 0.18rem 0 0.34rem;
+  }
+
+  .mobile-notice-strip .container {
+    display: flex;
+    justify-content: flex-start;
   }
 
   .nav-actions .btn,
@@ -1543,6 +1580,12 @@ body.modal-open {
         </div>
       </div>
     </header>
+
+    <div class="mobile-notice-strip" aria-label="필독 공지 바로가기">
+      <div class="container">
+        <button class="mobile-notice-button" type="button" data-open-self-order-notice>필독 공지</button>
+      </div>
+    </div>
 
     <main>
       <section id="hero" aria-labelledby="hero-title">
@@ -2206,10 +2249,12 @@ body.modal-open {
       const signupServicePolicyToggleButton = document.querySelector("[data-toggle-signup-service-policy]");
       const signupServicePolicyPanel = document.getElementById("signup-service-policy-panel");
       const signupServicePolicyContent = document.getElementById("signup-service-policy-content");
+      const noticeShortcutButton = document.querySelector("[data-open-self-order-notice]");
       let signupPolicyLoaded = false;
       let signupServicePolicyLoaded = false;
       let pendingLoginEntry = false;
       let pendingSignupEntry = false;
+      let pendingNoticeAction = null;
 
       function clearLegacyMemberTokens() {
         try {
@@ -2373,6 +2418,13 @@ body.modal-open {
         } catch (error) {}
       }
 
+      function isMobileViewport() {
+        if (typeof window.matchMedia === "function") {
+          return window.matchMedia("(max-width: 680px)").matches;
+        }
+        return window.innerWidth <= 680;
+      }
+
       function shouldOpenSelfOrderNotice() {
         try {
           return localStorage.getItem(SELF_ORDER_NOTICE_ACK_KEY) !== SELF_ORDER_NOTICE_ACK_VALUE;
@@ -2417,6 +2469,12 @@ body.modal-open {
         noticeModal.classList.remove("open");
         noticeModal.setAttribute("aria-hidden", "true");
         syncModalBodyState();
+        if (typeof pendingNoticeAction === "function") {
+          const nextAction = pendingNoticeAction;
+          pendingNoticeAction = null;
+          nextAction();
+          return;
+        }
         if (pendingLoginEntry) {
           pendingLoginEntry = false;
           openLoginModal();
@@ -2428,6 +2486,13 @@ body.modal-open {
           openSignupModal();
           consumeSignupHash();
         }
+      }
+
+      function handleNoticeGate(callback) {
+        if (!isMobileViewport() || !shouldOpenSelfOrderNotice()) return false;
+        pendingNoticeAction = callback;
+        openSelfOrderNotice();
+        return true;
       }
 
       function updateMemberStatus(member) {
@@ -2546,6 +2611,10 @@ body.modal-open {
       loginOpenButtons.forEach((button) => button.addEventListener("click", openLoginModal));
       signupOpenButtons.forEach((button) => button.addEventListener("click", openSignupModal));
       noticeConfirmButton?.addEventListener("click", closeSelfOrderNotice);
+      noticeShortcutButton?.addEventListener("click", () => {
+        pendingNoticeAction = null;
+        openSelfOrderNotice();
+      });
       loginCloseButton?.addEventListener("click", closeLoginModal);
       signupCloseButton?.addEventListener("click", closeSignupModal);
       signupPrivacyToggleButton?.addEventListener("click", (event) => {
@@ -2587,6 +2656,33 @@ body.modal-open {
           await apiFetch("/api/auth/logout", { method: "POST" });
         } catch (error) {}
         updateAuthUI(null);
+      });
+
+      document.querySelectorAll('a[href="/login"]').forEach((link) => {
+        link.addEventListener("click", (event) => {
+          if (!handleNoticeGate(() => {
+            openLoginModal();
+          })) return;
+          event.preventDefault();
+        });
+      });
+
+      document.querySelectorAll('a[href="/signup"]').forEach((link) => {
+        link.addEventListener("click", (event) => {
+          if (!handleNoticeGate(() => {
+            openSignupModal();
+          })) return;
+          event.preventDefault();
+        });
+      });
+
+      document.querySelectorAll('a[href="/services/press-release-distribution/"]').forEach((link) => {
+        link.addEventListener("click", (event) => {
+          if (!handleNoticeGate(() => {
+            window.location.href = "/services/press-release-distribution/";
+          })) return;
+          event.preventDefault();
+        });
       });
 
       loginForm?.addEventListener("submit", async (event) => {
@@ -2706,7 +2802,8 @@ body.modal-open {
         } else {
           updateAuthUI(null);
         }
-        if (shouldOpenSelfOrderNotice()) {
+        const needsNoticeAcknowledgement = shouldOpenSelfOrderNotice();
+        if (needsNoticeAcknowledgement && (!isMobileViewport() || loginRequestedFromEntry || signupRequestedFromEntry)) {
           pendingLoginEntry = !member && loginRequestedFromEntry;
           pendingSignupEntry = !member && signupRequestedFromEntry;
           openSelfOrderNotice();

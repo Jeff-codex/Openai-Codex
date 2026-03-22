@@ -1155,7 +1155,9 @@ body.has-channel-talk .footer-line {
     .nav-links {
         display: flex;
         overflow-x: auto;
+        flex-wrap: nowrap;
         gap: 0.55rem;
+        padding-right: 0.18rem;
         padding-bottom: 0.1rem;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -1169,11 +1171,17 @@ body.has-channel-talk .footer-line {
         flex: 0 0 auto;
         min-height: 40px;
         padding: 0.6rem 0.82rem;
+        white-space: nowrap;
         border-radius: 999px;
         border: 1px solid #d6e3f5;
         background: rgba(255, 255, 255, 0.92);
         justify-content: center;
         box-shadow: 0 6px 14px rgba(16, 44, 96, 0.06);
+    }
+
+    .nav-links a[href="/#contact"],
+    .nav-links a[href="#contact"] {
+        display: none;
     }
 
     .btn,
