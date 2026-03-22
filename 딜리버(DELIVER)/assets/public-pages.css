@@ -167,6 +167,9 @@ a {
 .nav-login-link {
     color: #52617c;
     font-weight: 700;
+    background: rgba(255, 255, 255, 0.92);
+    border-color: #d6e3f5;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
 .nav-login-link:hover,
@@ -1054,20 +1057,16 @@ tbody tr:last-child td {
 }
 
 .footer-line {
-    display: grid;
-    grid-template-columns: 1.15fr 1fr 1fr;
-    gap: 0.45rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
     padding: 1.35rem 0 1.7rem;
     font-size: 0.79rem;
 }
 
 body.has-channel-talk .footer-line {
     padding-bottom: 2rem;
-}
-
-.footer-line span:first-child,
-.footer-line span:last-child {
-    grid-column: 1 / -1;
 }
 
 .footer-line span:first-child {
@@ -1154,7 +1153,6 @@ body.has-channel-talk .footer-line {
     }
 
     .footer-line {
-        grid-template-columns: 1fr 1fr;
         padding-bottom: 6.9rem;
     }
 }
@@ -1204,12 +1202,7 @@ body.has-channel-talk .footer-line {
     }
 
     .footer-line {
-        grid-template-columns: 1fr;
         padding-bottom: 7.3rem;
-    }
-
-    .footer-line span {
-        grid-column: auto !important;
     }
 
     table {
