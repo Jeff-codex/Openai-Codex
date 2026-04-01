@@ -1,0 +1,5 @@
+Contact: tel:+82-505-007-3707
+Contact: https://everyonepr.com/#contact
+Canonical: https://everyonepr.com/.well-known/security.txt
+Preferred-Languages: ko, en
+Expires: 2027-04-02T23:59:59.000Z

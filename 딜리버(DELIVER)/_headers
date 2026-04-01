@@ -19,6 +19,12 @@
 /api/*
   Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none';
 
+/security.txt
+  Cache-Control: public, max-age=300
+
+/.well-known/security.txt
+  Cache-Control: public, max-age=300
+
 /member*
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
   Cross-Origin-Opener-Policy: same-origin-allow-popups

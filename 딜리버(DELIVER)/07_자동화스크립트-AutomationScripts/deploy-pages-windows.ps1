@@ -252,6 +252,7 @@ try {
     New-Item -ItemType Directory -Path $deployDir -Force | Out-Null
 
     $copyItems = @(
+        '.well-known',
         'index.html',
         'landing-root.html',
         '_headers',
@@ -267,6 +268,7 @@ try {
         'site.webmanifest',
         'google84463d2bf409df69.html',
         'b09eda93-01a2-4155-abab-1d6b64bc3519.txt',
+        'security.txt',
         'about',
         'assets',
         'compare',
