@@ -730,6 +730,55 @@ a {
     width: fit-content;
 }
 
+.guide-local-tabs-wrap {
+    margin-top: -0.45rem;
+    margin-bottom: 1.4rem;
+}
+
+.guide-local-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.58rem;
+    overflow-x: auto;
+    padding-bottom: 0.08rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.guide-local-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.guide-local-tabs a,
+.guide-local-tabs span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0.62rem 0.96rem;
+    border-radius: 999px;
+    border: 1px solid #d6e3f5;
+    background: rgba(255, 255, 255, 0.94);
+    color: #5a6d8a;
+    font-size: 0.86rem;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 7px 14px rgba(17, 42, 97, 0.06);
+}
+
+.guide-local-tabs a[aria-current="page"] {
+    background: linear-gradient(145deg, #2487ec 0%, var(--primary) 62%, var(--primary-deep) 100%);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 12px 24px rgba(10, 74, 204, 0.18);
+}
+
+.guide-local-tab--disabled {
+    border-style: dashed;
+    color: #7384a0;
+    background: rgba(247, 250, 255, 0.92);
+}
+
 .stack-grid {
     display: grid;
     gap: 1.15rem;
@@ -829,6 +878,41 @@ a {
 
 .hub-card .card-note {
     max-width: 42ch;
+}
+
+.guide-page .lede,
+.guide-page .section-head p,
+.guide-page .card p,
+.guide-page .panel p,
+.guide-page .faq-item .faq-body {
+    text-wrap: pretty;
+}
+
+.guide-page .section-head p,
+.guide-page .card p,
+.guide-page .panel p,
+.guide-page .faq-item .faq-body {
+    max-width: 62ch;
+}
+
+.guide-page .faq-item summary {
+    line-height: 1.55;
+}
+
+.guide-page--detail .section-head p {
+    max-width: 58ch;
+}
+
+.guide-final-cta .section-head {
+    max-width: 44rem;
+}
+
+.guide-final-cta .button-row {
+    margin-bottom: 0;
+}
+
+.guide-final-cta .button-link {
+    width: fit-content;
 }
 
 .card .icon-copy,
@@ -1245,6 +1329,13 @@ body.has-channel-talk .footer-line {
     .nav-links a {
         min-height: 38px;
         padding: 0.56rem 0.76rem;
+        font-size: 0.83rem;
+    }
+
+    .guide-local-tabs a,
+    .guide-local-tabs span {
+        min-height: 38px;
+        padding: 0.56rem 0.78rem;
         font-size: 0.83rem;
     }
 
