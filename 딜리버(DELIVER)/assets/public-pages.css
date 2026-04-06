@@ -521,6 +521,13 @@ a {
     text-wrap: pretty;
 }
 
+@media (min-width: 961px) {
+    .section-head h2.section-title--single-line {
+        max-width: none;
+        white-space: nowrap;
+    }
+}
+
 .grid-2,
 .grid-3,
 .grid-auto,
