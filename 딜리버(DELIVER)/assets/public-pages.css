@@ -773,6 +773,50 @@ a {
     box-shadow: 0 12px 24px rgba(10, 74, 204, 0.18);
 }
 
+.guide-sibling-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.58rem;
+    margin-top: -0.15rem;
+    margin-bottom: 1.4rem;
+}
+
+.guide-sibling-nav-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0.52rem 0.82rem;
+    border-radius: 999px;
+    background: rgba(234, 242, 255, 0.88);
+    color: #5c6f8d;
+    font-size: 0.8rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.guide-sibling-nav a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0.52rem 0.88rem;
+    border-radius: 999px;
+    border: 1px solid #d6e3f5;
+    background: rgba(255, 255, 255, 0.94);
+    color: #5a6d8a;
+    font-size: 0.84rem;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 7px 14px rgba(17, 42, 97, 0.06);
+}
+
+.guide-sibling-nav a[aria-current="page"] {
+    background: rgba(233, 241, 255, 0.92);
+    border-color: #bfd1ee;
+    color: var(--primary);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
 .guide-local-tab--disabled {
     border-style: dashed;
     color: #7384a0;
