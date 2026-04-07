@@ -467,14 +467,64 @@ h2 {
 }
 
 #hero {
-  padding-top: 3.2rem;
-  padding-bottom: 3.8rem;
+  position: relative;
+  padding-top: 4.25rem;
+  padding-bottom: 4.2rem;
+  overflow: hidden;
+  background:
+    radial-gradient(340px 240px at 20% 34%, rgba(8, 144, 248, 0.22) 0%, rgba(8, 144, 248, 0) 72%),
+    radial-gradient(380px 260px at 78% 18%, rgba(0, 56, 184, 0.18) 0%, rgba(0, 56, 184, 0) 74%),
+    radial-gradient(300px 210px at 82% 68%, rgba(8, 144, 248, 0.14) 0%, rgba(8, 144, 248, 0) 76%),
+    linear-gradient(180deg, #dceeff 0%, #cfe4ff 54%, #dbeafc 100%);
+}
+
+#hero::before,
+#hero::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(26px);
+  pointer-events: none;
+  opacity: 0.78;
+}
+
+#hero::before {
+  top: 3.8rem;
+  left: 14%;
+  width: 210px;
+  height: 210px;
+  background: radial-gradient(circle, rgba(9, 133, 244, 0.42) 0%, rgba(9, 133, 244, 0) 72%);
+}
+
+#hero::after {
+  right: 12%;
+  bottom: 1.4rem;
+  width: 290px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(0, 56, 184, 0.18) 0%, rgba(0, 56, 184, 0) 76%);
 }
 
 .hero-grid {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+  grid-template-areas:
+    "copy aside"
+    "actions aside";
+  column-gap: clamp(1.45rem, 2.4vw, 2rem);
+  row-gap: 1.14rem;
+  align-items: start;
+  max-width: 980px;
+  margin: 2.35rem auto 0;
+  padding: clamp(1.85rem, 3.2vw, 2.6rem);
+  border: 1px solid rgba(186, 209, 243, 0.96);
+  border-radius: 28px;
+  background:
+    linear-gradient(125deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 252, 255, 0.96) 50%, rgba(225, 239, 255, 0.92) 100%);
+  box-shadow:
+    0 18px 46px rgba(31, 85, 161, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  overflow: visible;
 }
 
 .hero-copy,
@@ -492,23 +542,24 @@ h2 {
 }
 
 .hero-copy {
-  padding: clamp(1.5rem, 2.6vw, 2.25rem);
-  background:
-    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 10px 24px rgba(11, 125, 232, 0.08), var(--shadow-sm);
+  grid-area: copy;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
   position: relative;
-  overflow: hidden;
   isolation: isolate;
+  overflow: visible;
 }
 
 .hero-copy::after {
   content: "";
   position: absolute;
-  inset: auto -32% -62% auto;
-  width: 360px;
-  height: 360px;
+  inset: auto auto -38% -14%;
+  width: 280px;
+  height: 280px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(8, 144, 248, 0.1) 0%, rgba(8, 144, 248, 0) 68%);
+  background: radial-gradient(circle, rgba(8, 144, 248, 0.14) 0%, rgba(8, 144, 248, 0) 70%);
   pointer-events: none;
   z-index: -1;
 }
@@ -518,63 +569,111 @@ h2 {
 }
 
 .hero-actions {
-  margin-top: 1.28rem;
+  margin-top: 1.36rem;
   display: flex;
   gap: 0.56rem;
   flex-wrap: wrap;
 }
 
+.hero-actions--hero {
+  grid-area: actions;
+  margin-top: 0;
+}
+
+.hero-aside {
+  grid-area: aside;
+  width: 100%;
+  max-width: 430px;
+  justify-self: end;
+  align-self: start;
+  margin-top: 3.55rem;
+}
+
 .hero-card {
-  padding: 1.1rem;
+  width: 100%;
+  padding: 1rem;
   display: grid;
-  gap: 0.58rem;
+  gap: 0.68rem;
   background:
-    linear-gradient(155deg, #f4f8ff 0%, #e9f1ff 48%, #dde9ff 100%);
-  border-color: #bcd0f2;
+    linear-gradient(180deg, rgba(247, 251, 255, 0.98) 0%, rgba(236, 244, 255, 0.94) 100%);
+  border-color: #c8d9f2;
   color: #1a2f57;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62), 0 16px 38px rgba(26, 74, 150, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 12px 26px rgba(31, 85, 161, 0.12);
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  border-radius: 18px;
 }
 
 .hero-card::before {
   content: "";
   position: absolute;
-  inset: -42% auto auto -36%;
-  width: 240px;
-  height: 240px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0) 66%);
+  inset: auto -28% -34% auto;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(133, 184, 255, 0.24) 0%, rgba(133, 184, 255, 0) 70%);
   pointer-events: none;
   z-index: -1;
 }
 
 .hero-card h3 {
   font-family: "Montserrat", "Noto Sans KR", sans-serif;
-  font-size: 1.03rem;
-  color: #0e3f8f;
+  font-size: 1.08rem;
+  color: #1a2437;
 }
 
 .hero-panel {
-  border-radius: var(--radius-md);
-  border: 1px solid #c9daf8;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(247, 250, 255, 0.72) 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
-  padding: 0.74rem 0.84rem;
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid #d7e4f6;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  padding: 0.84rem 0.92rem 0.84rem 2.05rem;
+}
+
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  left: 0.84rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #54b5ff 0%, #2177ea 100%);
+  box-shadow: 0 0 0 3px rgba(34, 119, 234, 0.12);
 }
 
 .hero-panel strong {
   display: block;
   margin-bottom: 0.25rem;
-  color: #184892;
-  font-size: 0.86rem;
+  color: #25324a;
+  font-size: 0.84rem;
 }
 
 .hero-panel p {
   margin: 0;
-  color: #4e6288;
-  font-size: 0.82rem;
-  line-height: 1.58;
+  color: #667794;
+  font-size: 0.8rem;
+  line-height: 1.56;
+}
+
+.hero-mascot {
+  position: absolute;
+  right: clamp(132px, 15.5%, 188px);
+  top: 0;
+  width: min(248px, 28vw);
+  transform: translateY(-58%);
+  filter: drop-shadow(0 16px 28px rgba(18, 74, 153, 0.18));
+  pointer-events: none;
+  z-index: 4;
+}
+
+.hero-grid .hero-card.reveal.on,
+.hero-aside .hero-card.reveal.on {
+  animation: none;
+  transform: none;
 }
 
 #proof,
@@ -1328,9 +1427,27 @@ body.modal-open {
 }
 
 @media (max-width: 1120px) {
-  .hero-grid,
   .pricing-wrap {
     grid-template-columns: 1fr;
+  }
+
+  .hero-grid {
+    grid-template-columns: minmax(0, 1.02fr) minmax(290px, 0.86fr);
+    max-width: 900px;
+    margin-top: 2.55rem;
+    padding: 2rem 1.9rem 1.85rem;
+    column-gap: 1.35rem;
+  }
+
+  .hero-aside {
+    max-width: 390px;
+    margin-top: 3.15rem;
+  }
+
+  .hero-mascot {
+    right: clamp(104px, 13.2%, 148px);
+    width: min(220px, 27vw);
+    transform: translateY(-59%);
   }
 
   .process-grid {
@@ -1415,7 +1532,7 @@ body.modal-open {
   }
 
   #hero {
-    padding-top: 2.5rem;
+    padding-top: 3.05rem;
   }
 
   .hero-copy,
@@ -1425,6 +1542,38 @@ body.modal-open {
   .step,
   .faq-item {
     border-radius: 14px;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copy"
+      "actions"
+      "aside";
+    margin-top: 3.1rem;
+    padding: 1.7rem;
+    padding-top: 2rem;
+    row-gap: 1rem;
+    column-gap: 0;
+    border-radius: 22px;
+  }
+
+  .hero-aside {
+    max-width: 460px;
+    width: 100%;
+    justify-self: center;
+    margin-top: 0.35rem;
+  }
+
+  .hero-actions--hero {
+    justify-content: flex-start;
+  }
+
+  .hero-mascot {
+    top: 0;
+    right: clamp(34px, 9vw, 74px);
+    width: min(180px, 36vw);
+    transform: translateY(-59%);
   }
 }
 
@@ -1509,6 +1658,53 @@ body.modal-open {
 
   .hero-actions .btn {
     width: 100%;
+  }
+
+  #hero {
+    padding-top: 2.75rem;
+    padding-bottom: 3.15rem;
+  }
+
+  .hero-grid {
+    grid-template-areas:
+      "copy"
+      "actions"
+      "aside";
+    margin-top: 2.45rem;
+    padding: 1.2rem;
+    padding-top: 1.5rem;
+    border-radius: 18px;
+    row-gap: 0.84rem;
+  }
+
+  .hero-aside {
+    max-width: none;
+    margin-top: 0.24rem;
+  }
+
+  .hero-mascot {
+    top: 0;
+    right: clamp(18px, 7vw, 30px);
+    width: min(142px, 39vw);
+    transform: translateY(-57%);
+  }
+
+  .hero-actions--hero {
+    margin-top: 0.12rem;
+  }
+
+  .hero-card {
+    padding: 0.88rem;
+  }
+
+  .hero-panel {
+    padding-left: 1.82rem;
+  }
+
+  .hero-panel::before {
+    left: 0.72rem;
+    width: 10px;
+    height: 10px;
   }
 
   .footer-line {
@@ -1611,27 +1807,39 @@ body.modal-open {
               모두의피알은 셀프언론홍보를 직접 시작하려는 팀이 보도자료 검수, 매체 선택, 주문 접수, 결제와 진행 상태 확인까지 한 곳에서 이어서 진행할 수 있도록 만든 서비스입니다.<br />
               회원가입 후 매체별 단가를 확인하고 필요한 순간 바로 접수할 수 있습니다.
             </p>
-            <div class="hero-actions">
-          <a class="btn btn-primary" href="/services/press-release-distribution/" data-cta="service-overview">배포 서비스</a>
-            <a class="btn btn-outline" href="/signup">회원가입 후 바로 시작</a>
-            </div>
           </div>
 
-          <article class="hero-card reveal" aria-label="서비스 핵심 포인트">
-            <h3>회원가입 후 바로 시작</h3>
-            <div class="hero-panel">
-              <strong>01. 매체 직접 선택</strong>
-              <p>회원 전용 매체 목록에서 단가와 특성을 비교한 뒤 원하는 매체를 직접 고를 수 있습니다.</p>
-            </div>
-            <div class="hero-panel">
-              <strong>02. 원고 첨부 후 주문 등록</strong>
-              <p>작성 완료한 원고를 첨부하고 요청사항을 입력하면 즉시 주문 접수가 완료됩니다.</p>
-            </div>
-            <div class="hero-panel">
-              <strong>03. 대시보드 실시간 확인</strong>
-              <p>결제 내역과 주문 상태를 실시간으로 확인하고, 결과까지 한 번에 관리할 수 있습니다.</p>
-            </div>
-          </article>
+          <img
+            class="hero-mascot"
+            src="/01_서비스코드-ServiceCode/공통데이터-SharedData/brand/everyonepr-hero-mascot-halfbody.png"
+            alt=""
+            aria-hidden="true"
+            loading="eager"
+            decoding="async"
+          />
+
+          <div class="hero-aside reveal">
+            <article class="hero-card" aria-label="서비스 핵심 포인트">
+              <h3>회원가입 후 바로 시작</h3>
+              <div class="hero-panel">
+                <strong>01. 매체 직접 선택</strong>
+                <p>회원 전용 매체 목록에서 단가와 특성을 비교한 뒤 원하는 매체를 직접 고를 수 있습니다.</p>
+              </div>
+              <div class="hero-panel">
+                <strong>02. 원고 첨부 후 주문 등록</strong>
+                <p>작성 완료한 원고를 첨부하고 요청사항을 입력하면 즉시 주문 접수가 완료됩니다.</p>
+              </div>
+              <div class="hero-panel">
+                <strong>03. 대시보드 실시간 확인</strong>
+                <p>결제 내역과 주문 상태를 실시간으로 확인하고, 결과까지 한 번에 관리할 수 있습니다.</p>
+              </div>
+            </article>
+          </div>
+
+          <div class="hero-actions hero-actions--hero reveal">
+            <a class="btn btn-primary" href="/services/press-release-distribution/" data-cta="service-overview">배포 서비스</a>
+            <a class="btn btn-outline" href="/signup">회원가입 후 바로 시작</a>
+          </div>
         </div>
       </section>
 
@@ -2833,4 +3041,3 @@ body.modal-open {
     </script>
 </body>
 </html>
-
