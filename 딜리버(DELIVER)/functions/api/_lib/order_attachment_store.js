@@ -13,13 +13,28 @@ const ALLOWED_EXTENSIONS = new Set([
 ]);
 
 const MAX_ATTACHMENT_BYTES = 30 * 1024 * 1024;
+let orderAttachmentSchemaReady = false;
+let orderAttachmentSchemaReadyPromise = null;
 
 export async function ensureOrderAttachmentTable(env) {
-  await d1Execute(
-    env,
-    "create table if not exists order_attachments (order_id text primary key, file_key text not null, file_name text not null, file_mime text not null default 'application/octet-stream', file_size integer not null default 0, uploaded_by_member_id text, uploaded_at text not null default (datetime('now')), foreign key(order_id) references orders(id) on delete cascade)"
-  );
-  await d1Execute(env, "create index if not exists idx_order_attachments_uploaded_at on order_attachments(uploaded_at)");
+  if (orderAttachmentSchemaReady) return;
+  if (orderAttachmentSchemaReadyPromise) {
+    await orderAttachmentSchemaReadyPromise;
+    return;
+  }
+  orderAttachmentSchemaReadyPromise = (async () => {
+    await d1Execute(
+      env,
+      "create table if not exists order_attachments (order_id text primary key, file_key text not null, file_name text not null, file_mime text not null default 'application/octet-stream', file_size integer not null default 0, uploaded_by_member_id text, uploaded_at text not null default (datetime('now')), foreign key(order_id) references orders(id) on delete cascade)"
+    );
+    await d1Execute(env, "create index if not exists idx_order_attachments_uploaded_at on order_attachments(uploaded_at)");
+    orderAttachmentSchemaReady = true;
+  })();
+  try {
+    await orderAttachmentSchemaReadyPromise;
+  } finally {
+    orderAttachmentSchemaReadyPromise = null;
+  }
 }
 
 function getFileExtension(fileName) {

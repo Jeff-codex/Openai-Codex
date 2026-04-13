@@ -61,43 +61,51 @@ export async function onRequestPost(context) {
       [loginId]
     );
     if (!rows.length) {
-      await kvPut(context.env, failKey, String(failCount + 1), LOGIN_FAIL_TTL_SEC);
-      await writeSecurityAudit(context.env, {
-        eventType: "member_login_failed",
-        actorType: "member",
-        actorId: loginId,
-        ip,
-        outcome: "failed",
-        detail: "account_not_found",
-      });
+      await Promise.all([
+        kvPut(context.env, failKey, String(failCount + 1), LOGIN_FAIL_TTL_SEC),
+        writeSecurityAudit(context.env, {
+          eventType: "member_login_failed",
+          actorType: "member",
+          actorId: loginId,
+          ip,
+          outcome: "failed",
+          detail: "account_not_found",
+        }),
+      ]);
       return jsonError("아이디 또는 비밀번호가 올바르지 않습니다.", 401);
     }
     const member = rows[0];
     const verified = await verifyPassword(password, member.password, context.env);
     if (!verified.ok) {
-      await kvPut(context.env, failKey, String(failCount + 1), LOGIN_FAIL_TTL_SEC);
-      await writeSecurityAudit(context.env, {
-        eventType: "member_login_failed",
-        actorType: "member",
-        actorId: loginId,
-        ip,
-        outcome: "failed",
-        detail: "wrong_password",
-      });
+      await Promise.all([
+        kvPut(context.env, failKey, String(failCount + 1), LOGIN_FAIL_TTL_SEC),
+        writeSecurityAudit(context.env, {
+          eventType: "member_login_failed",
+          actorType: "member",
+          actorId: loginId,
+          ip,
+          outcome: "failed",
+          detail: "wrong_password",
+        }),
+      ]);
       return jsonError("아이디 또는 비밀번호가 올바르지 않습니다.", 401);
     }
 
-    await kvDelete(context.env, failKey);
+    const postVerifyTasks = [
+      kvDelete(context.env, failKey),
+    ];
     if (verified.needsRehash) {
-      const nextHash = await hashPassword(password, context.env);
-      await d1Execute(context.env, "update members set password = ?, updated_at = ? where id = ?", [
-        nextHash,
-        new Date().toISOString(),
-        member.id,
-      ]);
+      postVerifyTasks.push((async () => {
+        const nextHash = await hashPassword(password, context.env);
+        await d1Execute(context.env, "update members set password = ?, updated_at = ? where id = ?", [
+          nextHash,
+          new Date().toISOString(),
+          member.id,
+        ]);
+      })());
     }
 
-    const token = await createSession(context.env, "member", {
+    const tokenPromise = createSession(context.env, "member", {
       memberId: member.id,
       loginId: member.login_id,
       email: member.email,
@@ -105,16 +113,20 @@ export async function onRequestPost(context) {
     }, context.request);
 
     const headers = new Headers();
+    const [token] = await Promise.all([
+      tokenPromise,
+      ...postVerifyTasks,
+      writeSecurityAudit(context.env, {
+        eventType: "member_login_success",
+        actorType: "member",
+        actorId: member.login_id,
+        ip,
+        outcome: "success",
+        detail: "authenticated",
+      }),
+    ]);
     appendSessionCookie(headers, "member", token, context.env.MEMBER_SESSION_TTL_SEC);
     appendClearSessionCookie(headers, "admin");
-    await writeSecurityAudit(context.env, {
-      eventType: "member_login_success",
-      actorType: "member",
-      actorId: member.login_id,
-      ip,
-      outcome: "success",
-      detail: "authenticated",
-    });
 
     return jsonOk({
       member: {

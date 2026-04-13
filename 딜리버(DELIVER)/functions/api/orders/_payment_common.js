@@ -20,6 +20,7 @@ const TOSS_PAYMENT_METHODS = [
 ];
 
 let paymentSchemaReady = false;
+let paymentSchemaReadyPromise = null;
 
 function normalizeIsoText(value) {
   const text = String(value || "").trim();
@@ -72,40 +73,51 @@ async function ensureOrdersExtraColumns(env) {
 
 export async function ensureOrderPaymentSchema(env) {
   if (paymentSchemaReady) return;
+  if (paymentSchemaReadyPromise) {
+    await paymentSchemaReadyPromise;
+    return;
+  }
 
-  await ensureOrdersExtraColumns(env);
-  await d1Execute(
-    env,
-    "create table if not exists order_payment_intents (id text primary key, intent_id text not null unique, member_id text not null, member_login_id text not null, media_id text not null, media_name text not null, unit_price integer not null, vat_amount integer not null, total_amount integer not null, draft_title text not null, draft_note text, draft_file_key text, draft_file_name text, draft_file_mime text, draft_file_size integer not null default 0, status text not null default 'ready', payment_method text, toss_payment_key text unique, toss_order_id text not null unique, toss_method text, toss_raw text, failure_code text, failure_message text, order_id text, expires_at text not null, created_at text not null default (datetime('now')), updated_at text not null default (datetime('now')), foreign key(member_id) references members(id) on delete cascade, foreign key(order_id) references orders(id) on delete set null)"
-  );
-  await d1Execute(env, "create index if not exists idx_order_payment_intents_member_id on order_payment_intents(member_id)");
-  await d1Execute(env, "create index if not exists idx_order_payment_intents_status on order_payment_intents(status)");
-  await d1Execute(env, "create index if not exists idx_order_payment_intents_created_at on order_payment_intents(created_at)");
-  await d1Execute(env, "create index if not exists idx_order_payment_intents_expires_at on order_payment_intents(expires_at)");
+  paymentSchemaReadyPromise = (async () => {
+    await ensureOrdersExtraColumns(env);
+    await d1Execute(
+      env,
+      "create table if not exists order_payment_intents (id text primary key, intent_id text not null unique, member_id text not null, member_login_id text not null, media_id text not null, media_name text not null, unit_price integer not null, vat_amount integer not null, total_amount integer not null, draft_title text not null, draft_note text, draft_file_key text, draft_file_name text, draft_file_mime text, draft_file_size integer not null default 0, status text not null default 'ready', payment_method text, toss_payment_key text unique, toss_order_id text not null unique, toss_method text, toss_raw text, failure_code text, failure_message text, order_id text, expires_at text not null, created_at text not null default (datetime('now')), updated_at text not null default (datetime('now')), foreign key(member_id) references members(id) on delete cascade, foreign key(order_id) references orders(id) on delete set null)"
+    );
+    await d1Execute(env, "create index if not exists idx_order_payment_intents_member_id on order_payment_intents(member_id)");
+    await d1Execute(env, "create index if not exists idx_order_payment_intents_status on order_payment_intents(status)");
+    await d1Execute(env, "create index if not exists idx_order_payment_intents_created_at on order_payment_intents(created_at)");
+    await d1Execute(env, "create index if not exists idx_order_payment_intents_expires_at on order_payment_intents(expires_at)");
 
-  await d1Execute(
-    env,
-    "create table if not exists order_payments (id text primary key, order_id text not null unique, member_id text not null, amount_supply integer not null, amount_vat integer not null, amount_total integer not null, payment_provider text not null default 'toss', payment_key text not null unique, order_id_pg text not null unique, method text, status text not null default 'paid', paid_at text not null, raw_payload text, created_at text not null default (datetime('now')), updated_at text not null default (datetime('now')), foreign key(order_id) references orders(id) on delete cascade, foreign key(member_id) references members(id) on delete cascade)"
-  );
-  await d1Execute(env, "create index if not exists idx_order_payments_member_id on order_payments(member_id)");
-  await d1Execute(env, "create index if not exists idx_order_payments_status on order_payments(status)");
-  await d1Execute(env, "create index if not exists idx_order_payments_paid_at on order_payments(paid_at)");
+    await d1Execute(
+      env,
+      "create table if not exists order_payments (id text primary key, order_id text not null unique, member_id text not null, amount_supply integer not null, amount_vat integer not null, amount_total integer not null, payment_provider text not null default 'toss', payment_key text not null unique, order_id_pg text not null unique, method text, status text not null default 'paid', paid_at text not null, raw_payload text, created_at text not null default (datetime('now')), updated_at text not null default (datetime('now')), foreign key(order_id) references orders(id) on delete cascade, foreign key(member_id) references members(id) on delete cascade)"
+    );
+    await d1Execute(env, "create index if not exists idx_order_payments_member_id on order_payments(member_id)");
+    await d1Execute(env, "create index if not exists idx_order_payments_status on order_payments(status)");
+    await d1Execute(env, "create index if not exists idx_order_payments_paid_at on order_payments(paid_at)");
 
-  await d1Execute(
-    env,
-    "create table if not exists payment_refunds (id text primary key, refund_id text not null unique, order_id text not null, payment_id text not null, refund_amount integer not null, status text not null default 'requested', reason text, requested_by text, approved_at text, toss_refund_key text, failure_code text, failure_message text, raw_payload text, created_at text not null default (datetime('now')), updated_at text not null default (datetime('now')), foreign key(order_id) references orders(id) on delete cascade, foreign key(payment_id) references order_payments(id) on delete cascade)"
-  );
-  await d1Execute(env, "create index if not exists idx_payment_refunds_order_id on payment_refunds(order_id)");
-  await d1Execute(env, "create index if not exists idx_payment_refunds_payment_id on payment_refunds(payment_id)");
-  await d1Execute(env, "create index if not exists idx_payment_refunds_status on payment_refunds(status)");
-  await d1Execute(env, "create index if not exists idx_payment_refunds_created_at on payment_refunds(created_at)");
+    await d1Execute(
+      env,
+      "create table if not exists payment_refunds (id text primary key, refund_id text not null unique, order_id text not null, payment_id text not null, refund_amount integer not null, status text not null default 'requested', reason text, requested_by text, approved_at text, toss_refund_key text, failure_code text, failure_message text, raw_payload text, created_at text not null default (datetime('now')), updated_at text not null default (datetime('now')), foreign key(order_id) references orders(id) on delete cascade, foreign key(payment_id) references order_payments(id) on delete cascade)"
+    );
+    await d1Execute(env, "create index if not exists idx_payment_refunds_order_id on payment_refunds(order_id)");
+    await d1Execute(env, "create index if not exists idx_payment_refunds_payment_id on payment_refunds(payment_id)");
+    await d1Execute(env, "create index if not exists idx_payment_refunds_status on payment_refunds(status)");
+    await d1Execute(env, "create index if not exists idx_payment_refunds_created_at on payment_refunds(created_at)");
 
-  await d1Execute(
-    env,
-    "create table if not exists order_number_sequences (date_key text primary key, last_value integer not null default 0, updated_at text not null default (datetime('now')))"
-  );
+    await d1Execute(
+      env,
+      "create table if not exists order_number_sequences (date_key text primary key, last_value integer not null default 0, updated_at text not null default (datetime('now')))"
+    );
 
-  paymentSchemaReady = true;
+    paymentSchemaReady = true;
+  })();
+  try {
+    await paymentSchemaReadyPromise;
+  } finally {
+    paymentSchemaReadyPromise = null;
+  }
 }
 
 export function normalizeAmount(value) {

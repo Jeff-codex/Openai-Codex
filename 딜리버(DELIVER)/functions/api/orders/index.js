@@ -9,8 +9,10 @@ export async function onRequestGet(context) {
     const session = await ensureMemberSession(context);
     if (!session) return jsonError("로그인이 필요합니다.", 401);
 
-    await ensureOrderAttachmentTable(context.env);
-    await ensureOrderPaymentSchema(context.env);
+    await Promise.all([
+      ensureOrderAttachmentTable(context.env),
+      ensureOrderPaymentSchema(context.env),
+    ]);
 
     const rows = await d1Query(
       context.env,

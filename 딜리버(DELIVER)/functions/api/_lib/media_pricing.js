@@ -9,6 +9,7 @@ const CATEGORY_SORT_ORDER = {
 };
 
 let mediaPricingSchemaReady = false;
+let mediaPricingSchemaReadyPromise = null;
 
 export function normalizePrice(value) {
   const n = Number(String(value ?? "").replace(/[^\d.-]/g, ""));
@@ -35,31 +36,42 @@ export function mediaCategorySortRank(category) {
 
 export async function ensureMediaPricingSchema(env) {
   if (mediaPricingSchemaReady) return;
-  const columns = await d1Query(env, "pragma table_info(media_channels)");
-  if (!columns.length) return;
-  const names = new Set(columns.map((row) => String(row.name || "").toLowerCase()));
-
-  if (!names.has("category_detail")) {
-    await d1Execute(env, "alter table media_channels add column category_detail text not null default ''");
+  if (mediaPricingSchemaReadyPromise) {
+    await mediaPricingSchemaReadyPromise;
+    return;
   }
-  if (!names.has("supply_price")) {
-    await d1Execute(env, "alter table media_channels add column supply_price integer not null default 0");
-  }
-  if (!names.has("sale_price")) {
-    await d1Execute(env, "alter table media_channels add column sale_price integer not null default 0");
-  }
+  mediaPricingSchemaReadyPromise = (async () => {
+    const columns = await d1Query(env, "pragma table_info(media_channels)");
+    if (!columns.length) return;
+    const names = new Set(columns.map((row) => String(row.name || "").toLowerCase()));
 
-  await d1Execute(
-    env,
-    "update media_channels set supply_price = case when coalesce(supply_price, 0) <= 0 then coalesce(unit_price, 0) else supply_price end where coalesce(supply_price, 0) <= 0"
-  );
-  await d1Execute(
-    env,
-    "update media_channels set sale_price = case when coalesce(sale_price, 0) <= 0 then coalesce(unit_price, 0) else sale_price end where coalesce(sale_price, 0) <= 0"
-  );
-  await d1Execute(env, "update media_channels set category_detail = '' where category_detail is null");
-  await d1Execute(env, "create index if not exists idx_media_channels_category on media_channels(category)");
-  await d1Execute(env, "create index if not exists idx_media_channels_sale_price on media_channels(sale_price)");
+    if (!names.has("category_detail")) {
+      await d1Execute(env, "alter table media_channels add column category_detail text not null default ''");
+    }
+    if (!names.has("supply_price")) {
+      await d1Execute(env, "alter table media_channels add column supply_price integer not null default 0");
+    }
+    if (!names.has("sale_price")) {
+      await d1Execute(env, "alter table media_channels add column sale_price integer not null default 0");
+    }
 
-  mediaPricingSchemaReady = true;
+    await d1Execute(
+      env,
+      "update media_channels set supply_price = case when coalesce(supply_price, 0) <= 0 then coalesce(unit_price, 0) else supply_price end where coalesce(supply_price, 0) <= 0"
+    );
+    await d1Execute(
+      env,
+      "update media_channels set sale_price = case when coalesce(sale_price, 0) <= 0 then coalesce(unit_price, 0) else sale_price end where coalesce(sale_price, 0) <= 0"
+    );
+    await d1Execute(env, "update media_channels set category_detail = '' where category_detail is null");
+    await d1Execute(env, "create index if not exists idx_media_channels_category on media_channels(category)");
+    await d1Execute(env, "create index if not exists idx_media_channels_sale_price on media_channels(sale_price)");
+
+    mediaPricingSchemaReady = true;
+  })();
+  try {
+    await mediaPricingSchemaReadyPromise;
+  } finally {
+    mediaPricingSchemaReadyPromise = null;
+  }
 }
