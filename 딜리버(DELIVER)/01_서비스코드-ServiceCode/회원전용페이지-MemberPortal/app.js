@@ -1054,19 +1054,25 @@ function renderAll() {
 }
 
 async function refreshData() {
-  const me = await apiFetch("/api/auth/me");
-  state.member = me.member;
+  const [meResult, mediaResult, ordersResult] = await Promise.allSettled([
+    apiFetch("/api/auth/me"),
+    apiFetch("/api/media"),
+    apiFetch("/api/orders"),
+  ]);
 
-  try {
-    const media = await apiFetch("/api/media");
-    state.media = Array.isArray(media.media) ? media.media.filter((item) => item.isActive !== false) : [];
-  } catch (error) {
+  if (meResult.status !== "fulfilled") {
+    throw meResult.reason;
+  }
+  state.member = meResult.value.member;
+
+  if (mediaResult.status === "fulfilled") {
+    state.media = Array.isArray(mediaResult.value.media)
+      ? mediaResult.value.media.filter((item) => item.isActive !== false)
+      : [];
   }
 
-  try {
-    const orders = await apiFetch("/api/orders");
-    state.orders = Array.isArray(orders.orders) ? orders.orders : [];
-  } catch (error) {
+  if (ordersResult.status === "fulfilled") {
+    state.orders = Array.isArray(ordersResult.value.orders) ? ordersResult.value.orders : [];
   }
 
   if (!state.selectedMediaId) {

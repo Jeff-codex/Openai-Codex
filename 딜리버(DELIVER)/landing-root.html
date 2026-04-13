@@ -2926,12 +2926,10 @@ body.modal-open {
           });
           updateAuthUI(response.member);
           setLoginMessage("success", "로그인되었습니다.");
-          window.setTimeout(() => {
-            closeLoginModal();
-            clearLoginMessage();
-            loginForm.reset();
-            moveToMemberPortal();
-          }, 450);
+          closeLoginModal();
+          clearLoginMessage();
+          loginForm.reset();
+          moveToMemberPortal();
         } catch (error) {
           setLoginMessage("error", error.message || "로그인 중 오류가 발생했습니다.");
         }
