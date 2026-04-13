@@ -27,6 +27,15 @@ function getFailKey(loginId, ip) {
   return `authfail:member:${safeLogin}:${safeIp}`;
 }
 
+function scheduleBackground(context, task) {
+  if (!task) return null;
+  if (typeof context?.waitUntil === "function") {
+    context.waitUntil(task);
+    return null;
+  }
+  return task;
+}
+
 export async function onRequestPost(context) {
   try {
     const body = await parseJson(context.request);
@@ -44,14 +53,14 @@ export async function onRequestPost(context) {
 
     const failCount = Number((await kvGet(context.env, failKey)) || 0);
     if (failCount >= LOGIN_FAIL_LIMIT) {
-      await writeSecurityAudit(context.env, {
+      await scheduleBackground(context, writeSecurityAudit(context.env, {
         eventType: "member_login_blocked",
         actorType: "member",
         actorId: loginId,
         ip,
         outcome: "blocked",
         detail: "too_many_attempts",
-      });
+      }));
       return jsonError("로그인 시도 횟수가 너무 많습니다. 잠시 후 다시 시도해 주세요.", 429);
     }
 
@@ -61,39 +70,33 @@ export async function onRequestPost(context) {
       [loginId]
     );
     if (!rows.length) {
-      await Promise.all([
-        kvPut(context.env, failKey, String(failCount + 1), LOGIN_FAIL_TTL_SEC),
-        writeSecurityAudit(context.env, {
-          eventType: "member_login_failed",
-          actorType: "member",
-          actorId: loginId,
-          ip,
-          outcome: "failed",
-          detail: "account_not_found",
-        }),
-      ]);
+      await kvPut(context.env, failKey, String(failCount + 1), LOGIN_FAIL_TTL_SEC);
+      await scheduleBackground(context, writeSecurityAudit(context.env, {
+        eventType: "member_login_failed",
+        actorType: "member",
+        actorId: loginId,
+        ip,
+        outcome: "failed",
+        detail: "account_not_found",
+      }));
       return jsonError("아이디 또는 비밀번호가 올바르지 않습니다.", 401);
     }
     const member = rows[0];
     const verified = await verifyPassword(password, member.password, context.env);
     if (!verified.ok) {
-      await Promise.all([
-        kvPut(context.env, failKey, String(failCount + 1), LOGIN_FAIL_TTL_SEC),
-        writeSecurityAudit(context.env, {
-          eventType: "member_login_failed",
-          actorType: "member",
-          actorId: loginId,
-          ip,
-          outcome: "failed",
-          detail: "wrong_password",
-        }),
-      ]);
+      await kvPut(context.env, failKey, String(failCount + 1), LOGIN_FAIL_TTL_SEC);
+      await scheduleBackground(context, writeSecurityAudit(context.env, {
+        eventType: "member_login_failed",
+        actorType: "member",
+        actorId: loginId,
+        ip,
+        outcome: "failed",
+        detail: "wrong_password",
+      }));
       return jsonError("아이디 또는 비밀번호가 올바르지 않습니다.", 401);
     }
 
-    const postVerifyTasks = [
-      kvDelete(context.env, failKey),
-    ];
+    const postVerifyTasks = [kvDelete(context.env, failKey)];
     if (verified.needsRehash) {
       postVerifyTasks.push((async () => {
         const nextHash = await hashPassword(password, context.env);
@@ -113,18 +116,21 @@ export async function onRequestPost(context) {
     }, context.request);
 
     const headers = new Headers();
-    const [token] = await Promise.all([
-      tokenPromise,
-      ...postVerifyTasks,
-      writeSecurityAudit(context.env, {
-        eventType: "member_login_success",
-        actorType: "member",
-        actorId: member.login_id,
-        ip,
-        outcome: "success",
-        detail: "authenticated",
-      }),
-    ]);
+    const token = await tokenPromise;
+    await scheduleBackground(
+      context,
+      Promise.all([
+        ...postVerifyTasks,
+        writeSecurityAudit(context.env, {
+          eventType: "member_login_success",
+          actorType: "member",
+          actorId: member.login_id,
+          ip,
+          outcome: "success",
+          detail: "authenticated",
+        }),
+      ])
+    );
     appendSessionCookie(headers, "member", token, context.env.MEMBER_SESSION_TTL_SEC);
     appendClearSessionCookie(headers, "admin");
 
