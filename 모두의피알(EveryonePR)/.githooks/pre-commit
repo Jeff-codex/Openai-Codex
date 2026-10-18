@@ -7,7 +7,7 @@ if [ -z "$REPO_ROOT" ]; then
   exit 1
 fi
 
-SCRIPT_PATH="$REPO_ROOT/딜리버(DELIVER)/07_자동화스크립트-AutomationScripts/precommit-html-guard.ps1"
+SCRIPT_PATH="$REPO_ROOT/모두의피알(EveryonePR)/07_자동화스크립트-AutomationScripts/precommit-html-guard.ps1"
 if [ ! -f "$SCRIPT_PATH" ]; then
   echo "[FAIL] missing guard script: $SCRIPT_PATH"
   exit 1

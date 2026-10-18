@@ -1,7 +1,8 @@
 # EveryonePR/모두의피알 운영/개발 가이드 (Windows Codex 앱 기준)
 
 ## 1. 프로젝트 위치
-- Windows 경로: `C:\Users\gusru\code\Openai-Codex\딜리버(DELIVER)`
+- 저장소 내 프로젝트 경로: `모두의피알(EveryonePR)/`
+- 프로젝트 폴더명은 공개 URL 경로에 포함되지 않는다. Git 연동 배포의 외부 Root directory 설정이 이전 폴더명을 참조하는 경우, 이 변경을 병합하기 전에 새 폴더명으로 맞춰야 한다.
 - 이 문서는 WSL 없이 Windows PowerShell 기준으로 작성되었다.
 - 외부 공개 브랜드와 대표 도메인은 `EveryonePR/모두의피알`, `https://everyonepr.com` 기준으로 설명한다.
 - Pages 프로젝트명 `dliver`, D1/KV/R2 이름 등은 현재 Cloudflare 내부 식별자이므로 문서에서 그대로 유지한다.
