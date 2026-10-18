@@ -8,15 +8,15 @@
     --text-sub: #61718d;
     --line: #d7e1f1;
     --line-strong: #bfd0eb;
-    --primary: #0a4acc;
+    --primary: #0038b8;
     --primary-deep: #072a7e;
     --primary-soft: #eaf2ff;
     --accent: #0d8ef3;
     --success: #0f9d58;
     --danger: #c5221f;
-    --shadow-sm: 0 12px 28px rgba(17, 34, 68, 0.07);
-    --shadow-md: 0 22px 50px rgba(12, 28, 68, 0.12);
-    --shadow-lg: 0 28px 68px rgba(8, 27, 74, 0.18);
+    --shadow-sm: 0 4px 16px rgba(17, 34, 68, 0.045);
+    --shadow-md: 0 12px 30px rgba(12, 28, 68, 0.07);
+    --shadow-lg: 0 18px 40px rgba(8, 27, 74, 0.1);
     --radius-xl: 28px;
     --radius-lg: 20px;
     --radius-md: 14px;
@@ -46,6 +46,19 @@ img {
     max-width: 100%;
 }
 
+h1,
+h2,
+h3 {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 4px;
+}
+
 a {
     color: inherit;
     text-decoration: none;
@@ -63,7 +76,7 @@ a {
     backdrop-filter: blur(10px);
     background: rgba(252, 253, 255, 0.94);
     border-bottom: 1px solid rgba(215, 225, 241, 0.95);
-    box-shadow: 0 5px 14px rgba(15, 34, 68, 0.04);
+    box-shadow: none;
 }
 
 .nav-shell {
@@ -222,31 +235,25 @@ a {
 }
 
 .btn::before {
-    content: "";
-    position: absolute;
-    inset: 1px 1px auto 1px;
-    height: 46%;
-    border-radius: inherit;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
-    pointer-events: none;
-    z-index: -1;
+    display: none;
 }
 
 .btn-primary {
-    background: linear-gradient(145deg, #2487ec 0%, var(--primary) 58%, var(--primary-deep) 100%);
+    background: var(--primary);
     color: #ffffff;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 14px 28px rgba(10, 74, 204, 0.18);
+    box-shadow: 0 4px 12px rgba(0, 56, 184, 0.14);
 }
 
 .btn-primary:hover {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26), 0 18px 30px rgba(0, 56, 184, 0.2);
+    background: var(--primary-deep);
+    box-shadow: 0 6px 16px rgba(0, 56, 184, 0.18);
 }
 
 .btn-secondary {
     background: linear-gradient(180deg, rgba(251, 253, 255, 0.98) 0%, rgba(244, 248, 255, 0.96) 100%);
     color: var(--primary);
     border: 1px solid #d6e1f4;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 18px rgba(17, 34, 68, 0.05);
+    box-shadow: none;
 }
 
 .btn-secondary:hover {
@@ -261,7 +268,7 @@ a {
 
 .hero-shell {
     display: grid;
-    gap: 1.35rem;
+    gap: 1.5rem;
     grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
     align-items: stretch;
 }
@@ -295,7 +302,7 @@ a {
     border: 1px solid #c0d1ef;
     border-radius: calc(var(--radius-xl) - 2px);
     background: linear-gradient(150deg, #f4f8ff 0%, #e8f1ff 54%, #dde9ff 100%);
-    box-shadow: 0 18px 36px rgba(26, 74, 150, 0.16);
+    box-shadow: var(--shadow-sm);
     padding: clamp(1.28rem, 2.8vw, 1.82rem);
     display: grid;
     gap: 0.82rem;
@@ -340,9 +347,9 @@ a {
     margin: 0.9rem 0 0.8rem;
     font-family: "Montserrat", "Noto Sans KR", sans-serif;
     font-size: clamp(2.05rem, 3.35vw, 3rem);
-    line-height: 1.12;
-    letter-spacing: -0.03em;
-    max-width: 15.8ch;
+    line-height: 1.24;
+    letter-spacing: -0.02em;
+    max-width: none;
     text-wrap: pretty;
 }
 
@@ -517,7 +524,7 @@ a {
     font-size: clamp(1.56rem, 2.45vw, 2.02rem);
     line-height: 1.25;
     letter-spacing: -0.02em;
-    max-width: 22ch;
+    max-width: none;
     text-wrap: pretty;
 }
 
@@ -534,7 +541,7 @@ a {
 .compare-grid,
 .hub-grid {
     display: grid;
-    gap: 1.15rem;
+    gap: 1.25rem;
 }
 
 .grid-2 {
@@ -565,7 +572,7 @@ a {
 .card,
 .panel,
 .cta-band {
-    padding: 1.3rem;
+    padding: 1.5rem;
 }
 
 .card,
@@ -584,6 +591,11 @@ a {
 
 .card {
     height: 100%;
+}
+
+.card > .button-row:last-child {
+    align-self: end;
+    margin-top: auto;
 }
 
 .card::before,

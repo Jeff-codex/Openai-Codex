@@ -1,0 +1,93 @@
+/* Shared, progressively enhanced navigation. Existing navigation remains available without JS. */
+.public-navigation-panel { display: contents; }
+.public-menu-toggle, .public-mobile-signup { display: none; }
+
+@media (max-width: 960px) {
+  .nav-collapsible.nav-inner,
+  .nav-collapsible.nav-shell {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    min-height: 64px;
+    padding: 10px 0;
+  }
+  .nav-collapsible .brand,
+  .nav-collapsible .brand-mark {
+    order: 0;
+    width: auto;
+    margin-right: auto;
+    justify-content: flex-start;
+  }
+  .nav-collapsible .brand-logo,
+  .nav-collapsible .brand-mark img { width: 144px; }
+  .nav-collapsible .public-menu-toggle,
+  .nav-collapsible .public-mobile-signup {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+  .nav-collapsible .public-mobile-signup {
+    order: 1;
+    color: white;
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  .nav-collapsible .public-mobile-signup[hidden] { display: none; }
+  .nav-collapsible .public-menu-toggle { order: 2; gap: 7px; color: var(--text); background: white; cursor: pointer; }
+  .public-menu-icon { display: grid; gap: 5px; width: 14px; }
+  .public-menu-icon i { display: block; height: 2px; background: currentColor; border-radius: 1px; }
+  .nav-collapsible .public-navigation-panel { display: none; order: 3; width: 100%; }
+  .nav-collapsible.public-menu-open .public-navigation-panel { display: grid; gap: 12px; padding-top: 12px; max-height: calc(100dvh - 80px); overflow-y: auto; }
+  .nav-collapsible .nav-links {
+    order: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+    padding: 0;
+    overflow: visible;
+  }
+  .nav-collapsible .nav-links a {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    box-shadow: none;
+    background: var(--bg-soft);
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: normal;
+  }
+  .nav-collapsible .nav-actions {
+    order: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 8px;
+  }
+  .nav-collapsible .nav-actions a,
+  .nav-collapsible .nav-actions button,
+  .nav-collapsible .nav-actions .chip { width: auto; min-height: 44px; padding-inline: 16px; }
+  .nav-collapsible .mobile-notice-strip { display: block; order: 2; width: 100%; }
+}
+
+@media (max-width: 359px) {
+  .nav-collapsible .brand-logo,
+  .nav-collapsible .brand-mark img { width: 122px; }
+  .nav-collapsible .public-menu-toggle,
+  .nav-collapsible .public-mobile-signup { padding-inline: 9px; }
+}
