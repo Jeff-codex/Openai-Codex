@@ -1,6 +1,14 @@
 param(
-    [string]$Branch = ''
+    [string]$Branch = '',
+    [switch]$UseProcessEnvironment,
+    [switch]$ValidateOnly
 )
+
+# -ValidateOnly checks the static entry points without credentials or deployment.
+# -UseProcessEnvironment uses an existing CLOUDFLARE_API_TOKEN without reading or
+# writing legacy credential files. Missing credentials stop the deployment.
+# Example: .\deploy-pages-windows.ps1 -ValidateOnly
+# Example: .\deploy-pages-windows.ps1 -UseProcessEnvironment -Branch design-preview
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -143,7 +151,23 @@ function Get-ForbiddenDeployFiles {
 $loadedFrom = ''
 $envMap = [ordered]@{}
 
-if (Test-Path -LiteralPath $windowsSecretFile) {
+if ($ValidateOnly) {
+    Assert-RootIndexIntegrity -ProjectRoot $projectRoot
+    Assert-RedirectsIntegrity -ProjectRoot $projectRoot
+    Write-State -Key 'STATIC_GUARD' -Value 'SET'
+    Write-State -Key 'DEPLOYMENT' -Value 'SKIPPED_VALIDATE_ONLY'
+    return
+}
+
+if ($UseProcessEnvironment) {
+    $processToken = [Environment]::GetEnvironmentVariable('CLOUDFLARE_API_TOKEN', 'Process')
+    if ([string]::IsNullOrWhiteSpace($processToken)) {
+        throw 'UseProcessEnvironment requires CLOUDFLARE_API_TOKEN in the process environment'
+    }
+    $loadedFrom = 'PROCESS'
+}
+
+if (-not $UseProcessEnvironment -and (Test-Path -LiteralPath $windowsSecretFile)) {
     $winLines = Get-Content -LiteralPath $windowsSecretFile
     $envMap = Parse-EnvText -Lines $winLines
     if ($envMap.Count -gt 0) {
@@ -151,7 +175,7 @@ if (Test-Path -LiteralPath $windowsSecretFile) {
     }
 }
 
-if (-not $loadedFrom) {
+if (-not $UseProcessEnvironment -and -not $loadedFrom) {
     $wslCmd = Get-Command wsl.exe -ErrorAction SilentlyContinue
     if ($wslCmd) {
         $wslOutput = & wsl.exe sh -lc "test -f '$wslSecretPath' && cat '$wslSecretPath'"
@@ -213,7 +237,6 @@ if (-not $verifyOk) {
 
 $nodeDir = 'C:\Program Files\nodejs'
 $nodeExePath = Resolve-NodeTool -CommandName 'node' -FallbackPath (Join-Path $nodeDir 'node.exe')
-$npmPath = Resolve-NodeTool -CommandName 'npm' -FallbackPath (Join-Path $nodeDir 'npm.cmd')
 $resolvedNodeDir = Split-Path -Parent $nodeExePath
 $currentPath = [Environment]::GetEnvironmentVariable('Path', 'Process')
 if ($currentPath -notlike "*$resolvedNodeDir*") {
@@ -238,6 +261,7 @@ try {
     }
 
     if ($needsInstall) {
+        $npmPath = Resolve-NodeTool -CommandName 'npm' -FallbackPath (Join-Path $nodeDir 'npm.cmd')
         & $npmPath ci --ignore-scripts --prefer-offline --no-audit --fund=false
         if ($LASTEXITCODE -ne 0) {
             throw "npm ci failed with code $LASTEXITCODE"
@@ -344,6 +368,12 @@ try {
 finally {
     Pop-Location
     if (Test-Path -LiteralPath $deployDir) {
-        Remove-Item -LiteralPath $deployDir -Recurse -Force -ErrorAction SilentlyContinue
+        $resolvedTempRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath()).TrimEnd([System.IO.Path]::DirectorySeparatorChar)
+        $resolvedDeployDir = (Resolve-Path -LiteralPath $deployDir).Path
+        $insideTemp = $resolvedDeployDir.StartsWith($resolvedTempRoot + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)
+        if (-not $insideTemp -or (Split-Path -Leaf $resolvedDeployDir) -notmatch '^dliver-pages-deploy-\d{14}$') {
+            throw 'Refusing cleanup: deployment directory is outside the expected temporary location'
+        }
+        Remove-Item -LiteralPath $resolvedDeployDir -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
