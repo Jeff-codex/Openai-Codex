@@ -40,8 +40,23 @@
 
 ## 배포 전 확인 및 복구
 
-현재 Production 배포, DNS 변경, DB 쓰기를 수행하지 않았다. Cloudflare 프로젝트 `dliver`, D1/KV/R2 식별자와 배포 스크립트는 그대로다.
+초기 로컬 검토 단계에서는 Production 배포, DNS 변경, DB 쓰기를 수행하지 않았다. 아래 후속 Preview 검증은 사용자의 배포 요청 이후 진행했다. 운영 반영 결과는 [PR #1](https://github.com/Jeff-codex/Openai-Codex/pull/1)에 기록한다.
 
-외부 Cloudflare Git 연동의 Root directory가 옛 폴더명을 지정하는지는 미확인이다. 병합 전에 실제 배포 방식과 Root directory를 확인하고, 해당 설정을 사용하는 경우 새 폴더명으로 변경한 Preview에서 배포·주요 이동 경로를 검증한다. 저장소 내부 배포 스크립트는 프로젝트 상대 경로를 사용한다.
+Cloudflare API에서 Git 연동 source와 Root directory가 없는 직접 업로드 프로젝트임을 확인했다. 따라서 이번 폴더명 변경에 따른 외부 Root directory 수정은 필요하지 않다. 저장소 내부 배포 스크립트는 프로젝트 상대 경로를 사용한다.
 
 운영 반영 후 복구가 필요하면 기존 Cloudflare 배포로 롤백하고, 이 PR의 변경을 되돌린다. 폴더명을 되돌리면 외부 Root directory 설정도 함께 맞춘다. 백업 브랜치에는 변경 전 커밋이 보존되어 있다.
+
+## 후속 Cloudflare Preview 검증
+
+- 배포 전 운영 커밋: `d031fa74ba351f5b4c1eab78253618d190b76659` — 백업과 일치.
+- 배포 전 운영 배포 ID: `74c15892-1580-4463-8864-7b89332be0ae` — 롤백 기준.
+- Preview: `https://eb1520ac.dliver.pages.dev`, 커밋 `222e92e95dd1ed5a2c1cdb100da7b0140512235e`, Cloudflare 상태 `success`.
+- 공개 HTML 25개와 에셋 7개가 로컬 수정본과 모두 일치. 위와 동일한 텍스트 정규화 기준.
+- 실제 Preview 화면에서 PC/모바일 홈, 모바일 메뉴, 가격 FAQ, 가이드, 기존 회원가입 모달을 확인. 회원가입 양식은 제출하지 않음.
+- `/api/health`: HTTP 200, `ok=true`, `r2Ready=true`, Preview 매체 수 280. 배포 전 Production 매체 수는 281이며, 두 환경의 D1/KV 바인딩이 서로 다른 것을 확인.
+- `/api/auth/me`: 비로그인 HTTP 401. `/login`, `/signup`: HTTP 200 및 새 내비게이션 확인.
+- Preview 배포 후 기존 Production 배포 ID와 전체 환경 구성 해시가 동일함을 확인. DNS 및 D1/KV/R2 구성을 변경하지 않음.
+
+배포 스크립트는 `-UseProcessEnvironment`로 현재 프로세스의 토큰을 명시적으로 사용할 수 있게 했다. 이 모드는 기존 인증 파일을 읽거나 쓰지 않으며, 토큰이 없으면 정확한 이유와 함께 즉시 실패한다. `-ValidateOnly`는 인증/배포 없이 정적 진입점만 검증한다. 두 경로를 각각 검증했다. Wrangler가 이미 설치되어 있으면 npm을 요구하지 않으며, 임시 폴더 정리 전에 경로 범위를 확인한다.
+
+로그인 성공·주문 생성·결제 승인·DB 저장 전체 흐름은 이 디자인 배포 검증에 포함하지 않는다. 기존 서버 코드와 인증·결제 설정은 유지한다.
